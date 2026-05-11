@@ -1,0 +1,51 @@
+/* The article body has its own clamp(96, 12vw, 160) bottom padding —
+   that becomes the visual space above the card. Match it with the same
+   value as bottom padding on this section so the gap below the card is
+   identical. */
+.section {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 32px clamp(96px, 12vw, 160px);
+}
+
+.eyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+/* Center the credit card(s) horizontally in the article. Single author
+   lands as one bounded card. Collaborations lay out side-by-side and
+   wrap, all centered as a row. Card width is capped at 280px so cards
+   never stretch huge in a wide section. */
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+}
+
+.cards > * {
+  flex: 0 0 280px;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 0 16px 64px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cards {
+    gap: var(--space-element);
+  }
+  .cards > * {
+    flex: 0 0 calc(50% - calc(var(--space-element) / 2));
+  }
+}

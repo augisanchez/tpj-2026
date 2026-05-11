@@ -1,0 +1,73 @@
+.page {
+  padding: 120px 32px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+
+.title {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(48px, 6vw, 96px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 48px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.body :global(p) {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--text);
+  margin: 0;
+}
+
+.body :global(p:first-child) {
+  font-size: var(--text-intro);
+  line-height: 1.55;
+}
+
+.body :global(h2) {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.1;
+  margin: 24px 0 0;
+}
+
+.body :global(a) {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.body :global(a:hover) {
+  text-decoration-color: var(--chip-bg);
+  text-decoration-thickness: 3px;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 64px 16px;
+  }
+  .title {
+    margin-bottom: 32px;
+  }
+}

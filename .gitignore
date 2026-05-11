@@ -1,0 +1,11 @@
+.DS_Store
+.env*
+.vercel
+node_modules/
+.next/
+*.log
+
+# WordPress: track theme source only, ignore restored core/uploads/etc.
+wordpress/wp-content/uploads/
+wordpress/wp-content/cache/
+wordpress/wp-content/upgrade/

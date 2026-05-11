@@ -1,0 +1,56 @@
+.banner {
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  padding: clamp(64px, 8vw, 112px) 0;
+}
+
+.bannerInner {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.title {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(72px, 14vw, 240px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  margin: 0 0 clamp(32px, 4vw, 56px);
+  text-transform: none;
+}
+
+.support {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 1.6vw, 24px);
+}
+
+.support :global(p) {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1.4;
+  color: var(--chip-text);
+  margin: 0;
+}
+
+/* When the banner has more than one paragraph, the last one drops to a
+   quieter scale to act as a closing tagline (e.g. location lines on
+   the About page). Single-paragraph banners stay at the lead size. */
+.support :global(p:last-child:not(:only-child)) {
+  font-size: clamp(15px, 1.4vw, 19px);
+  line-height: 1.45;
+}
+
+.support :global(a) {
+  color: var(--chip-text);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 920px) {
+  .bannerInner {
+    padding: 0 24px;
+  }
+}

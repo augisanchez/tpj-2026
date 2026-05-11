@@ -1,0 +1,103 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 120px;
+}
+
+.intro {
+  padding: 96px 32px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.eyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.title {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+}
+
+.lede {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-intro);
+  line-height: 1.55;
+  color: var(--text);
+  max-width: 880px;
+  margin: 0;
+}
+
+.summary {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+
+/* 5 across at desktop. Step down progressively so tablets and phones
+   stay legible. Card visuals live in PhotographerListCard.module.css. */
+.grid {
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: 24px;
+  row-gap: 64px;
+}
+
+.empty {
+  padding: 0 32px 120px;
+}
+
+@media (max-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .intro {
+    padding: 64px 16px 48px;
+  }
+  .grid {
+    padding: 0 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 48px;
+    column-gap: 16px;
+  }
+  .empty {
+    padding: 0 16px 64px;
+  }
+}
+
+/* Stay at two columns even on the smallest viewports — the directory
+   is long enough that a single-column layout becomes tedious to scroll. */
+@media (max-width: 480px) {
+  .grid {
+    row-gap: 40px;
+    column-gap: 12px;
+  }
+}

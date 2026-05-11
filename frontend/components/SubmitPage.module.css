@@ -1,0 +1,213 @@
+/* Content area below the shared SupportingPageBanner */
+
+.page {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: clamp(64px, 8vw, 120px) 32px;
+}
+
+.pitch {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 880px;
+  margin: 0 auto 80px;
+}
+
+/* Pitch heading matches the lead-sentence style from the lime banner
+   above so the page reads as one continuous voice. */
+.pitchHeading {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1.4;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.paragraph {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--text);
+  margin: 0;
+}
+
+.howTo {
+  margin: 0 auto 96px;
+  max-width: 880px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px clamp(24px, 4vw, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.howToEyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.howToBody {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0;
+}
+
+.howToEmail {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(22px, 2.5vw, 32px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+  margin: 8px 0 0;
+  display: inline-block;
+  overflow-wrap: anywhere;
+  border-bottom: 2px solid var(--text);
+  padding-bottom: 4px;
+  transition: color 150ms ease-out, border-color 150ms ease-out;
+}
+
+.howToEmail:hover {
+  color: var(--text);
+  border-bottom-color: var(--chip-bg);
+  border-bottom-width: 6px;
+}
+
+/* Guidelines */
+
+.guidelinesHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 880px;
+  margin: 0 auto 32px;
+}
+
+.guidelinesEyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.guidelinesTitle {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin: 0;
+}
+
+.guidelinesList {
+  list-style: none;
+  margin: 0 auto 96px;
+  padding: 0;
+  max-width: 880px;
+  counter-reset: guideline;
+}
+
+.guideline {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 32px;
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  align-items: baseline;
+  counter-increment: guideline;
+}
+
+.guideline:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.guideline::before {
+  content: counter(guideline, decimal-leading-zero);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.guidelineText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guidelineHeadline {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(22px, 2.4vw, 28px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0;
+}
+
+.guidelineDetail {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.65;
+  color: var(--text);
+  margin: 0;
+}
+
+/* Closing — normal body styling, left-aligned, same width as the rest */
+
+.closing {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.closingHeadline,
+.closingHeart {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1.4;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: 0;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 64px 16px;
+  }
+  .guideline {
+    grid-template-columns: 48px 1fr;
+    gap: 16px;
+    padding: 20px 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .howToEmail {
+    font-size: 20px;
+  }
+}

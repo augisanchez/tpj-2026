@@ -1,0 +1,96 @@
+:root {
+  /* Color */
+  --bg: #f2f2f2;
+  --surface: #ffffff;
+  --text: #1a1814;
+  --muted: #888;
+  --border: #ddd;
+  --placeholder: #d1d1d1;
+  --chip-bg: #e4ffb1;
+  --chip-text: #1a1814;
+  --chip-active: #1a1814;
+  --chip-active-text: #e8e4df;
+  --hero-bg: #0e0e0e;
+  --hero-text: #ffffff;
+  --hero-muted: #cccccc;
+  --hero-credit: #4d4d4d;
+  --footer-bg: #e5e5e5;
+  --footer-text: #1a1814;
+
+  /* Type scale */
+  --text-hero:       clamp(2.625rem, 1rem + 7.2vw, 12.5rem);
+  --text-display:    clamp(2.25rem, 1.25rem + 4.5vw, 6.75rem);
+  --text-heading-1:  clamp(2rem, 1.25rem + 3vw, 4rem);
+  --text-heading-2:  clamp(1.5rem, 1.125rem + 1.5vw, 2.5rem);
+  --text-heading-3:  clamp(1.25rem, 1rem + 0.75vw, 1.75rem);
+  --text-intro:      clamp(1.1875rem, 1rem + 0.5vw, 1.5rem);
+  --text-body:       clamp(1.0625rem, 0.95rem + 0.5vw, 1.3125rem);
+  --text-caption:    clamp(0.875rem, 0.8rem + 0.15vw, 1rem);
+  --text-ui:         clamp(0.75rem, 0.7rem + 0.1vw, 0.875rem);
+  --text-label:      clamp(0.625rem, 0.6rem + 0.075vw, 0.75rem);
+
+  /* Spacing */
+  --space-section:  clamp(6rem, 2rem + 6vw, 15rem);
+  --space-block:    clamp(3rem, 1.25rem + 2.5vw, 6rem);
+  --space-element:  clamp(1rem, 0.75rem + 0.5vw, 2rem);
+  --space-tight:    0.5rem;
+
+  /* Page padding */
+  --gutter: clamp(1.25rem, 0.5rem + 5vw, 15rem);
+
+  /* Max content width for inset homepage sections (matches the hero
+     card's 1376px content width). Sections that should breathe at the
+     wide end stop here; Hero spans edge-to-edge. */
+  --content-max: 1376px;
+
+  /* Wider stop for sections that should use more horizontal real estate
+     on big screens (theme cards, latest grid). The photographer
+     spotlight intentionally stays at --content-max to keep that block
+     focused and readable. */
+  --content-max-wide: 1800px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
+  font-size: var(--text-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}

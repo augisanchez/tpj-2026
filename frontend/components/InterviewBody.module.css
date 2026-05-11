@@ -1,0 +1,182 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: clamp(96px, 12vw, 160px) 32px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.body > * {
+  width: 100%;
+  max-width: 680px;
+  margin: 0;
+}
+
+/* Lede (italic standfirst paragraph emitted by InterviewBody.tsx) */
+.body > :global(p.interview-lede) {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--text-intro);
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* Modern interviews use H2 = question, P = answer in raw HTML */
+.body > p {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.body > h1,
+.body > h2,
+.body > h3,
+.body > h4 {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: var(--text-body);
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: var(--text);
+  /* Extra visual breathing room before each new question */
+  padding-top: 16px;
+}
+
+/* Legacy [int] shortcode pairs rendered server-side */
+.body > :global(p.int-q) {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: var(--text-body);
+  line-height: 1.45;
+  color: var(--text);
+  padding-top: 16px;
+}
+
+.body > :global(p.int-a) {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.body em,
+.body i {
+  font-style: italic;
+}
+
+.body strong,
+.body b {
+  font-weight: 700;
+}
+
+.body a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.body a:hover {
+  text-decoration-color: var(--chip-bg);
+  text-decoration-thickness: 3px;
+}
+
+/* [fig] variants — same width semantics as ArticleBody */
+
+.body :global(.fig img) {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+}
+
+.body > :global(.fig) {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.body > :global(.fig-fullbleed) {
+  max-width: 100%;
+}
+
+.body > :global(.fig-twothirds),
+.body > :global(.fig-two-thirds),
+.body > :global(.fig-twoup),
+.body > :global(.fig-two-up),
+.body > :global(.fig-three-up) {
+  max-width: 66%;
+}
+
+.body > :global(.fig-twoup),
+.body > :global(.fig-two-up) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 64px;
+  row-gap: 64px;
+}
+
+.body > :global(.fig-three-up) {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 64px;
+  row-gap: 64px;
+}
+
+.body > :global(.fig-twoup) figcaption,
+.body > :global(.fig-two-up) figcaption,
+.body > :global(.fig-three-up) figcaption {
+  grid-column: 1 / -1;
+}
+
+.body :global(.fig figcaption) {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-caption);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  margin: 0;
+}
+
+.body > :global(.fig-margin) {
+  max-width: 680px;
+}
+
+@media (max-width: 768px) {
+  .body {
+    padding: 64px 16px;
+    gap: 24px;
+  }
+  .body > :global(.fig-twothirds),
+  .body > :global(.fig-two-thirds),
+  .body > :global(.fig-twoup),
+  .body > :global(.fig-two-up),
+  .body > :global(.fig-three-up) {
+    max-width: 100%;
+  }
+  .body > :global(.fig-three-up) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Mobile: every figure variant collapses to a single full-width column,
+   matching the ArticleBody mobile treatment so essays and interviews
+   render figures the same way on phone. */
+@media (max-width: 640px) {
+  .body > :global(.fig-twoup),
+  .body > :global(.fig-two-up),
+  .body > :global(.fig-three-up) {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    row-gap: 32px;
+  }
+  .body > :global(.fig-margin) {
+    max-width: 100%;
+  }
+}

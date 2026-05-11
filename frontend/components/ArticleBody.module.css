@@ -1,0 +1,296 @@
+.body {
+  display: flow-root;
+  padding: clamp(96px, 12vw, 160px) 32px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.body > * {
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.body > * + * {
+  margin-top: 32px;
+}
+
+/* Figures get a noticeably larger top gap so consecutive photographs
+   read as separate moments rather than stacked tight against each other. */
+.body > :global(.fig),
+.body > :global(.fig-fullbleed),
+.body > :global(.fig-twothirds),
+.body > :global(.fig-two-thirds),
+.body > :global(.fig-twoup),
+.body > :global(.fig-two-up),
+.body > :global(.fig-three-up) {
+  margin-top: 64px;
+}
+
+/* Feature variant — every block (prose AND figures) shares the same
+   centered column so the page reads as one tight, deliberate
+   text-forward layout. Selectors use `.body.centered` (specificity
+   0,3,0 with the trailing class) so they beat the default
+   `.body > .fig*` rules that otherwise push figures to full body
+   width. Vertical rhythm matches essay/interview — the only thing
+   different on Feature is the column constraint. */
+.body.centered > *,
+.body.centered > :global(.fig),
+.body.centered > :global(.fig-fullbleed),
+.body.centered > :global(.fig-twothirds),
+.body.centered > :global(.fig-two-thirds),
+.body.centered > :global(.fig-twoup),
+.body.centered > :global(.fig-two-up),
+.body.centered > :global(.fig-three-up) {
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Multi-column figure variants don't have room to breathe inside a
+   680px column, so collapse to single-column on the Feature variant. */
+.body.centered > :global(.fig-twoup),
+.body.centered > :global(.fig-two-up),
+.body.centered > :global(.fig-three-up) {
+  grid-template-columns: 1fr;
+}
+
+/* Feature variant runs at a slower reading pace than essays/interviews
+   — the body is mostly text, so we give paragraphs and figures more
+   vertical breathing room. */
+.body.centered > * + * {
+  margin-top: 56px;
+}
+
+.body.centered > :global(.fig),
+.body.centered > :global(.fig-fullbleed),
+.body.centered > :global(.fig-twothirds),
+.body.centered > :global(.fig-two-thirds),
+.body.centered > :global(.fig-twoup),
+.body.centered > :global(.fig-two-up),
+.body.centered > :global(.fig-three-up) {
+  margin-top: 112px;
+}
+
+.body p {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--text);
+  margin: 0;
+}
+
+.body p:first-child {
+  font-size: var(--text-intro);
+  line-height: 1.55;
+}
+
+.body blockquote {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(28px, 1rem + 1.6vw, 40px);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.body img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+}
+
+.body figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.body figcaption,
+.body .wp-caption-text {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-caption);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* [fig] variants — width per class
+   - fig (no variant)          full body content width (default)
+   - fig-fullbleed             same as default
+   - fig-twothirds             66% of body, centered
+   - fig-twoup                 full body, two-column grid
+   - fig-three-up              full body, three-column grid
+   - fig-margin                280px floated right with text wrap
+
+   Images inside any fig fill the figure's allotted width and scale
+   proportionally via height: auto. */
+
+.body :global(.fig) {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.body :global(.fig img) {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+}
+
+.body :global(.fig figcaption) {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-caption);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Default fig and fullbleed both span the full body content area,
+   overriding the body's 680px column for prose. */
+.body > :global(.fig),
+.body > :global(.fig-fullbleed) {
+  max-width: 100%;
+  clear: both;
+}
+
+.body > :global(.fig-twothirds),
+.body > :global(.fig-two-thirds) {
+  max-width: 66%;
+  clear: both;
+}
+
+.body > :global(.fig-twoup),
+.body > :global(.fig-two-up),
+.body > :global(.fig-three-up) {
+  max-width: 100%;
+  clear: both;
+  display: grid;
+  /* Horizontal gap between images matches the vertical gap between
+     consecutive figures so the page reads as one consistent rhythm. */
+  column-gap: 64px;
+  row-gap: 64px;
+}
+
+.body > :global(.fig-twoup),
+.body > :global(.fig-two-up) {
+  grid-template-columns: 1fr 1fr;
+}
+
+.body > :global(.fig-three-up) {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.body > :global(.fig-twoup) figcaption,
+.body > :global(.fig-two-up) figcaption,
+.body > :global(.fig-three-up) figcaption {
+  grid-column: 1 / -1;
+}
+
+/* fig-margin floats right of the prose column with text wrap. */
+.body > :global(.fig-margin) {
+  width: 280px;
+  max-width: 280px;
+  float: right;
+  margin: 0 0 24px 32px;
+}
+
+@media (max-width: 1024px) {
+  .body > :global(.fig-margin) {
+    float: none;
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .body > :global(.fig-twothirds),
+  .body > :global(.fig-two-thirds) {
+    max-width: 100%;
+  }
+  .body > :global(.fig-three-up) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.body a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.body a:hover {
+  text-decoration-color: var(--chip-bg);
+  text-decoration-thickness: 3px;
+}
+
+.body em,
+.body i {
+  font-style: italic;
+}
+
+.body strong,
+.body b {
+  font-weight: 700;
+}
+
+.body h2 {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 24px 0 0;
+}
+
+.body h3 {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.1;
+  margin: 16px 0 0;
+}
+
+@media (max-width: 768px) {
+  .body {
+    padding: 64px 16px;
+    gap: 24px;
+  }
+}
+
+/* On mobile every figure variant collapses to a single full-body-width
+   column so the page reads as a clean vertical stack. Multi-column
+   layouts and the floated margin variant don't have room to breathe at
+   phone widths. */
+@media (max-width: 640px) {
+  .body > :global(.fig-twothirds),
+  .body > :global(.fig-two-thirds),
+  .body > :global(.fig-twoup),
+  .body > :global(.fig-two-up),
+  .body > :global(.fig-three-up),
+  .body > :global(.fig-margin) {
+    max-width: 100%;
+    width: 100%;
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .body > :global(.fig-twoup),
+  .body > :global(.fig-two-up),
+  .body > :global(.fig-three-up) {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    row-gap: 32px;
+  }
+}

@@ -1,0 +1,23 @@
+.section {
+  padding: 0 32px;
+}
+
+.statement {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(32px, 4.5vw, 64px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+  max-width: 28ch;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 0 16px;
+  }
+  .statement {
+    max-width: none;
+  }
+}

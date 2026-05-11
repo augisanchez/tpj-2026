@@ -1,0 +1,118 @@
+.section {
+  padding: 0 32px;
+}
+
+.block {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  background: var(--placeholder);
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 800ms ease-out;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.copy {
+  position: relative;
+  z-index: 2;
+  min-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(64px, 10vw, 144px) 32px;
+  color: #fff;
+}
+
+.quote {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(28px, 3.6vw, 56px);
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: #fff;
+  max-width: 32ch;
+  margin: 0 0 40px;
+  text-shadow: 0 1px 24px rgba(0, 0, 0, 0.25);
+}
+
+.quote p {
+  margin: 0;
+}
+
+.attribution {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attributionName {
+  border-bottom: 1px solid transparent;
+  transition: border-color 200ms ease-out;
+}
+
+.attributionArrow {
+  display: inline-block;
+  transition: transform 200ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .block:hover .image {
+    transform: scale(1.02);
+  }
+  .block:hover .attributionArrow {
+    transform: translateX(4px);
+  }
+  .block:hover .attributionName {
+    border-bottom-color: #fff;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 0 16px;
+  }
+  .copy {
+    min-height: 420px;
+    padding: 56px 24px;
+  }
+  .quote {
+    font-size: clamp(22px, 6vw, 32px);
+    margin-bottom: 28px;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image,
+  .attributionArrow {
+    transition: none;
+  }
+}

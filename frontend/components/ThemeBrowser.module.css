@@ -1,0 +1,145 @@
+.section {
+  padding: 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.header {
+  max-width: 56ch;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+}
+
+.description {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.chip {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out,
+    color 150ms ease-out;
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: var(--text);
+  }
+  .chipActive:hover {
+    border-color: var(--text);
+    background: var(--text);
+    color: var(--bg);
+  }
+}
+
+.chipActive {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.select {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 36px 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  min-width: 220px;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--text);
+}
+
+.selectChevron {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text);
+}
+
+.desktopOnly {
+  display: flex;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 0 16px;
+    gap: 24px;
+  }
+  .cards {
+    grid-template-columns: 1fr;
+    row-gap: 48px;
+  }
+}
+
+@media (max-width: 640px) {
+  .desktopOnly {
+    display: none;
+  }
+  .mobileOnly {
+    display: inline-flex;
+  }
+}

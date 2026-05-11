@@ -1,0 +1,169 @@
+/* Sticky filter bar mirroring the Explore page pattern: search field on
+   the left, alphabet shortcut floated right. Sticky behavior matches —
+   top: 0, z-index 90 (the global Nav at z-100 covers it on scroll-up,
+   and reveals it when the Nav auto-hides on scroll-down). */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 48px;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border);
+  margin: 0 0 48px;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.label {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.input {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 999px;
+  width: 280px;
+  max-width: 100%;
+  transition: border-color 150ms ease-out;
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
+.input:hover,
+.input:focus {
+  outline: none;
+  border-color: var(--text);
+}
+
+/* Live "X of Y" annotation, shown only when search is active. Same
+   visual register as the field labels — small uppercase muted —
+   so it reads as metadata about the search, not a control. */
+.count {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.alphabetGroup {
+  margin-left: auto;
+}
+
+.alphabet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.letterChip {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.letterChip:hover {
+  border-color: var(--chip-active);
+  background: var(--chip-active);
+  color: var(--chip-active-text);
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+/* The id lives on the section, so the scroll offset has to live here
+   too — applying it to the heading was a no-op. The value clears the
+   sticky filter bar (~72px) plus a bit extra so the global Nav, if
+   visible during scroll-up jumps, doesn't crop the letter. */
+.section {
+  scroll-margin-top: 96px;
+}
+
+.letterHeading {
+  padding: 0 32px;
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 24px;
+}
+
+.noResults {
+  padding: 40px 32px;
+  text-align: center;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .bar {
+    padding: 16px;
+    gap: 12px 24px;
+  }
+  .input {
+    width: 100%;
+  }
+  /* Hide the alphabet jump menu on mobile — it wraps onto several rows
+     and competes with search, which is the natural find-tool with a
+     soft keyboard right there. Section IDs stay rendered so any
+     existing hash links keep scrolling correctly. */
+  .alphabetGroup {
+    display: none;
+  }
+  .letterHeading {
+    padding: 0 16px;
+  }
+  .noResults {
+    padding: 32px 16px;
+  }
+  .sections {
+    gap: 56px;
+  }
+}

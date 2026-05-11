@@ -1,0 +1,121 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-decoration: none;
+  color: inherit;
+  /* Prevent long unbreakable content (slug-shaped titles, long URLs) from
+     pushing a grid track wider than its 1fr allowance. Pairs with
+     minmax(0, 1fr) on parent grids. */
+  min-width: 0;
+  /* Browser-native virtualization: off-screen cards skip rendering until
+     they're near the viewport, dramatically reducing layout/paint cost
+     when many cards are in the DOM. The intrinsic size is a hint so
+     scrollbar height stays accurate before content renders. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
+}
+
+.imageWrapper {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--placeholder);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Pseudo-element border that sits above the image. Same pattern as the
+   homepage hero — grows and darkens on hover without affecting layout. */
+.imageWrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: box-shadow 200ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover .imageWrapper::after {
+    box-shadow: inset 0 0 0 4px var(--text);
+  }
+}
+
+/* While the featured image is still loading, gently pulse the placeholder
+   so empty cards read as intentional skeletons rather than missing media. */
+.imageWrapperLoading {
+  animation: tpj-card-skeleton 1.6s ease-in-out infinite;
+}
+
+@keyframes tpj-card-skeleton {
+  0%, 100% { background-color: var(--placeholder); }
+  50% { background-color: color-mix(in srgb, var(--placeholder) 60%, var(--bg) 40%); }
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: transform 600ms ease-out, opacity 400ms ease-out;
+}
+
+.imageLoaded {
+  opacity: 1;
+}
+
+.card:hover .image {
+  transform: scale(1.015);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image {
+    opacity: 1;
+    transition: transform 600ms ease-out;
+  }
+  .imageWrapperLoading {
+    animation: none;
+  }
+}
+
+.textStack {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 8px 0 0 0;
+  overflow-wrap: anywhere;
+}
+
+.description {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+
+.date {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  margin-top: 12px;
+}
+
+.title1up { font-size: 36px; }
+.title2up { font-size: 80px; }
+.title3up { font-size: 56px; }
+.title4up { font-size: 32px; }
+.title5up { font-size: 36px; }
+.title6up { font-size: 28px; }

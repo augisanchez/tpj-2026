@@ -1,0 +1,192 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  padding-top: 64px;
+}
+
+/* Calling-card layout: a bounded 4:5 portrait tile on the left, the
+   full identity + bio + socials stack flowing in the right column.
+   The portrait dimension is the load-bearing decision — both real
+   portraits and the initials fallback look intentional at this scale,
+   so the page no longer breaks down when a photographer lacks a photo. */
+.profile {
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 480px) minmax(0, 1fr);
+  gap: 64px;
+  align-items: start;
+}
+
+.cover {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: var(--placeholder);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.coverImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.name {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  /* Tightened from the prior 64–128px range — that was tuned for a
+     full-width name; here it shares space with a 480px portrait tile. */
+  font-size: clamp(48px, 5.5vw, 88px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.locationCount {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin: 0;
+}
+
+.bioColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  color: var(--text);
+}
+
+.bio {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-intro);
+  line-height: 1.55;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.socials {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: -8px;
+}
+
+.social {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px;
+  transition: opacity 150ms ease-out;
+}
+
+.social:hover {
+  opacity: 0.6;
+}
+
+.articles {
+  padding: 96px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.articlesHead {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 64px 24px;
+}
+
+@media (max-width: 1024px) {
+  .profile {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .cover {
+    max-width: 420px;
+  }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 48px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile,
+  .articles {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .profile {
+    gap: 32px;
+  }
+  .cover {
+    max-width: 320px;
+    justify-self: center;
+  }
+  /* On mobile, center the eyebrow + name + meta line so the photo and
+     name read as a single centered card. Bio and socials stay
+     left-aligned for readability — long paragraphs are noisier when
+     centered. */
+  .identity {
+    text-align: center;
+    align-items: center;
+  }
+  .articles {
+    padding-top: 64px;
+    padding-bottom: 64px;
+    gap: 32px;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}

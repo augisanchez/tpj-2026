@@ -1,0 +1,131 @@
+/* Single source of vertical rhythm on the homepage. Slightly tighter
+   than --space-section so sections breathe but don't over-pace. The
+   wrapper provides nav and footer clearance via padding, and the gap
+   handles every inter-section break, so individual sections shouldn't
+   add their own vertical padding or margin. */
+.homepage {
+  --homepage-rhythm: clamp(5rem, 2rem + 5vw, 13rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--homepage-rhythm);
+  padding-bottom: var(--homepage-rhythm);
+}
+
+@media (max-width: 640px) {
+  .homepage {
+    --homepage-rhythm: 8rem;
+  }
+}
+
+/* Edge-to-edge with 32px gutters. Every section on the homepage uses
+   this same width and gutter so content lines up vertically. */
+.wideSection {
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-element);
+  margin: 0 0 var(--space-element);
+}
+
+.eyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: var(--text-heading-3);
+  color: var(--muted);
+  margin: 0;
+}
+
+.exploreLink {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.exploreArrow {
+  display: inline-block;
+  transition: transform 200ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .exploreLink:hover .exploreArrow {
+    transform: translateX(4px);
+  }
+}
+
+/* Latest grid: 3 across at tablet+, 1 on mobile. Clean single row at
+   every breakpoint above mobile — no hide/show trickery needed. */
+.latestGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: var(--space-element);
+  row-gap: 48px;
+}
+
+@media (min-width: 768px) {
+  .latestGrid {
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 56px;
+  }
+}
+
+/* From the Archive section header: display title with a short framing
+   description. Larger than an eyebrow so the section reads as a chapter
+   opener rather than a label. */
+.featuredHeader {
+  margin: 0 0 var(--space-element);
+  max-width: 56ch;
+}
+
+.featuredTitle {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+
+.featuredDescription {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Dive Deeper grid: photographer spotlight, archive piece, featured
+   theme. Desktop column count matches the rendered card count so the
+   row is always evenly distributed if a source is missing. */
+.featuredGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: var(--space-element);
+  row-gap: 48px;
+}
+
+@media (min-width: 768px) {
+  .featuredGrid {
+    grid-template-columns: repeat(var(--featured-cols, 3), 1fr);
+    row-gap: 56px;
+  }
+}
+
+@media (max-width: 768px) {
+  .wideSection {
+    padding: 0 16px;
+  }
+}

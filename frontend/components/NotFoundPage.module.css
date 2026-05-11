@@ -1,0 +1,118 @@
+.cover {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 65px);
+  padding: 32px 32px 32px;
+  margin: 0;
+  text-decoration: none;
+  color: var(--hero-text);
+  background: var(--hero-bg);
+  overflow: hidden;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 14, 14, 0.45) 0%,
+    rgba(14, 14, 14, 0.7) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 720px;
+}
+
+.eyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hero-muted);
+  margin: 0;
+}
+
+.title {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(72px, 11vw, 176px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--hero-text);
+  margin: 0;
+}
+
+.sub {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--text-intro);
+  line-height: 1.45;
+  color: var(--hero-text);
+  margin: 0;
+}
+
+.cta {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hero-text);
+  margin: 24px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--hero-text);
+  transition: border-bottom-color 200ms ease-out;
+}
+
+.credit {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 2;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--hero-muted);
+  margin: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cover:hover .cta {
+    border-bottom-color: var(--chip-bg);
+  }
+}
+
+@media (max-width: 640px) {
+  .cover {
+    padding: 24px 16px;
+  }
+  .title {
+    font-size: clamp(72px, 22vw, 160px);
+  }
+}

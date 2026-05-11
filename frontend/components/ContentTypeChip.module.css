@@ -1,0 +1,34 @@
+.chip {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: 4px;
+  padding: 3px 4px;
+  transition: background-color 150ms ease-out;
+}
+
+.chip:hover {
+  background: #d4ee9b;
+}
+
+.small {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+.medium {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+
+.large {
+  font-size: 16px;
+  letter-spacing: 0.14em;
+}

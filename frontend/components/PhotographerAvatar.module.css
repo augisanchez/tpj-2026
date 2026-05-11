@@ -1,0 +1,24 @@
+.fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--text);
+  color: var(--bg);
+  /* Enable container-relative sizing so initials scale with the wrapper
+     (which is variously 40px in lists, larger on the index, very large
+     on the photographer detail hero). */
+  container-type: inline-size;
+}
+
+.initials {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  /* 32% of the container's inline size — keeps initials proportional
+     across small chips and full hero covers without per-call overrides. */
+  font-size: 32cqi;
+  line-height: 1;
+  user-select: none;
+}

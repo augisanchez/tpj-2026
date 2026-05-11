@@ -1,0 +1,40 @@
+.page {
+  padding: var(--space-section) 32px;
+}
+
+.header {
+  margin-bottom: var(--space-block);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 880px;
+}
+
+.title {
+  font-size: var(--text-display);
+  margin: 0;
+}
+
+.lede {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: var(--text-intro);
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0;
+}
+
+.count {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-section) 16px;
+  }
+}

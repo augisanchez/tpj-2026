@@ -1,0 +1,77 @@
+.footer {
+  background: var(--footer-bg);
+  color: var(--footer-text);
+  /* Horizontal padding mirrors Nav.module.css (40px desktop, 16px
+     mobile at the same breakpoint) so the brand mark and the link
+     row line up vertically with the nav above. */
+  padding: 100px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.mark {
+  height: 56px;
+  width: auto;
+  display: block;
+}
+
+.copyright {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.est {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin: 0;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.link {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--footer-text);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 150ms ease-out;
+}
+
+.link:hover {
+  opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 64px 16px;
+    gap: 32px;
+  }
+  .links {
+    display: none;
+  }
+}

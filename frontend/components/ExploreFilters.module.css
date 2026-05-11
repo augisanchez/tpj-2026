@@ -1,0 +1,148 @@
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 48px;
+  padding: 20px 32px;
+  margin: 0 -32px 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  .bar {
+    padding: 16px;
+    margin: 0 -16px 24px;
+    gap: 12px 24px;
+  }
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.label {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.chip:hover {
+  border-color: var(--text);
+}
+
+.chipActive {
+  background: var(--chip-active);
+  color: var(--chip-active-text);
+  border-color: var(--chip-active);
+}
+
+.chipActive:hover {
+  border-color: var(--chip-active);
+}
+
+/* Theme select — pill-shaped, custom chevron, matches chip dimensions */
+
+.themeWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.themeSelect {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 36px 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 150ms ease-out, background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.themeSelect:hover {
+  border-color: var(--text);
+}
+
+.themeSelect:focus {
+  outline: none;
+  border-color: var(--text);
+}
+
+.themeSelectActive {
+  background: var(--chip-active);
+  color: var(--chip-active-text);
+  border-color: var(--chip-active);
+}
+
+.themeSelectActive:hover,
+.themeSelectActive:focus {
+  border-color: var(--chip-active);
+}
+
+.themeChevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text);
+}
+
+/* The chevron sits outside the select element, so it can't inherit the
+   active-state color directly. Pick it up via :has() on the wrapper
+   when the select inside has the active class. */
+.themeWrap:has(.themeSelectActive) .themeChevron {
+  color: var(--chip-active-text);
+}
+
+/* Sort group floats to the right edge of the bar */
+
+.sortGroup {
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .sortGroup {
+    margin-left: 0;
+  }
+}

@@ -1,0 +1,8 @@
+/*
+Theme Name: TPJ Headless
+Theme URI: https://thephotographicjournal.com/
+Author: The Photographic Journal
+Description: Headless WordPress theme for V2. Registers CPTs, taxonomies, and exposes them to WPGraphQL. Frontend rendering is handled by the Next.js app at code/frontend/.
+Version: 0.1.0
+Text Domain: tpj-headless
+*/

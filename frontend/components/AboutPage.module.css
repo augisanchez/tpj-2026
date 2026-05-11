@@ -1,0 +1,131 @@
+/* Content area below the shared SupportingPageBanner */
+
+.page {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: clamp(64px, 8vw, 120px) 32px;
+}
+
+.mission {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 880px;
+  margin: 0 auto 96px;
+}
+
+.missionHeading {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 3.5vw, 48px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin: 0 0 16px;
+}
+
+.lede {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--text-intro);
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0;
+}
+
+.paragraph {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.7;
+  color: var(--text);
+  margin: 0;
+}
+
+.paragraph a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.teamImage {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto 96px;
+  display: block;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.teamImage img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 auto 64px;
+  max-width: 880px;
+}
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 24px;
+  row-gap: 64px;
+}
+
+.member {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 8px;
+}
+
+.memberName {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0;
+}
+
+.memberRole {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .teamGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 64px 16px;
+  }
+  .mission,
+  .teamImage {
+    margin-bottom: 64px;
+  }
+  .divider {
+    margin-bottom: 48px;
+  }
+  .teamGrid {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 48px;
+  }
+}

@@ -1,0 +1,79 @@
+.content {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg);
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 16px 24px;
+  animation: fadeIn 200ms ease-out;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content:focus {
+  outline: none;
+}
+
+.content[data-state="closed"] {
+  animation: fadeOut 150ms ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.link {
+  font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+  padding: 20px 8px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.link:last-child {
+  border-bottom: 0;
+}
+
+.link:active {
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content,
+  .content[data-state="closed"] {
+    animation: none !important;
+  }
+}

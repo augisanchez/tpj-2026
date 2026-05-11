@@ -1,0 +1,138 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 14, 14, 0.96);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 64px 80px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-out;
+}
+
+.overlayOpen {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.image {
+  max-width: 100%;
+  max-height: calc(100vh - 200px);
+  object-fit: contain;
+  border-radius: 4px;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+  transition: opacity 150ms ease-out, transform 200ms ease-out;
+}
+
+.image.fading {
+  opacity: 0;
+}
+
+.caption {
+  margin-top: 24px;
+  max-width: 720px;
+  text-align: center;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--hero-muted);
+}
+
+.counter {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hero-muted);
+}
+
+.close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 50%;
+  transition: background-color 150ms ease-out;
+}
+
+.close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 50%;
+  transition: background-color 150ms ease-out, opacity 150ms ease-out;
+}
+
+.nav:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.navPrev {
+  left: 16px;
+}
+
+.navNext {
+  right: 16px;
+}
+
+@media (max-width: 640px) {
+  .overlay {
+    padding: 48px 8px;
+  }
+  .image {
+    max-height: calc(100vh - 160px);
+  }
+  .nav {
+    width: 44px;
+    height: 44px;
+  }
+  .navPrev {
+    left: 4px;
+  }
+  .navNext {
+    right: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .image {
+    transition: none;
+  }
+}
