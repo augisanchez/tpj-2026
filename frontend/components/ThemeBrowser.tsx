@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { ArticleCard } from "./ArticleCard";
 import { StaggerReveal } from "./StaggerReveal";
@@ -18,7 +19,15 @@ export function ThemeBrowser({ groups }: Props) {
   return (
     <section className={styles.section}>
       <div className={styles.header}>
-        <h2 className={styles.title}>Themes</h2>
+        <div className={styles.headerTop}>
+          <h2 className={styles.title}>Themes</h2>
+          <Link href="/themes" className={styles.exploreLink}>
+            Explore themes
+            <span className={styles.exploreArrow} aria-hidden="true">
+              →
+            </span>
+          </Link>
+        </div>
         <p className={styles.description}>
           Each theme gathers articles around a shared idea for you to explore.
         </p>

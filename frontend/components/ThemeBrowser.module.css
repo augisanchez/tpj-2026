@@ -9,10 +9,43 @@
 }
 
 .header {
-  max-width: 56ch;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* Title row: title left, "Explore themes" link right, matching the
+   Keep Exploring section header pattern. */
+.headerTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-element);
+}
+
+.exploreLink {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.exploreArrow {
+  display: inline-block;
+  transition: transform 200ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .exploreLink:hover .exploreArrow {
+    transform: translateX(4px);
+  }
 }
 
 .title {
@@ -32,6 +65,7 @@
   line-height: 1.5;
   color: var(--muted);
   margin: 0;
+  max-width: 56ch;
 }
 
 .chipRow {

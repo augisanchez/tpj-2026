@@ -3,6 +3,7 @@ import { Oswald, Inter, Source_Serif_4 } from "next/font/google";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { PageTransition } from "@/components/PageTransition";
+import { RouteCurtain } from "@/components/RouteCurtain";
 import "./globals.css";
 
 const oswald = Oswald({
@@ -46,6 +47,7 @@ export default function RootLayout({
         <Nav />
         <PageTransition>{children}</PageTransition>
         <Footer />
+        <RouteCurtain />
       </body>
     </html>
   );

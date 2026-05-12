@@ -26,6 +26,13 @@ type Props = {
   article: Article;
   variant?: ArticleCardVariant;
   showDate?: boolean;
+  /**
+   * Render with stacked-paper lines beneath the image, so the card
+   * reads as a collection (e.g. a Theme grouping multiple articles)
+   * rather than a single piece. Two inset horizontal rules sit below
+   * the bottom edge of the image.
+   */
+  stacked?: boolean;
 };
 
 const CHIP_SIZE_BY_VARIANT: Record<ArticleCardVariant, ContentTypeChipSize> = {
@@ -41,6 +48,7 @@ export function ArticleCard({
   article,
   variant = "4up",
   showDate = true,
+  stacked = false,
 }: Props) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const hasImage = Boolean(article.featuredImage);
@@ -55,18 +63,30 @@ export function ArticleCard({
     hasImage && !imageLoaded ? " " + styles.imageWrapperLoading : ""
   }`;
 
+  const imageBlockClass = `${styles.imageBlock}${
+    stacked ? " " + styles.imageBlockStacked : ""
+  }`;
+
   return (
     <Link href={article.href} className={styles.card}>
-      <div className={wrapperClass}>
-        {article.featuredImage && (
-          <img
-            className={`${styles.image}${imageLoaded ? " " + styles.imageLoaded : ""}`}
-            src={article.featuredImage.src}
-            alt={article.featuredImage.alt}
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageLoaded(true)}
-          />
+      <div className={imageBlockClass}>
+        <div className={wrapperClass}>
+          {article.featuredImage && (
+            <img
+              className={`${styles.image}${imageLoaded ? " " + styles.imageLoaded : ""}`}
+              src={article.featuredImage.src}
+              alt={article.featuredImage.alt}
+              loading="lazy"
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageLoaded(true)}
+            />
+          )}
+        </div>
+        {stacked && (
+          <div className={styles.stackLines} aria-hidden="true">
+            <span className={styles.stackLine} />
+            <span className={styles.stackLine} />
+          </div>
         )}
       </div>
       <div className={styles.textStack}>

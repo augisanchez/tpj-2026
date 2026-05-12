@@ -113,6 +113,7 @@ export default async function Home() {
     description?: string;
     showDate: boolean;
     featuredImage?: { src: string; alt: string };
+    stacked?: boolean;
   }> = [];
 
   featuredCards.push({
@@ -153,6 +154,7 @@ export default async function Home() {
       description: theme.prompt,
       showDate: false,
       featuredImage: themeCover,
+      stacked: true,
     });
   }
 
@@ -263,6 +265,7 @@ export default async function Home() {
               key={card.key}
               variant="3up"
               showDate={card.showDate}
+              stacked={card.stacked}
               article={{
                 title: card.title,
                 date: card.date,
