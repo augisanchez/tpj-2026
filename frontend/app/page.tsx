@@ -99,10 +99,10 @@ export default async function Home() {
   const themePool = essays;
   const themeGroups = buildThemeGroups(themePool);
 
-  // Dive Deeper: photographer spotlight, an older piece worth
-  // revisiting, and a featured theme. The theme card uses a random
-  // theme per ISR window and borrows a cover image from its current
-  // (stand-in) essay group until per-theme tagging ships.
+  // Dive Deeper: 6 cards in two rows. Mix of curated entry points
+  // (photographer spotlight, archive feature) and discovery prompts
+  // (themes, recent essays) so the section spans the archive instead
+  // of repeating Keep Exploring.
   const featuredCards: Array<{
     key: string;
     title: string;
@@ -138,19 +138,44 @@ export default async function Home() {
     });
   }
 
-  const featuredTheme = THEMES[Math.floor(Math.random() * THEMES.length)];
-  const featuredThemeCover =
-    themeGroups[featuredTheme.slug]?.[0]?.featuredImage ?? undefined;
-  featuredCards.push({
-    key: "theme",
-    title: featuredTheme.name,
-    date: new Date().toISOString(),
-    href: `/theme/${featuredTheme.slug}`,
-    contentTypeLabel: "Theme",
-    description: featuredTheme.prompt,
-    showDate: false,
-    featuredImage: featuredThemeCover,
-  });
+  // Two random themes, each with a cover image borrowed from its
+  // (stand-in) essay group until per-theme tagging ships.
+  const featuredThemes = pickRandom(THEMES, 2);
+  for (const theme of featuredThemes) {
+    const themeCover = themeGroups[theme.slug]?.[0]?.featuredImage ?? undefined;
+    featuredCards.push({
+      key: `theme-${theme.slug}`,
+      title: theme.name,
+      date: new Date().toISOString(),
+      href: `/theme/${theme.slug}`,
+      contentTypeLabel: "Theme",
+      description: theme.prompt,
+      showDate: false,
+      featuredImage: themeCover,
+    });
+  }
+
+  // Two random essays from the pool, excluding anything already shown
+  // in the hero or Keep Exploring rows so Dive Deeper feels like a
+  // distinct surface rather than a continuation.
+  const shownEssayIds = new Set<string>([
+    heroArticle?.id,
+    ...exploreArticles.map((a) => a.id),
+  ].filter((x): x is string => Boolean(x)));
+  const essayCandidates = essays.filter((e) => !shownEssayIds.has(e.id));
+  const featuredEssays = pickRandom(essayCandidates, 2);
+  for (const essay of featuredEssays) {
+    featuredCards.push({
+      key: `essay-${essay.id}`,
+      title: essay.title,
+      date: essay.date,
+      href: `/essay/${essay.slug}`,
+      contentTypeLabel: "Photo Essay",
+      description: summarize(essay.excerpt, 160),
+      showDate: true,
+      featuredImage: essay.featuredImage ?? undefined,
+    });
+  }
 
   return (
     <div className={styles.homepage}>
@@ -206,8 +231,7 @@ export default async function Home() {
         <div className={styles.featuredHeader}>
           <h2 className={styles.featuredTitle}>Dive Deeper</h2>
           <p className={styles.featuredDescription}>
-            Three ways further in: a photographer worth knowing, an older
-            piece worth revisiting, and a theme worth following.
+            More ways further in.
           </p>
         </div>
 

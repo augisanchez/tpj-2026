@@ -113,9 +113,10 @@
   margin: 0;
 }
 
-/* Dive Deeper grid: photographer spotlight, archive piece, featured
-   theme. Desktop column count matches the rendered card count so the
-   row is always evenly distributed if a source is missing. */
+/* Dive Deeper grid: caps at 3 columns so 6 cards wrap to two rows.
+   --featured-cols is still passed from the page so degraded states
+   (1 or 2 cards present) compress to that many columns instead of
+   leaving empty gaps. */
 .featuredGrid {
   display: grid;
   grid-template-columns: 1fr;
@@ -125,7 +126,7 @@
 
 @media (min-width: 768px) {
   .featuredGrid {
-    grid-template-columns: repeat(var(--featured-cols, 3), 1fr);
+    grid-template-columns: repeat(min(3, var(--featured-cols, 3)), 1fr);
     row-gap: 56px;
   }
 }
