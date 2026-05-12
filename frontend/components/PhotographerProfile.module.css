@@ -79,6 +79,17 @@
   margin: 0;
 }
 
+/* Agency / representation credit. Sits just below the meta line and
+   reads a half-step quieter so it doesn't compete with the count. */
+.representedBy {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
 .bioColumn {
   display: flex;
   flex-direction: column;

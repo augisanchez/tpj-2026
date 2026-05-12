@@ -24,6 +24,8 @@ const PhotographerBySlugQuery = gql`
       bluesky
       threads
       linkedin
+      location
+      representedBy
       featuredImage {
         node {
           sourceUrl
@@ -157,6 +159,8 @@ export type Photographer = {
   slug: string;
   bio: string;
   interviewCount: number;
+  location: string | null;
+  representedBy: string | null;
   socials: { label: string; href: string; external: boolean }[];
   portrait: { src: string; alt: string } | null;
 };
@@ -180,6 +184,8 @@ type Raw = {
   bluesky: string | null;
   threads: string | null;
   linkedin: string | null;
+  location: string | null;
+  representedBy: string | null;
   featuredImage: {
     node: { sourceUrl: string | null; altText: string | null } | null;
   } | null;
@@ -206,6 +212,8 @@ type LinkedRaw = {
   bluesky: string | null;
   threads: string | null;
   linkedin: string | null;
+  location: string | null;
+  representedBy: string | null;
   featuredImage: {
     node: { sourceUrl: string | null; altText: string | null } | null;
   } | null;
@@ -402,6 +410,8 @@ async function derivePhotographerFromArticles(
       slug: found.slug,
       bio: found.content ? htmlToPlainText(found.content) : "",
       interviewCount: count,
+      location: found.location ?? null,
+      representedBy: found.representedBy ?? null,
       socials: buildSocials({
         website: found.website,
         instagram: found.instagram,
@@ -432,6 +442,8 @@ async function derivePhotographerFromArticles(
       slug,
       bio: "",
       interviewCount: count,
+      location: null,
+      representedBy: null,
       socials: [],
       portrait: resolvePortrait(phantomArticleImage, null, displayName),
     };
@@ -457,6 +469,8 @@ export async function fetchPhotographerBySlug(
     slug: raw.slug,
     bio: raw.content ? htmlToPlainText(raw.content) : "",
     interviewCount: raw.interviewCount ?? 0,
+    location: raw.location ?? null,
+    representedBy: raw.representedBy ?? null,
     socials: buildSocials({
       website: raw.website,
       instagram: raw.instagram,

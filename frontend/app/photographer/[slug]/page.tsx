@@ -38,9 +38,12 @@ export default async function PhotographerPage({ params }: Props) {
       ? new Date(articles[articles.length - 1].date).getFullYear()
       : null;
 
-  // Meta line composition. Location is intentionally omitted until the
-  // backend exposes a tpj_location meta field on the photographer post.
+  // Meta line: location · article count line. Location reads from
+  // tpj_location postmeta (exposed as `location` on Photographer).
   const metaSegments: string[] = [];
+  if (photographer.location) {
+    metaSegments.push(photographer.location);
+  }
   if (totalArticles > 0) {
     metaSegments.push(
       `${totalArticles} ${
@@ -66,6 +69,11 @@ export default async function PhotographerPage({ params }: Props) {
             <p className={styles.eyebrow}>Photographer</p>
             <h1 className={styles.name}>{photographer.name}</h1>
             {metaLine && <p className={styles.locationCount}>{metaLine}</p>}
+            {photographer.representedBy && (
+              <p className={styles.representedBy}>
+                Represented by {photographer.representedBy}
+              </p>
+            )}
           </div>
 
           <div className={styles.bioColumn}>
