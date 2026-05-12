@@ -2,14 +2,56 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import { ArticleCard } from "./ArticleCard";
-import { StaggerReveal } from "./StaggerReveal";
 import { THEMES } from "@/lib/themes";
 import type { RecentEssay } from "@/lib/queries/recent-essays";
 import styles from "./ThemeBrowser.module.css";
 
 type Props = {
   groups: Record<string, RecentEssay[]>;
+};
+
+// Variants for the chip-swap animation. AnimatePresence (mode="wait")
+// drives the sequence:
+//   1. Active group's cards run their exit variant (stagger from last
+//      to first, ~50ms apart).
+//   2. New group mounts; its cards run the visible variant (stagger
+//      from first to last, ~100ms apart, larger lift).
+// On first mount the cards also use the visible variant — same
+// cascade effect that StaggerReveal previously provided, but driven
+// here so chip-swap exit can share the same vocabulary.
+// Tuned so a full chip-swap (exit-then-enter via mode="wait") lands
+// just under a second. Exit is intentionally tighter than enter —
+// the outgoing cards are leaving, not the focus; the new set is.
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.07,
+      delayChildren: 0.02,
+    },
+  },
+  exit: {
+    transition: {
+      staggerChildren: 0.04,
+      staggerDirection: -1,
+    },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.2, 0.6, 0.2, 1] },
+  },
+  exit: {
+    opacity: 0,
+    y: 12,
+    transition: { duration: 0.2, ease: [0.4, 0, 1, 1] },
+  },
 };
 
 export function ThemeBrowser({ groups }: Props) {
@@ -83,21 +125,32 @@ export function ThemeBrowser({ groups }: Props) {
         </svg>
       </span>
 
-      <StaggerReveal className={styles.cards} key={activeSlug}>
-        {cards.map((essay) => (
-          <ArticleCard
-            key={essay.id}
-            variant="5up"
-            article={{
-              title: essay.title,
-              date: essay.date,
-              href: `/essay/${essay.slug}`,
-              contentTypeLabel: "Photo Essay",
-              featuredImage: essay.featuredImage ?? undefined,
-            }}
-          />
-        ))}
-      </StaggerReveal>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeSlug}
+          className={styles.cards}
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          exit="exit"
+          viewport={{ once: true, amount: 0.1 }}
+        >
+          {cards.map((essay) => (
+            <motion.div key={essay.id} variants={cardVariants}>
+              <ArticleCard
+                variant="5up"
+                article={{
+                  title: essay.title,
+                  date: essay.date,
+                  href: `/essay/${essay.slug}`,
+                  contentTypeLabel: "Photo Essay",
+                  featuredImage: essay.featuredImage ?? undefined,
+                }}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+      </AnimatePresence>
     </section>
   );
 }
