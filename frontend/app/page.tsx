@@ -43,6 +43,23 @@ function summarize(
 }
 
 /**
+ * Stand-in article count per theme. Until Step 12 (AI theme tagging)
+ * ships and real per-theme counts exist, deterministically hash the
+ * slug into a plausible-looking value (18-32) so the homepage Theme
+ * cards can render their collection badge with varied numbers instead
+ * of every theme showing the same stand-in length of 3. Replace this
+ * with the real per-theme fetch when tagging lands; the call site
+ * doesn't need to change.
+ */
+function themeBadgeCount(slug: string): number {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
+  }
+  return 18 + (hash % 15); // 18..32
+}
+
+/**
  * Random sample of `n` items from `pool` without duplicates within the
  * sample. Returns fewer when the pool is short.
  */
@@ -114,6 +131,7 @@ export default async function Home() {
     showDate: boolean;
     featuredImage?: { src: string; alt: string };
     stacked?: boolean;
+    badgeCount?: number;
   }> = [];
 
   featuredCards.push({
@@ -155,6 +173,7 @@ export default async function Home() {
       showDate: false,
       featuredImage: themeCover,
       stacked: true,
+      badgeCount: themeBadgeCount(theme.slug),
     });
   }
 
@@ -266,6 +285,7 @@ export default async function Home() {
               variant="3up"
               showDate={card.showDate}
               stacked={card.stacked}
+              badgeCount={card.badgeCount}
               article={{
                 title: card.title,
                 date: card.date,

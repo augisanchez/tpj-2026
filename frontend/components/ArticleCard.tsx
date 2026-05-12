@@ -33,6 +33,12 @@ type Props = {
    * the bottom edge of the image.
    */
   stacked?: boolean;
+  /**
+   * Article count badge rendered in the bottom-right of the image.
+   * Use on collection cards (Themes) to reinforce that the link
+   * leads to a grouping. Hidden when undefined or non-positive.
+   */
+  badgeCount?: number;
 };
 
 const CHIP_SIZE_BY_VARIANT: Record<ArticleCardVariant, ContentTypeChipSize> = {
@@ -49,6 +55,7 @@ export function ArticleCard({
   variant = "4up",
   showDate = true,
   stacked = false,
+  badgeCount,
 }: Props) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const hasImage = Boolean(article.featuredImage);
@@ -80,6 +87,14 @@ export function ArticleCard({
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageLoaded(true)}
             />
+          )}
+          {typeof badgeCount === "number" && badgeCount > 0 && (
+            <span
+              className={styles.imageBadge}
+              aria-label={`${badgeCount} articles in this collection`}
+            >
+              {badgeCount}
+            </span>
           )}
         </div>
         {stacked && (
