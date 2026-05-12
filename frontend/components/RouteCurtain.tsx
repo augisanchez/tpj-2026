@@ -16,30 +16,54 @@ const CAMERA_FRAMES = [
   "/svg/cameras/camera-6.svg",
 ];
 
-// One frame every 150ms = ~900ms full cycle. The curtain's camera-
-// visible window is ~715ms (panel center crosses the viewport between
-// 17.5% and 82.5% of the 1100ms animation), so the user sees 4-5
-// distinct cameras per navigation.
+// One frame every 150ms.
 const FRAME_MS = 150;
 
+// Top-level destinations get the curtain. Content pages (essays,
+// interviews, features, individual photographers, individual themes)
+// navigate without it and get a lighter inline fade-up via
+// PageTransition. Hierarchy avoids transition fatigue: the curtain
+// is reserved for the moments that actually feel like a section
+// change.
+const TOP_LEVEL_PATHS = new Set<string>([
+  "/",
+  "/explore",
+  "/themes",
+  "/photographers",
+  "/about",
+  "/shop",
+  "/submit",
+  "/search",
+  "/contact",
+]);
+
+function isTopLevelDestination(href: string): boolean {
+  try {
+    const url = new URL(href, window.location.href);
+    return TOP_LEVEL_PATHS.has(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Route transition: a dark panel sweeps down from the top, holds briefly
- * with a centered cycling-camera mark visible, then continues off the
- * bottom to reveal the new page.
+ * Route transition: a white panel fades in over the page, holds briefly
+ * with the cycling camera silhouettes above the TPJ wordmark, then
+ * fades back out to reveal the new page. Pure opacity motion (no
+ * translation) plus a weighted ease-in-out reads as deliberate
+ * without feeling clunky.
  *
- * Hooks into a document-level click listener that catches internal
- * <a> targets, prevents default navigation, runs the cover phase, then
- * pushes the route under the panel and lets the uncover phase finish.
+ * Hooks into a document-level click listener (capture phase) that
+ * catches internal <a> targets, prevents default navigation, runs
+ * the fade-in phase, pushes the route under the panel, then lets
+ * the fade-out phase finish.
+ *
  * Skips for:
  *   - non-left-clicks and clicks with modifier keys (open-in-new-tab)
  *   - links with target="_blank" or a download attribute
  *   - hash, mailto:, tel: links
  *   - cross-origin links
  *   - users with prefers-reduced-motion (navigation happens normally)
- *
- * Browser back/forward and direct URL entry don't fire a click, so they
- * skip the curtain. That's intentional — those navigations feel "user-
- * initiated immediate" and don't need the editorial interlude.
  */
 export function RouteCurtain() {
   const router = useRouter();
@@ -66,7 +90,10 @@ export function RouteCurtain() {
     function handleClick(e: MouseEvent) {
       if (e.button !== 0) return;
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (e.defaultPrevented) return;
+      // We intentionally don't bail on e.defaultPrevented here: we run
+      // in capture phase before anything else gets the click, so this
+      // would always be false at our point unless another capture-phase
+      // listener stepped in.
 
       const target = e.target as HTMLElement | null;
       const link = target?.closest("a");
@@ -83,7 +110,6 @@ export function RouteCurtain() {
       try {
         const url = new URL(href, window.location.href);
         if (url.origin !== window.location.origin) return;
-        // Same path + same hash = no navigation happening anyway.
         if (
           url.pathname === window.location.pathname &&
           url.search === window.location.search
@@ -94,13 +120,25 @@ export function RouteCurtain() {
         return;
       }
 
-      // Respect the user's motion preference: don't intercept; let the
-      // Link navigate normally.
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         return;
       }
 
+      // Hierarchy: only intercept top-level destinations. Content
+      // clicks (essays/interviews/features/individual photographer
+      // or theme pages) get a lighter inline reveal via
+      // PageTransition instead, so we don't pay the curtain cost
+      // every time the editor drills into a single piece.
+      if (!isTopLevelDestination(href)) {
+        return;
+      }
+
+      // Capture-phase intercept: stop the click before Next.js Link's
+      // own onClick (which would call router.push and navigate
+      // instantly) ever runs. We take over the navigation ourselves
+      // via the timeout below.
       e.preventDefault();
+      e.stopPropagation();
       clearPending();
       // Reset to camera 1 so every navigation begins the cycle at the
       // same starting point.
@@ -109,17 +147,17 @@ export function RouteCurtain() {
 
       // Phase timings (must stay in sync with the @keyframes in
       // RouteCurtain.module.css):
-      //   0       -> panel starts above the viewport
-      //   35%     -> fully covering (camera visible)
-      //   65%     -> still covering (held)
-      //   100%    -> panel has left the bottom
-      // Total animation: 1100ms.
+      //   0       -> transparent
+      //   27%     -> fully opaque (350ms in)
+      //   73%     -> still fully opaque (held — user feedback was the
+      //              hold was too short before the next item revealed)
+      //   100%    -> transparent again (new page revealed)
+      // Total: 1300ms (up from 1100ms). Hold is ~600ms.
       //
-      // We push the route at ~330ms (right around the moment the panel
-      // hits cover) so the new page is mounted under the curtain by
-      // the time the uncover phase reveals it.
-      const total = 1100;
-      const navAt = 330;
+      // router.push at ~380ms (right after fade-in completes) so the
+      // new page is mounted behind the curtain during the hold.
+      const total = 1300;
+      const navAt = 380;
 
       timeoutsRef.current.push(
         window.setTimeout(() => {
@@ -131,9 +169,9 @@ export function RouteCurtain() {
       );
     }
 
-    document.addEventListener("click", handleClick);
+    document.addEventListener("click", handleClick, true);
     return () => {
-      document.removeEventListener("click", handleClick);
+      document.removeEventListener("click", handleClick, true);
       clearPending();
     };
   }, [router]);
@@ -143,15 +181,23 @@ export function RouteCurtain() {
       className={`${styles.curtain}${active ? " " + styles.curtainActive : ""}`}
       aria-hidden="true"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        className={styles.logo}
-        src={CAMERA_FRAMES[frameIndex]}
-        alt=""
-      />
-      {/* Preload remaining frames so the first cycle doesn't pop. The
-          hidden images warm the browser's image cache without taking
-          layout space. */}
+      <div className={styles.stack}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className={styles.camera}
+          src={CAMERA_FRAMES[frameIndex]}
+          alt=""
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className={styles.wordmark}
+          src="/svg/wordmark.svg"
+          alt=""
+        />
+      </div>
+
+      {/* Preload all camera frames on mount so the first cycle doesn't
+          pop in with a delay. The hidden div doesn't take layout space. */}
       <div style={{ display: "none" }} aria-hidden="true">
         {CAMERA_FRAMES.map((src) => (
           // eslint-disable-next-line @next/next/no-img-element

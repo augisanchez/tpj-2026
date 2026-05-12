@@ -1,18 +1,22 @@
 <?php
 /**
- * Admin-side UI for the Photographer CPT that supports the editorial
- * picker workflow. Separate from photographer-meta.php so that file
- * stays focused on the editable meta-box fields and this file holds
- * read-only context panels and admin-only behavior.
+ * Admin-side UI for the editorial photographer picker workflow.
+ * Separate from photographer-meta.php so that file stays focused on
+ * the editable meta-box fields on the Photographer CPT, while this
+ * file owns:
  *
- * Current pieces:
- *  - Linked Articles meta box: shows every essay/interview/feature
- *    that links to this photographer via tpj_photographer postmeta,
- *    so editors can verify their link list at a glance.
+ *  1. Linked Articles meta box on the Photographer CPT — read-only
+ *     list of articles that credit this photographer.
+ *  2. Photographer picker meta box on essay/interview/feature CPTs —
+ *     searchable, multi-select picker that replaces the legacy
+ *     "type into a text field" workflow. Writes tpj_photographer
+ *     postmeta (multi-row, ordered) and derives the legacy
+ *     `photographer` text credit on save.
  *
  * Planned (not yet built — see project_tpj_editorial_picker.md):
  *  - Slug-locked-after-publish guard.
- *  - Slug change disclosure UI.
+ *  - Drag-to-reorder selected chips (step 8).
+ *  - Inline "Add new" form invoking the create REST endpoint (step 7).
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -106,3 +110,188 @@ function tpj_render_photographer_backlinks_meta_box( $post ) {
 	}
 	echo '</ul>';
 }
+
+/* -------------------------------------------------------------------- */
+/* Photographer picker meta box — on essay / interview / feature edit   */
+/* screens. Lets editors search the Photographer CPT and assign one or  */
+/* more as credits via a chip-based UI. Renders an empty shell server-  */
+/* side; assets/article-photographer-picker.js hydrates it.             */
+/* -------------------------------------------------------------------- */
+
+const TPJ_PICKER_POST_TYPES = [ 'essay', 'interview', 'feature' ];
+
+add_action( 'add_meta_boxes', function () {
+	foreach ( TPJ_PICKER_POST_TYPES as $type ) {
+		add_meta_box(
+			'tpj_photographer_picker',
+			'Photographer Credit',
+			'tpj_render_photographer_picker_meta_box',
+			$type,
+			'side',
+			'high'
+		);
+	}
+} );
+
+/**
+ * Enqueue the picker JS/CSS only on the article edit screens where the
+ * meta box renders.
+ */
+add_action( 'admin_enqueue_scripts', function ( $hook ) {
+	if ( ! in_array( $hook, [ 'post.php', 'post-new.php' ], true ) ) {
+		return;
+	}
+	$screen = get_current_screen();
+	if ( ! $screen || ! in_array( $screen->post_type, TPJ_PICKER_POST_TYPES, true ) ) {
+		return;
+	}
+
+	$theme_uri = get_template_directory_uri();
+	wp_enqueue_style(
+		'tpj-photographer-picker',
+		$theme_uri . '/assets/article-photographer-picker.css',
+		[],
+		'1.0.0'
+	);
+	wp_enqueue_script(
+		'tpj-photographer-picker',
+		$theme_uri . '/assets/article-photographer-picker.js',
+		[],
+		'1.0.0',
+		true
+	);
+} );
+
+/**
+ * Render the picker shell with initial selection hydrated server-side.
+ * The JS reads container data-* attributes and takes over from there.
+ */
+function tpj_render_photographer_picker_meta_box( $post ) {
+	wp_nonce_field( 'tpj_photographer_picker', 'tpj_photographer_picker_nonce' );
+
+	$linked_ids = tpj_get_photographer_links( $post->ID );
+
+	// Hydrate each linked photographer's metadata server-side so the
+	// chips render with full info on first paint (no spinner-then-fill
+	// flash, no extra REST round trip).
+	global $wpdb;
+	$initial = [];
+	foreach ( $linked_ids as $id ) {
+		$photog = get_post( $id );
+		if ( ! $photog || $photog->post_type !== 'photographer' ) {
+			continue;
+		}
+		$article_count = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$wpdb->postmeta}
+			 WHERE meta_key = 'tpj_photographer' AND meta_value = %s",
+			(string) $id
+		) );
+		$portrait = get_post_meta( $id, 'tpj_portrait_url', true );
+		$location = get_post_meta( $id, 'tpj_location', true );
+		$initial[] = [
+			'id'            => (int) $id,
+			'name'          => $photog->post_title,
+			'slug'          => $photog->post_name,
+			'portrait'      => $portrait !== '' ? $portrait : null,
+			'location'      => $location !== '' ? $location : null,
+			'atomic_combo'  => (bool) get_post_meta( $id, 'tpj_atomic_combo', true ),
+			'article_count' => $article_count,
+		];
+	}
+
+	$rest_url   = rest_url( 'tpj/v1/photographers/search' );
+	$rest_nonce = wp_create_nonce( 'wp_rest' );
+	?>
+	<div class="tpj-picker"
+	     data-initial="<?php echo esc_attr( wp_json_encode( $initial ) ); ?>"
+	     data-rest-url="<?php echo esc_attr( $rest_url ); ?>"
+	     data-rest-nonce="<?php echo esc_attr( $rest_nonce ); ?>">
+		<input
+			type="hidden"
+			name="tpj_photographer_ids"
+			value="<?php echo esc_attr( wp_json_encode( array_map( 'intval', array_column( $initial, 'id' ) ) ) ); ?>"
+		/>
+
+		<div class="tpj-picker-chips"></div>
+		<p class="tpj-picker-empty" <?php echo empty( $initial ) ? '' : 'hidden'; ?>>
+			No photographer assigned. Search below to add one.
+		</p>
+
+		<div class="tpj-picker-search">
+			<input
+				type="search"
+				class="tpj-picker-search-input"
+				placeholder="Search photographers…"
+				autocomplete="off"
+			/>
+			<div class="tpj-picker-results" hidden></div>
+		</div>
+
+		<p class="tpj-picker-note">
+			Photographer credit only. List crew (MUA, stylist, models) in the article body.
+		</p>
+	</div>
+	<?php
+}
+
+/**
+ * Save handler. Reads the hidden tpj_photographer_ids JSON input,
+ * validates each ID resolves to a published photographer, writes the
+ * multi-row tpj_photographer postmeta, and derives the legacy
+ * `photographer` text credit (joined with " & ") so both fields stay
+ * in sync from a single source.
+ */
+add_action( 'save_post', function ( $post_id ) {
+	$post = get_post( $post_id );
+	if ( ! $post || ! in_array( $post->post_type, TPJ_PICKER_POST_TYPES, true ) ) {
+		return;
+	}
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+	if ( wp_is_post_revision( $post_id ) ) {
+		return;
+	}
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+	if ( ! isset( $_POST['tpj_photographer_picker_nonce'] ) ) {
+		return;
+	}
+	if ( ! wp_verify_nonce(
+		sanitize_text_field( wp_unslash( $_POST['tpj_photographer_picker_nonce'] ) ),
+		'tpj_photographer_picker'
+	) ) {
+		return;
+	}
+
+	$raw = isset( $_POST['tpj_photographer_ids'] )
+		? wp_unslash( $_POST['tpj_photographer_ids'] )
+		: '[]';
+	$ids = json_decode( $raw, true );
+	if ( ! is_array( $ids ) ) {
+		return;
+	}
+
+	// Validate every ID is a published photographer. Filters out junk
+	// from a tampered payload or stale data (e.g. an ID that got
+	// trashed between page-load and save).
+	$valid_ids = [];
+	$names     = [];
+	foreach ( $ids as $id ) {
+		$id     = (int) $id;
+		$photog = get_post( $id );
+		if ( $photog && $photog->post_type === 'photographer' && $photog->post_status === 'publish' ) {
+			$valid_ids[] = $id;
+			$names[]     = html_entity_decode( $photog->post_title, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		}
+	}
+
+	tpj_set_photographer_links( $post_id, $valid_ids );
+
+	if ( ! empty( $names ) ) {
+		update_post_meta( $post_id, 'photographer', implode( ' & ', $names ) );
+	} else {
+		delete_post_meta( $post_id, 'photographer' );
+	}
+} );

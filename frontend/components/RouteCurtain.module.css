@@ -1,71 +1,81 @@
-/* Editorial route-transition curtain. A full-viewport dark panel sweeps
-   from above the screen down to fully cover (logo visible at peak),
-   holds briefly, then continues off the bottom of the screen to reveal
-   the new page. Pointer events off when idle so it never blocks clicks
-   on the live page.
+/* Editorial route-transition curtain. White full-viewport panel
+   fades in over the page, holds with a cycling camera above the TPJ
+   wordmark, then fades back out to reveal the new page. Reserved
+   for top-level navigation (Homepage, Explore, Themes, etc.) —
+   content clicks get a lighter inline reveal via PageTransition,
+   so we don't induce transition fatigue.
 
    Timing in lockstep with components/RouteCurtain.tsx:
-     0%   -> off the top   (translateY -100%)
-     35%  -> fully covering
-     65%  -> still covering, held
-     100% -> off the bottom (translateY 100%)
-   Total: 1100ms. Easing biases toward a slow start and slow finish so
-   the cover and uncover phases feel like deliberate gestures rather
-   than snaps. */
+     0%   -> transparent (curtain inert)
+     27%  -> fully opaque (350ms fade-in)
+     73%  -> still fully opaque (~600ms hold — long enough that
+              the wordmark + camera read clearly before reveal)
+     100% -> transparent again (new page revealed; 350ms fade-out)
+   Total: 1300ms. Weighted ease-in-out so the fades feel deliberate
+   at the edges of each phase without snapping. */
 
 .curtain {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #0e0e0e;
-  pointer-events: none;
-  transform: translateY(-100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Reset will-change so the GPU layer doesn't linger when idle. */
-  will-change: auto;
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	background: #ffffff;
+	pointer-events: none;
+	opacity: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	will-change: auto;
 }
 
 .curtainActive {
-  pointer-events: auto;
-  will-change: transform;
-  animation: tpj-route-curtain 1100ms cubic-bezier(0.5, 0.05, 0.5, 0.95)
-    forwards;
+	pointer-events: auto;
+	will-change: opacity;
+	animation: tpj-route-curtain 1300ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
 
 @keyframes tpj-route-curtain {
-  0% {
-    transform: translateY(-100%);
-  }
-  35% {
-    transform: translateY(0%);
-  }
-  65% {
-    transform: translateY(0%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
+	0% {
+		opacity: 0;
+	}
+	27% {
+		opacity: 1;
+	}
+	73% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
 }
 
-.logo {
-  /* Cycling camera silhouettes (6 frames, swapped every 150ms by
-     RouteCurtain.tsx). SVGs are square viewBox 612x612 with white
-     fill, so they sit cleanly on the dark panel. Sized so the camera
-     reads as the focal element without overwhelming the panel. */
-  width: clamp(140px, 18vw, 220px);
-  height: auto;
-  display: block;
+/* Stack the camera above the wordmark, both centered. Gap is the
+   visual "breath" between the two — small enough to read as one
+   composition, large enough that the wordmark doesn't crowd the
+   camera silhouette. */
+.stack {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: clamp(20px, 3vw, 40px);
+}
+
+.camera {
+	width: clamp(120px, 14vw, 180px);
+	height: auto;
+	display: block;
+}
+
+.wordmark {
+	width: clamp(220px, 26vw, 380px);
+	height: auto;
+	display: block;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* When reduced-motion is on, the click handler bails out and lets
-     Next.js navigate normally, so the curtain never activates. As a
-     belt-and-braces measure, disable the animation here too. */
-  .curtainActive {
-    animation: none;
-    transform: translateY(-100%);
-    pointer-events: none;
-  }
+	.curtainActive {
+		animation: none;
+		opacity: 0;
+		pointer-events: none;
+	}
 }
