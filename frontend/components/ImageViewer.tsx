@@ -1,20 +1,22 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useDrag } from "@use-gesture/react";
+import {
+  motion,
+  useMotionValue,
+  animate,
+  type PanInfo,
+} from "motion/react";
 import styles from "./ImageViewer.module.css";
 
+// Distance + velocity thresholds for the two release outcomes.
+// Crossing either threshold on the matching axis triggers the action;
+// otherwise motion's spring snaps the image back to origin.
+const SWIPE_CLOSE_DISTANCE = 120;
+const SWIPE_CLOSE_VELOCITY = 500;
 const SWIPE_NAV_DISTANCE = 80;
-const SWIPE_NAV_VELOCITY = 0.3;
-const SWIPE_CLOSE_DISTANCE = 100;
-const SWIPE_CLOSE_VELOCITY = 0.5;
+const SWIPE_NAV_VELOCITY = 500;
 
 type ViewerImage = {
   src: string;
@@ -69,8 +71,13 @@ export function ImageViewer({ containerRef }: Props) {
   const [index, setIndex] = useState(0);
   const [fading, setFading] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
   const imagesRef = useRef<ViewerImage[]>([]);
+
+  // Motion values drive the image's translation. We track x and y
+  // separately so we can react to vertical drag (close gesture) and
+  // horizontal drag (swipe nav) with different thresholds.
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
   useEffect(() => {
     setMounted(true);
@@ -109,7 +116,11 @@ export function ImageViewer({ containerRef }: Props) {
     };
   }, [containerRef]);
 
-  const close = useCallback(() => setOpen(false), []);
+  const close = useCallback(() => {
+    setOpen(false);
+    x.set(0);
+    y.set(0);
+  }, [x, y]);
 
   const swap = useCallback(
     (delta: number) => {
@@ -117,31 +128,51 @@ export function ImageViewer({ containerRef }: Props) {
       if (len === 0) return;
       const next = (index + delta + len) % len;
       setFading(true);
-      setTimeout(() => {
+      window.setTimeout(() => {
         setIndex(next);
         setFading(false);
+        x.set(0);
+        y.set(0);
       }, 150);
     },
-    [index]
+    [index, x, y]
   );
 
-  const bindDrag = useDrag(
-    ({ down, movement: [mx, my], velocity: [vx, vy], direction: [, dy] }) => {
-      if (down) {
-        setDrag({ x: mx, y: Math.max(0, my), active: true });
+  const onDragEnd = useCallback(
+    (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const { offset, velocity } = info;
+
+      // Dismiss on down-drag: animate the image off the bottom of the
+      // viewport, then close. The overlay's opacity is bound to y, so
+      // it fades to match.
+      if (
+        offset.y > SWIPE_CLOSE_DISTANCE ||
+        velocity.y > SWIPE_CLOSE_VELOCITY
+      ) {
+        const exit = window.innerHeight;
+        animate(y, exit, {
+          duration: 0.28,
+          ease: [0.4, 0, 1, 1],
+          onComplete: () => close(),
+        });
         return;
       }
-      setDrag({ x: 0, y: 0, active: false });
-      if (my > SWIPE_CLOSE_DISTANCE || (vy > SWIPE_CLOSE_VELOCITY && dy > 0)) {
-        close();
+
+      // Swap on horizontal drag: trigger swap and let the existing
+      // fade-cycle reset x/y to 0 (via the setTimeout in swap()).
+      if (
+        Math.abs(offset.x) > SWIPE_NAV_DISTANCE ||
+        Math.abs(velocity.x) > SWIPE_NAV_VELOCITY
+      ) {
+        if (offset.x < 0) swap(1);
+        else swap(-1);
         return;
       }
-      if (Math.abs(mx) > SWIPE_NAV_DISTANCE || (vx > SWIPE_NAV_VELOCITY && Math.abs(mx) > 20)) {
-        if (mx < 0) swap(1);
-        else if (mx > 0) swap(-1);
-      }
+
+      // No action threshold met: motion's dragSnapToOrigin springs
+      // x and y back to 0 automatically.
     },
-    { filterTaps: true, pointer: { touch: true } }
+    [close, swap, y]
   );
 
   // Keyboard navigation and body scroll lock when open
@@ -232,21 +263,24 @@ export function ImageViewer({ containerRef }: Props) {
       )}
 
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <motion.img
         className={`${styles.image}${fading ? " " + styles.fading : ""}`}
         src={current.src}
         alt={current.alt}
         onClick={(e) => e.stopPropagation()}
         draggable={false}
-        style={
-          drag.active
-            ? {
-                transform: `translate(${drag.x}px, ${drag.y}px)`,
-                transition: "none",
-              }
-            : undefined
-        }
-        {...bindDrag()}
+        // Drag both axes — vertical handles close, horizontal handles
+        // swipe-nav. dragElastic gives the image a slightly rubbery
+        // feel as it leaves the viewport edges; dragSnapToOrigin
+        // returns the image to (0,0) on release unless onDragEnd took
+        // an explicit close/swap action first. Spring tuning here is
+        // moderately stiff so the snap-back lands without overshoot.
+        drag
+        dragSnapToOrigin
+        dragElastic={0.4}
+        dragTransition={{ bounceStiffness: 600, bounceDamping: 30 }}
+        onDragEnd={onDragEnd}
+        style={{ x, y }}
       />
       {current.caption && (
         <p className={styles.caption} onClick={(e) => e.stopPropagation()}>

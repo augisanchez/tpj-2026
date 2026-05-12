@@ -26,7 +26,10 @@
   user-select: none;
   -webkit-user-drag: none;
   touch-action: none;
-  transition: opacity 150ms ease-out, transform 200ms ease-out;
+  /* Transform is driven by Motion's drag mechanics; only opacity
+     gets a CSS transition. Adding a transform transition here
+     would fight Motion's per-frame updates and cause stutter. */
+  transition: opacity 150ms ease-out;
 }
 
 .image.fading {
