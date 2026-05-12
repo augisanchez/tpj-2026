@@ -1,6 +1,12 @@
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { ContentTypeChip } from "./ContentTypeChip";
 import styles from "./HomepageHero.module.css";
+
+function articleImageTransitionName(href: string): string | null {
+  const m = href.match(/^\/(essay|interview|feature)\/([^/?#]+)/);
+  return m ? `article-image-${m[1]}-${m[2]}` : null;
+}
 
 type Props = {
   href: string;
@@ -35,16 +41,23 @@ export function HomepageHero({
         ? `Photographs by ${photographerName}`
         : formattedDate;
 
+  const morphName = articleImageTransitionName(href);
+  const imageEl = backgroundImage && (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className={styles.image}
+      src={backgroundImage.src}
+      alt={backgroundImage.alt}
+    />
+  );
+
   return (
     <div className={styles.outer}>
       <Link href={href} className={styles.card}>
-        {backgroundImage && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            className={styles.image}
-            src={backgroundImage.src}
-            alt={backgroundImage.alt}
-          />
+        {imageEl && morphName ? (
+          <ViewTransition name={morphName}>{imageEl}</ViewTransition>
+        ) : (
+          imageEl
         )}
         <div className={styles.gradient} aria-hidden="true" />
         <div className={styles.stack}>

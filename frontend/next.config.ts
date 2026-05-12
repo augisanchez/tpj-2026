@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Enables React 19's <ViewTransition> component so route navigations
+    // can be coordinated browser-side (outgoing fade + incoming fade,
+    // plus shared-element morphs). Gated behind a Next.js experimental
+    // flag in 16.x. Required for components/PageTransition.tsx and any
+    // future ViewTransition usage.
+    viewTransition: true,
+  },
   async redirects() {
     return [
       // Editorial Lens → Theme rename (2026-05-04). Permanent so any

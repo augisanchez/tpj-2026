@@ -61,6 +61,7 @@ export default async function PhotographerPage({ params }: Props) {
             name={photographer.name}
             portrait={photographer.portrait ?? undefined}
             className={styles.coverImage}
+            transitionName={`photographer-portrait-${photographer.slug}`}
           />
         </div>
 

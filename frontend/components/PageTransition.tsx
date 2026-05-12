@@ -1,32 +1,23 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import styles from "./PageTransition.module.css";
-
-const DETAIL_PATTERN = /^\/(essay|interview|feature|photographer|theme)\//;
+import { ViewTransition } from "react";
 
 type Props = {
   children: React.ReactNode;
 };
 
 /**
- * Remounts main content on route change to trigger CSS-driven fade-in.
+ * Wraps main content in React's <ViewTransition>. Route navigations in
+ * the App Router are React Transitions, so this activates a coordinated
+ * outgoing-fade + incoming-fade on every navigation. Replaces the prior
+ * CSS-keyed remount approach so the outgoing page also animates and so
+ * future shared-element morphs (ArticleCard image to article hero) can
+ * be added by giving paired elements the same `name` prop.
  *
- * - Top-level / index pages get a 200ms cross-fade.
- * - Detail pages (single article, photographer, theme) get a 300ms
- *   fade with an 8px lift to signal a focal view.
- *
- * Reduced-motion users get no animation. Nav and Footer are outside this
- * wrapper so they persist visually across navigation.
+ * Animation timings and easing live in PageTransition.module.css via
+ * the `::view-transition-old(root)` / `::view-transition-new(root)`
+ * pseudo-elements. Reduced-motion is honored there.
  */
 export function PageTransition({ children }: Props) {
-  const pathname = usePathname();
-  const isDetail = DETAIL_PATTERN.test(pathname);
-  const className = `${styles.transition}${isDetail ? " " + styles.detail : ""}`;
-
-  return (
-    <div key={pathname} className={className}>
-      {children}
-    </div>
-  );
+  return <ViewTransition>{children}</ViewTransition>;
 }

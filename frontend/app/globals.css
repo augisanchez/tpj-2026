@@ -94,3 +94,45 @@ img {
   max-width: 100%;
   display: block;
 }
+
+/* ------------------------------------------------------------------ */
+/* View transitions                                                   */
+/* ------------------------------------------------------------------ */
+/* Route-level fade. React 19's <ViewTransition> wraps the page in     */
+/* components/PageTransition.tsx, and the browser exposes the          */
+/* ::view-transition-* pseudo-elements on the document root during the */
+/* transition. Outgoing fades out (200ms ease-out), incoming fades in  */
+/* with a small upward lift (300ms ease-out) — same vocabulary as the  */
+/* prior CSS-keyed approach but coordinated both directions.           */
+
+::view-transition-old(root) {
+  animation: tpj-fade-out 200ms ease-out forwards;
+}
+
+::view-transition-new(root) {
+  animation: tpj-fade-up-in 300ms ease-out forwards;
+}
+
+@keyframes tpj-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes tpj-fade-up-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

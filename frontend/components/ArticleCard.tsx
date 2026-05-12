@@ -1,9 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import styles from "./ArticleCard.module.css";
+
+// Build a stable view-transition name from a "/type/slug" href so this
+// card's image can morph into the destination Hero's image on click.
+// Returns null for non-article hrefs (e.g. /photographer/...) so they
+// don't pollute the article-image namespace.
+function articleImageTransitionName(href: string): string | null {
+  const m = href.match(/^\/(essay|interview|feature)\/([^/?#]+)/);
+  return m ? `article-image-${m[1]}-${m[2]}` : null;
+}
 
 export type ArticleCardVariant =
   | "1up"
@@ -55,18 +64,25 @@ export function ArticleCard({
     hasImage && !imageLoaded ? " " + styles.imageWrapperLoading : ""
   }`;
 
+  const morphName = articleImageTransitionName(article.href);
+  const imageEl = article.featuredImage && (
+    <img
+      className={`${styles.image}${imageLoaded ? " " + styles.imageLoaded : ""}`}
+      src={article.featuredImage.src}
+      alt={article.featuredImage.alt}
+      loading="lazy"
+      onLoad={() => setImageLoaded(true)}
+      onError={() => setImageLoaded(true)}
+    />
+  );
+
   return (
     <Link href={article.href} className={styles.card}>
       <div className={wrapperClass}>
-        {article.featuredImage && (
-          <img
-            className={`${styles.image}${imageLoaded ? " " + styles.imageLoaded : ""}`}
-            src={article.featuredImage.src}
-            alt={article.featuredImage.alt}
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageLoaded(true)}
-          />
+        {imageEl && morphName ? (
+          <ViewTransition name={morphName}>{imageEl}</ViewTransition>
+        ) : (
+          imageEl
         )}
       </div>
       <div className={styles.textStack}>

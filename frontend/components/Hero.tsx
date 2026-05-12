@@ -1,3 +1,4 @@
+import { ViewTransition } from "react";
 import { ContentTypeChip } from "./ContentTypeChip";
 import styles from "./Hero.module.css";
 
@@ -7,6 +8,12 @@ type Props = {
   subtitle?: string;
   byline?: string;
   backgroundImage?: { src: string; alt: string };
+  /**
+   * Optional shared-element name. When set and a card on the previous
+   * page wrapped its image with the same name, the browser morphs that
+   * thumbnail into this hero image on navigation.
+   */
+  transitionName?: string;
 };
 
 export function Hero({
@@ -15,17 +22,24 @@ export function Hero({
   subtitle,
   byline,
   backgroundImage,
+  transitionName,
 }: Props) {
+  const imageEl = backgroundImage && (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className={styles.image}
+      src={backgroundImage.src}
+      alt={backgroundImage.alt}
+    />
+  );
+
   return (
     <div className={styles.outer}>
       <div className={styles.card}>
-        {backgroundImage && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            className={styles.image}
-            src={backgroundImage.src}
-            alt={backgroundImage.alt}
-          />
+        {imageEl && transitionName ? (
+          <ViewTransition name={transitionName}>{imageEl}</ViewTransition>
+        ) : (
+          imageEl
         )}
         <div className={styles.gradient} aria-hidden="true" />
         <div className={styles.stack}>
