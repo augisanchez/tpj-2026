@@ -67,7 +67,6 @@ export default async function FeaturePage({ params }: Props) {
         title={feature.title}
         byline={byline}
         backgroundImage={feature.featuredImage ?? undefined}
-        transitionName={`article-image-feature-${feature.slug}`}
       />
 
       {feature.intro && <EssayIntro text={feature.intro} narrow />}

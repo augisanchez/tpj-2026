@@ -44,7 +44,6 @@ export default async function EssayPage({ params }: Props) {
             : formattedDate
         }
         backgroundImage={essay.featuredImage ?? undefined}
-        transitionName={`article-image-essay-${essay.slug}`}
       />
 
       {essay.intro && <EssayIntro text={essay.intro} />}

@@ -44,7 +44,6 @@ export default async function InterviewPage({ params }: Props) {
             : formattedDate
         }
         backgroundImage={interview.featuredImage ?? undefined}
-        transitionName={`article-image-interview-${interview.slug}`}
       />
 
       {interview.intro && <EssayIntro text={interview.intro} />}

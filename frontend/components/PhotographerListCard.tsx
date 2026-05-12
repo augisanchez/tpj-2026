@@ -45,7 +45,6 @@ export function PhotographerListCard({
           name={name}
           portrait={portrait ?? undefined}
           className={styles.portrait}
-          transitionName={`photographer-portrait-${slug}`}
         />
       </div>
       <h3 className={styles.cardName}>{name}</h3>

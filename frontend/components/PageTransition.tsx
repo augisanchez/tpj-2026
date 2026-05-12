@@ -1,23 +1,14 @@
-"use client";
-
-import { ViewTransition } from "react";
-
 type Props = {
   children: React.ReactNode;
 };
 
 /**
- * Wraps main content in React's <ViewTransition>. Route navigations in
- * the App Router are React Transitions, so this activates a coordinated
- * outgoing-fade + incoming-fade on every navigation. Replaces the prior
- * CSS-keyed remount approach so the outgoing page also animates and so
- * future shared-element morphs (ArticleCard image to article hero) can
- * be added by giving paired elements the same `name` prop.
- *
- * Animation timings and easing live in PageTransition.module.css via
- * the `::view-transition-old(root)` / `::view-transition-new(root)`
- * pseudo-elements. Reduced-motion is honored there.
+ * Pass-through wrapper. The earlier CSS-fade and ViewTransition-based
+ * page-level transitions were retired; the editorial route transition
+ * will live in a dedicated curtain component (coming next). This
+ * component is kept as a seam so we can re-introduce route-level wrap
+ * logic without touching every layout consumer.
  */
 export function PageTransition({ children }: Props) {
-  return <ViewTransition>{children}</ViewTransition>;
+  return <>{children}</>;
 }

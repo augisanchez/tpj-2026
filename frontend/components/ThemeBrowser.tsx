@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArticleCard } from "./ArticleCard";
+import { StaggerReveal } from "./StaggerReveal";
 import { THEMES } from "@/lib/themes";
 import type { RecentEssay } from "@/lib/queries/recent-essays";
 import styles from "./ThemeBrowser.module.css";
@@ -73,7 +74,7 @@ export function ThemeBrowser({ groups }: Props) {
         </svg>
       </span>
 
-      <div className={styles.cards} key={activeSlug}>
+      <StaggerReveal className={styles.cards} key={activeSlug}>
         {cards.map((essay) => (
           <ArticleCard
             key={essay.id}
@@ -87,7 +88,7 @@ export function ThemeBrowser({ groups }: Props) {
             }}
           />
         ))}
-      </div>
+      </StaggerReveal>
     </section>
   );
 }

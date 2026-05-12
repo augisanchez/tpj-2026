@@ -44,15 +44,25 @@
   }
 }
 
-/* While the featured image is still loading, gently pulse the placeholder
-   so empty cards read as intentional skeletons rather than missing media. */
+/* Loading skeleton: a brighter band sweeps left-to-right across the
+   placeholder, clearly reading as "image loading" even on fast loads.
+   The 200% background-size gives the sweep travel distance; the
+   animation moves background-position from right (100%) to left
+   (-100%) so the band traverses the full card width. */
 .imageWrapperLoading {
-  animation: tpj-card-skeleton 1.6s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    #cccccc 0%,
+    #e0e0e0 50%,
+    #cccccc 100%
+  );
+  background-size: 200% 100%;
+  animation: tpj-card-skeleton 1.4s ease-in-out infinite;
 }
 
 @keyframes tpj-card-skeleton {
-  0%, 100% { background-color: var(--placeholder); }
-  50% { background-color: color-mix(in srgb, var(--placeholder) 60%, var(--bg) 40%); }
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
 }
 
 .image {

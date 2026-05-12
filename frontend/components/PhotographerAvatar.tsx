@@ -1,18 +1,12 @@
 "use client";
 
-import { useState, ViewTransition } from "react";
+import { useState } from "react";
 import styles from "./PhotographerAvatar.module.css";
 
 type Props = {
   name: string;
   portrait?: { src: string; alt: string };
   className?: string;
-  /**
-   * Optional shared-element name. When the portrait img is rendered
-   * (not the initials fallback), pairing this name across pages morphs
-   * the portrait from card to profile cover on navigation.
-   */
-  transitionName?: string;
 };
 
 /**
@@ -36,16 +30,11 @@ function computeInitials(name: string): string {
   return (first + last).toUpperCase();
 }
 
-export function PhotographerAvatar({
-  name,
-  portrait,
-  className,
-  transitionName,
-}: Props) {
+export function PhotographerAvatar({ name, portrait, className }: Props) {
   const [errored, setErrored] = useState(false);
 
   if (portrait && !errored) {
-    const imageEl = (
+    return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
         className={className}
@@ -53,11 +42,6 @@ export function PhotographerAvatar({
         alt={portrait.alt}
         onError={() => setErrored(true)}
       />
-    );
-    return transitionName ? (
-      <ViewTransition name={transitionName}>{imageEl}</ViewTransition>
-    ) : (
-      imageEl
     );
   }
 

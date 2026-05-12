@@ -96,34 +96,36 @@ img {
 }
 
 /* ------------------------------------------------------------------ */
-/* View transitions                                                   */
+/* Stagger reveal                                                     */
 /* ------------------------------------------------------------------ */
-/* Route-level fade. React 19's <ViewTransition> wraps the page in     */
-/* components/PageTransition.tsx, and the browser exposes the          */
-/* ::view-transition-* pseudo-elements on the document root during the */
-/* transition. Outgoing fades out (200ms ease-out), incoming fades in  */
-/* with a small upward lift (300ms ease-out) — same vocabulary as the  */
-/* prior CSS-keyed approach but coordinated both directions.           */
+/* Wrap any row/grid in <StaggerReveal> and its direct children fade  */
+/* up one-by-one. The reveal triggers on mount for above-the-fold     */
+/* containers and on IntersectionObserver for below-the-fold ones.    */
+/* --stagger-step is the inter-child delay (default 100ms, passed     */
+/* through as a prop on the wrapper).                                 */
 
-::view-transition-old(root) {
-  animation: tpj-fade-out 200ms ease-out forwards;
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(28px);
 }
 
-::view-transition-new(root) {
-  animation: tpj-fade-up-in 300ms ease-out forwards;
+.stagger-revealed > * {
+  animation: tpj-stagger-in 700ms cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
 }
 
-@keyframes tpj-fade-out {
-  to {
-    opacity: 0;
-  }
-}
+.stagger-revealed > *:nth-child(2) { animation-delay: calc(1 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(3) { animation-delay: calc(2 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(4) { animation-delay: calc(3 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(5) { animation-delay: calc(4 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(6) { animation-delay: calc(5 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(7) { animation-delay: calc(6 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(8) { animation-delay: calc(7 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(9) { animation-delay: calc(8 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(10) { animation-delay: calc(9 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(11) { animation-delay: calc(10 * var(--stagger-step, 100ms)); }
+.stagger-revealed > *:nth-child(12) { animation-delay: calc(11 * var(--stagger-step, 100ms)); }
 
-@keyframes tpj-fade-up-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
+@keyframes tpj-stagger-in {
   to {
     opacity: 1;
     transform: translateY(0);
@@ -131,8 +133,10 @@ img {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
+  .stagger-children > *,
+  .stagger-revealed > * {
     animation: none;
+    opacity: 1;
+    transform: none;
   }
 }

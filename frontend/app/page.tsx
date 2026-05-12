@@ -5,6 +5,7 @@ import { HomepageHero } from "@/components/HomepageHero";
 import { InterviewQuoteRotator } from "@/components/InterviewQuoteRotator";
 import { PurposeStatement } from "@/components/PurposeStatement";
 import { ScrollCue } from "@/components/ScrollCue";
+import { StaggerReveal } from "@/components/StaggerReveal";
 import { ThemeBrowser } from "@/components/ThemeBrowser";
 import { FALLBACK_PHOTOGRAPHER } from "@/lib/photographer-fallback";
 import { fetchArchiveFeature } from "@/lib/queries/archive-feature";
@@ -156,13 +157,18 @@ export default async function Home() {
   }
 
   // Two random essays from the pool, excluding anything already shown
-  // in the hero or Keep Exploring rows so Dive Deeper feels like a
-  // distinct surface rather than a continuation.
-  const shownEssayIds = new Set<string>([
-    heroArticle?.id,
-    ...exploreArticles.map((a) => a.id),
+  // anywhere on the page (hero, Keep Exploring, the archive feature
+  // already added to featuredCards above). Dedup by href because the
+  // recent-articles and recent-essays queries return different GraphQL
+  // global-id shapes for the same post; href is the only stable join.
+  const shownHrefs = new Set<string>([
+    heroArticle ? articleHref(heroArticle) : null,
+    ...exploreArticles.map(articleHref),
+    ...featuredCards.map((c) => c.href),
   ].filter((x): x is string => Boolean(x)));
-  const essayCandidates = essays.filter((e) => !shownEssayIds.has(e.id));
+  const essayCandidates = essays.filter(
+    (e) => !shownHrefs.has(`/essay/${e.slug}`)
+  );
   const featuredEssays = pickRandom(essayCandidates, 2);
   for (const essay of featuredEssays) {
     featuredCards.push({
@@ -176,6 +182,19 @@ export default async function Home() {
       featuredImage: essay.featuredImage ?? undefined,
     });
   }
+
+  // Final safety net: drop any featuredCards that duplicate the hero
+  // or Keep Exploring rows. Keeps Dive Deeper feeling like a distinct
+  // surface rather than a continuation of the recent feed.
+  const seenHrefs = new Set<string>([
+    heroArticle ? articleHref(heroArticle) : null,
+    ...exploreArticles.map(articleHref),
+  ].filter((x): x is string => Boolean(x)));
+  const dedupedFeaturedCards = featuredCards.filter((c) => {
+    if (seenHrefs.has(c.href)) return false;
+    seenHrefs.add(c.href);
+    return true;
+  });
 
   return (
     <div className={styles.homepage}>
@@ -206,7 +225,7 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className={styles.latestGrid}>
+        <StaggerReveal className={styles.latestGrid}>
           {exploreArticles.map((article) => (
             <ArticleCard
               key={article.id}
@@ -220,7 +239,7 @@ export default async function Home() {
               }}
             />
           ))}
-        </div>
+        </StaggerReveal>
       </section>
 
       <ThemeBrowser groups={themeGroups} />
@@ -235,11 +254,11 @@ export default async function Home() {
           </p>
         </div>
 
-        <div
+        <StaggerReveal
           className={styles.featuredGrid}
-          style={{ "--featured-cols": featuredCards.length } as CSSProperties}
+          step={120}
         >
-          {featuredCards.map((card) => (
+          {dedupedFeaturedCards.map((card) => (
             <ArticleCard
               key={card.key}
               variant="3up"
@@ -254,7 +273,7 @@ export default async function Home() {
               }}
             />
           ))}
-        </div>
+        </StaggerReveal>
       </section>
     </div>
   );
