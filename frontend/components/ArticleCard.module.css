@@ -115,7 +115,12 @@
 
 .title1up { font-size: 36px; }
 .title2up { font-size: 80px; }
-.title3up { font-size: 56px; }
+/* 3-up cards live in narrower-than-full-width columns on the homepage
+   (Keep Exploring, Dive Deeper) where the section indent expands at
+   wider viewports. Scale the title with the card width so it doesn't
+   crowd at 1024-1280 viewports and reaches the original 56px cap at
+   ~1820+. */
+.title3up { font-size: clamp(32px, 1rem + 2.2vw, 56px); }
 .title4up { font-size: 32px; }
 .title5up { font-size: 36px; }
 .title6up { font-size: 28px; }

@@ -1,5 +1,7 @@
 .section {
-  padding: 0 32px;
+  /* When rendered inside .homepage, inherits the responsive inner
+     indent (--homepage-padding-x). Falls back to a flat 32px elsewhere. */
+  padding: 0 var(--homepage-padding-x, 32px);
   display: flex;
   flex-direction: column;
   gap: 32px;

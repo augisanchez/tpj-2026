@@ -5,6 +5,11 @@
    add their own vertical padding or margin. */
 .homepage {
   --homepage-rhythm: clamp(5rem, 2rem + 5vw, 13rem);
+  /* Inner indent for content sections (Keep Exploring, ThemeBrowser,
+     PurposeStatement, Dive Deeper). Hero and InterviewQuoteRotator
+     intentionally do NOT inherit this — they keep the existing page-
+     edge gutter so the homepage reads as two indentation levels. */
+  --homepage-padding-x: clamp(1rem, -6rem + 15vw, 12rem);
   display: flex;
   flex-direction: column;
   gap: var(--homepage-rhythm);
@@ -17,11 +22,12 @@
   }
 }
 
-/* Edge-to-edge with 32px gutters. Every section on the homepage uses
-   this same width and gutter so content lines up vertically. */
+/* Indented section: uses the homepage inner-indent var when rendered
+   on the homepage; falls back to a flat 32px gutter when used elsewhere
+   (so the component stays portable). */
 .wideSection {
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 var(--homepage-padding-x, 32px);
 }
 
 .sectionHeader {
