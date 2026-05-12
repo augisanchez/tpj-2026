@@ -147,8 +147,107 @@
 	line-height: 1.2;
 }
 
-.tpj-picker-add-new {
+.tpj-picker-add-new-toggle {
 	font-size: 12px;
+	text-align: left;
+	padding: 4px 0 !important;
+}
+
+/* Inline create form. Stacks vertically inside the meta box. */
+.tpj-picker-form {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 10px;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+
+.tpj-picker-form-row {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.tpj-picker-form-label {
+	font-size: 11px;
+	font-weight: 600;
+	color: #555;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.tpj-picker-form-row input,
+.tpj-picker-form-row textarea {
+	width: 100%;
+	font-size: 13px;
+}
+
+.tpj-picker-form-row textarea {
+	resize: vertical;
+	min-height: 60px;
+}
+
+.tpj-picker-form-suggestion {
+	background: #fff8e5;
+	border: 1px solid #f5c462;
+	border-radius: 3px;
+	padding: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.tpj-picker-form-suggestion-header {
+	font-size: 11px;
+	font-weight: 600;
+	margin: 0;
+	color: #5a4500;
+}
+
+.tpj-picker-form-suggestion-item {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	padding: 6px 8px;
+	cursor: pointer;
+	text-align: left;
+}
+
+.tpj-picker-form-suggestion-item:hover,
+.tpj-picker-form-suggestion-item:focus-visible {
+	background: #f6f7f7;
+	outline: none;
+}
+
+.tpj-picker-form-suggestion-item strong {
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.tpj-picker-form-suggestion-item span {
+	font-size: 11px;
+	color: #777;
+}
+
+.tpj-picker-form-error {
+	font-size: 12px;
+	color: #b32d2e;
+	background: #fdeded;
+	border: 1px solid #f0b6b7;
+	border-radius: 3px;
+	padding: 6px 8px;
+}
+
+.tpj-picker-form-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
 .tpj-picker-note {

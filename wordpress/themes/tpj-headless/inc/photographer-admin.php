@@ -199,12 +199,14 @@ function tpj_render_photographer_picker_meta_box( $post ) {
 		];
 	}
 
-	$rest_url   = rest_url( 'tpj/v1/photographers/search' );
+	$search_url = rest_url( 'tpj/v1/photographers/search' );
+	$create_url = rest_url( 'tpj/v1/photographers/create' );
 	$rest_nonce = wp_create_nonce( 'wp_rest' );
 	?>
 	<div class="tpj-picker"
 	     data-initial="<?php echo esc_attr( wp_json_encode( $initial ) ); ?>"
-	     data-rest-url="<?php echo esc_attr( $rest_url ); ?>"
+	     data-search-url="<?php echo esc_attr( $search_url ); ?>"
+	     data-create-url="<?php echo esc_attr( $create_url ); ?>"
 	     data-rest-nonce="<?php echo esc_attr( $rest_nonce ); ?>">
 		<input
 			type="hidden"
@@ -225,6 +227,35 @@ function tpj_render_photographer_picker_meta_box( $post ) {
 				autocomplete="off"
 			/>
 			<div class="tpj-picker-results" hidden></div>
+		</div>
+
+		<button type="button" class="button button-link tpj-picker-add-new-toggle">
+			+ Add new photographer
+		</button>
+
+		<div class="tpj-picker-form" hidden>
+			<label class="tpj-picker-form-row">
+				<span class="tpj-picker-form-label">Name *</span>
+				<input type="text" class="tpj-picker-form-name" autocomplete="off" />
+			</label>
+			<div class="tpj-picker-form-suggestion" hidden></div>
+			<label class="tpj-picker-form-row">
+				<span class="tpj-picker-form-label">Bio</span>
+				<textarea class="tpj-picker-form-bio" rows="3"></textarea>
+			</label>
+			<label class="tpj-picker-form-row">
+				<span class="tpj-picker-form-label">Website</span>
+				<input type="text" class="tpj-picker-form-website" autocomplete="off" placeholder="https://…" />
+			</label>
+			<label class="tpj-picker-form-row">
+				<span class="tpj-picker-form-label">Instagram</span>
+				<input type="text" class="tpj-picker-form-instagram" autocomplete="off" placeholder="handle or full URL" />
+			</label>
+			<div class="tpj-picker-form-error" hidden></div>
+			<div class="tpj-picker-form-actions">
+				<button type="button" class="button button-primary tpj-picker-form-submit">Create</button>
+				<button type="button" class="button-link tpj-picker-form-cancel">Cancel</button>
+			</div>
 		</div>
 
 		<p class="tpj-picker-note">
