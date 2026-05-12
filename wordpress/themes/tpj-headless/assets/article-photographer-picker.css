@@ -30,6 +30,29 @@
 	background: #f6f7f7;
 	border: 1px solid #dcdcde;
 	border-radius: 4px;
+	transition: opacity 120ms ease-out, border-color 120ms ease-out;
+}
+
+/* Drag affordance: only when more than one chip is present (the JS
+   only sets draggable=true in that case, but we add the cursor here
+   for visual continuity). */
+.tpj-picker-chip[draggable="true"] {
+	cursor: grab;
+}
+
+.tpj-picker-chip[draggable="true"]:active {
+	cursor: grabbing;
+}
+
+.tpj-picker-chip-dragging {
+	opacity: 0.4;
+}
+
+/* Drop target — a clear top edge so editors can see exactly where
+   the chip will land. */
+.tpj-picker-chip-drop-target {
+	border-top-color: #2271b1;
+	border-top-width: 2px;
 }
 
 .tpj-picker-chip-avatar,
@@ -76,6 +99,15 @@
 	font-size: 11px;
 	color: #888;
 	line-height: 1.2;
+}
+
+/* Substring of the search query, highlighted inside a result/
+   suggestion name. Heavier weight than the surrounding name (which
+   is already 600) so the matched portion clearly stands out. No
+   background — too noisy for a small dropdown row. */
+.tpj-picker-match {
+	font-weight: 800;
+	color: #1a1814;
 }
 
 .tpj-picker-chip-remove {

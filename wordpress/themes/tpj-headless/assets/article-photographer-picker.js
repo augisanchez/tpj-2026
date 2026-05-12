@@ -55,6 +55,10 @@
 		// instant.
 		var selected = initial.slice();
 
+		// Drag state for chip reordering. dragFromIdx records the
+		// source index between dragstart and drop; null when idle.
+		var dragFromIdx = null;
+
 		function syncHidden() {
 			var ids = selected.map(function (p) {
 				return p.id;
@@ -74,6 +78,51 @@
 				var chip = document.createElement("div");
 				chip.className = "tpj-picker-chip";
 				chip.dataset.index = String(idx);
+
+				// Drag-to-reorder. The whole chip is the drag handle so
+				// editors can grab and drop without aiming at a small grip
+				// icon. The reorder happens on drop; no live preview, just
+				// a simple "release where you want it" interaction.
+				if (selected.length > 1) {
+					chip.draggable = true;
+					chip.addEventListener("dragstart", function (e) {
+						dragFromIdx = idx;
+						chip.classList.add("tpj-picker-chip-dragging");
+						if (e.dataTransfer) {
+							e.dataTransfer.effectAllowed = "move";
+							// Some browsers need data set to allow the drop.
+							e.dataTransfer.setData("text/plain", String(idx));
+						}
+					});
+					chip.addEventListener("dragover", function (e) {
+						if (dragFromIdx === null || dragFromIdx === idx) return;
+						e.preventDefault();
+						if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+						chip.classList.add("tpj-picker-chip-drop-target");
+					});
+					chip.addEventListener("dragleave", function () {
+						chip.classList.remove("tpj-picker-chip-drop-target");
+					});
+					chip.addEventListener("drop", function (e) {
+						e.preventDefault();
+						chip.classList.remove("tpj-picker-chip-drop-target");
+						if (dragFromIdx === null || dragFromIdx === idx) return;
+						var moved = selected.splice(dragFromIdx, 1)[0];
+						selected.splice(idx, 0, moved);
+						dragFromIdx = null;
+						renderChips();
+					});
+					chip.addEventListener("dragend", function () {
+						chip.classList.remove("tpj-picker-chip-dragging");
+						dragFromIdx = null;
+						// Belt-and-braces: clear stale drop-target classes
+						// on every chip in case dragleave didn't fire.
+						chipsEl.querySelectorAll(".tpj-picker-chip-drop-target")
+							.forEach(function (el) {
+								el.classList.remove("tpj-picker-chip-drop-target");
+							});
+					});
+				}
 
 				// Portrait (or initials fallback)
 				var portrait = document.createElement("span");
@@ -156,10 +205,10 @@
 					return res.json();
 				})
 				.then(function (data) {
-					renderResults(Array.isArray(data) ? data : []);
+					renderResults(Array.isArray(data) ? data : [], q);
 				})
 				.catch(function () {
-					renderResults([]);
+					renderResults([], q);
 				});
 		}
 
@@ -242,15 +291,17 @@
 					: "Some existing photographers match. Use one instead of creating a duplicate?";
 			suggestionEl.appendChild(header);
 
+			var query = nameInput ? nameInput.value : "";
 			matches.forEach(function (p) {
 				if (selected.some(function (s) { return s.id === p.id; })) return;
 				var btn = document.createElement("button");
 				btn.type = "button";
 				btn.className = "tpj-picker-form-suggestion-item";
-				btn.innerHTML =
-					"<strong></strong><span></span>";
-				btn.querySelector("strong").textContent = decodeEntities(p.name);
-				btn.querySelector("span").textContent =
+				var nameEl = document.createElement("strong");
+				appendHighlighted(nameEl, decodeEntities(p.name), query);
+				btn.appendChild(nameEl);
+				var metaEl = document.createElement("span");
+				metaEl.textContent =
 					p.slug +
 					(p.article_count
 						? " · " +
@@ -258,6 +309,7 @@
 							" article" +
 							(p.article_count === 1 ? "" : "s")
 						: "");
+				btn.appendChild(metaEl);
 				btn.addEventListener("click", function () {
 					selected.push(p);
 					renderChips();
@@ -368,7 +420,7 @@
 			});
 		}
 
-		function renderResults(results) {
+		function renderResults(results, query) {
 			resultsEl.innerHTML = "";
 
 			// Filter out anything already selected so the editor doesn't
@@ -412,7 +464,10 @@
 				var topLine = document.createElement("span");
 				topLine.className = "tpj-picker-result-top";
 				var name = document.createElement("strong");
-				name.textContent = decodeEntities(p.name);
+				// Bold the matched substring of `query` within the name
+				// so editors disambiguating "Daniels" vs "May Daniels"
+				// can see what their query actually matched on.
+				appendHighlighted(name, decodeEntities(p.name), query);
 				topLine.appendChild(name);
 				var slugSpan = document.createElement("span");
 				slugSpan.className = "tpj-picker-result-slug";
@@ -470,6 +525,43 @@
 	function decodeEntities(s) {
 		decoder.innerHTML = String(s);
 		return decoder.value;
+	}
+
+	// Append `text` to `container`, wrapping any case-insensitive
+	// occurrence of `query` in a <span class="tpj-picker-match"> so
+	// CSS can bold the matched substring. Uses textContent throughout
+	// (no innerHTML / no escaping needed) so it's XSS-safe.
+	function appendHighlighted(container, text, query) {
+		container.textContent = "";
+		text = String(text);
+		query = String(query || "").trim();
+		if (!query) {
+			container.textContent = text;
+			return;
+		}
+
+		var lower = text.toLowerCase();
+		var qlower = query.toLowerCase();
+		var qlen = query.length;
+		var idx = 0;
+
+		while (idx < text.length) {
+			var match = lower.indexOf(qlower, idx);
+			if (match === -1) {
+				container.appendChild(document.createTextNode(text.substring(idx)));
+				break;
+			}
+			if (match > idx) {
+				container.appendChild(
+					document.createTextNode(text.substring(idx, match))
+				);
+			}
+			var mark = document.createElement("span");
+			mark.className = "tpj-picker-match";
+			mark.textContent = text.substring(match, match + qlen);
+			container.appendChild(mark);
+			idx = match + qlen;
+		}
 	}
 
 	function initials(name) {
