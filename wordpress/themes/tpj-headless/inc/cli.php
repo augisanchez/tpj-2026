@@ -3071,6 +3071,239 @@ class TPJ_CLI {
 
 		WP_CLI::success( 'Import complete.' );
 	}
+
+	/**
+	 * HEAD-probe every photographer social link and classify each as
+	 * live / redirect / blocked / dead / malformed. Reports only —
+	 * no automatic removal of dead links because platform-side
+	 * "blocked" responses (Instagram 401, VSCO 403, etc.) often
+	 * shadow real liveness, and a false-positive removal of a valid
+	 * profile would be worse than a stale one.
+	 *
+	 * Scope: every published Photographer post's website / instagram /
+	 * twitter / facebook / tumblr / flickr / vsco_grid / vimeo / blog /
+	 * bluesky / threads / linkedin postmeta whose value is non-empty.
+	 *
+	 * Network: sequential HEAD via wp_remote_head with a configurable
+	 * timeout. With ~5K total URLs (489 photographers * ~10 avg links)
+	 * and a 4s timeout, worst-case runtime is ~30 min when every
+	 * request hits the timeout cap. Real-world is much faster — most
+	 * URLs resolve in <1s. Run during off-hours for the first pass.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--timeout=<seconds>]
+	 * : Per-request timeout. Default 4.
+	 *
+	 * [--keys=<list>]
+	 * : Comma-separated subset of meta keys to probe. Useful for a
+	 * quick re-check of a single platform (e.g. --keys=website).
+	 * Default: all 12 link types.
+	 *
+	 * [--photographer-id=<id>]
+	 * : Limit to a single photographer record. Useful when iterating.
+	 *
+	 * @when after_wp_load
+	 */
+	public function audit_photographer_links( $args, $assoc_args ) {
+		$timeout         = max( 1, (int) ( $assoc_args['timeout'] ?? 4 ) );
+		$photographer_id = isset( $assoc_args['photographer-id'] )
+			? (int) $assoc_args['photographer-id']
+			: 0;
+
+		$default_keys = [
+			'website',
+			'instagram',
+			'twitter',
+			'facebook',
+			'tumblr',
+			'flickr',
+			'vsco_grid',
+			'vimeo',
+			'blog',
+			'bluesky',
+			'threads',
+			'linkedin',
+		];
+		$keys = isset( $assoc_args['keys'] )
+			? array_intersect(
+				array_map( 'trim', explode( ',', $assoc_args['keys'] ) ),
+				$default_keys
+			)
+			: $default_keys;
+
+		if ( empty( $keys ) ) {
+			WP_CLI::error( 'No valid meta keys specified.' );
+		}
+
+		global $wpdb;
+
+		$key_placeholders = implode( ',', array_fill( 0, count( $keys ), '%s' ) );
+		$query_args       = array_merge( [ 'photographer' ], array_values( $keys ) );
+
+		$sql = "SELECT p.ID, p.post_title, pm.meta_key, pm.meta_value
+				FROM {$wpdb->posts} p
+				JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+				WHERE p.post_type = %s
+				  AND p.post_status = 'publish'
+				  AND pm.meta_key IN ($key_placeholders)
+				  AND pm.meta_value != ''";
+
+		if ( $photographer_id > 0 ) {
+			$sql .= ' AND p.ID = %d';
+			$query_args[] = $photographer_id;
+		}
+
+		$sql .= ' ORDER BY p.post_title, pm.meta_key';
+
+		$rows = $wpdb->get_results( $wpdb->prepare( $sql, $query_args ) );
+		$total = count( $rows );
+
+		if ( $total === 0 ) {
+			WP_CLI::success( 'No photographer links to audit.' );
+			return;
+		}
+
+		WP_CLI::log( sprintf(
+			'Probing %d links across %d link types (timeout %ds).',
+			$total,
+			count( $keys ),
+			$timeout
+		) );
+
+		$stats = [
+			'live'      => 0,
+			'redirect'  => 0,
+			'blocked'   => 0,
+			'malformed' => 0,
+			'dead'      => 0,
+		];
+		$dead    = [];
+		$blocked = [];
+
+		$progress = WP_CLI\Utils\make_progress_bar( 'Auditing', $total );
+
+		foreach ( $rows as $row ) {
+			$progress->tick();
+
+			$url = tpj_normalize_url( $row->meta_value );
+			if ( ! $url ) {
+				// Try prefixing the value with https:// for bare
+				// hostnames before declaring it malformed — editors
+				// often paste "instagram.com/handle" without scheme.
+				$candidate = 'https://' . ltrim( $row->meta_value, '/' );
+				$url       = tpj_normalize_url( $candidate );
+				if ( ! $url ) {
+					$stats['malformed']++;
+					continue;
+				}
+			}
+
+			$response = wp_remote_head( $url, [
+				'timeout'     => $timeout,
+				'redirection' => 3,
+				'sslverify'   => false,
+				'user-agent'  => 'TPJ link audit (Mozilla/5.0 compatible)',
+			] );
+
+			if ( is_wp_error( $response ) ) {
+				$stats['dead']++;
+				$dead[] = sprintf(
+					'%s (#%d) %s -> %s : %s',
+					$row->post_title,
+					$row->ID,
+					$row->meta_key,
+					$url,
+					$response->get_error_message()
+				);
+				continue;
+			}
+
+			$code = (int) wp_remote_retrieve_response_code( $response );
+
+			// HEAD-not-allowed: retry once as GET. Some servers
+			// reject HEAD specifically (405) but still answer GET.
+			if ( $code === 405 ) {
+				$response = wp_remote_get( $url, [
+					'timeout'     => $timeout,
+					'redirection' => 3,
+					'sslverify'   => false,
+					'user-agent'  => 'TPJ link audit (Mozilla/5.0 compatible)',
+				] );
+				if ( is_wp_error( $response ) ) {
+					$stats['dead']++;
+					$dead[] = sprintf(
+						'%s (#%d) %s -> %s : %s',
+						$row->post_title,
+						$row->ID,
+						$row->meta_key,
+						$url,
+						$response->get_error_message()
+					);
+					continue;
+				}
+				$code = (int) wp_remote_retrieve_response_code( $response );
+			}
+
+			if ( $code >= 200 && $code < 300 ) {
+				$stats['live']++;
+			} elseif ( $code >= 300 && $code < 400 ) {
+				$stats['redirect']++;
+			} elseif ( in_array( $code, [ 401, 403, 429 ], true ) ) {
+				// Platform-side bot blocking. Instagram, VSCO, Threads
+				// frequently return 401/403/429 to non-browser UAs.
+				// These probably resolve fine in a real browser; flag
+				// for review, don't classify as dead.
+				$stats['blocked']++;
+				$blocked[] = sprintf(
+					'%s (#%d) %s -> %s : HTTP %d',
+					$row->post_title,
+					$row->ID,
+					$row->meta_key,
+					$url,
+					$code
+				);
+			} else {
+				$stats['dead']++;
+				$dead[] = sprintf(
+					'%s (#%d) %s -> %s : HTTP %d',
+					$row->post_title,
+					$row->ID,
+					$row->meta_key,
+					$url,
+					$code
+				);
+			}
+		}
+
+		$progress->finish();
+
+		WP_CLI::log( '' );
+		WP_CLI::log( '======= LINK AUDIT SUMMARY =======' );
+		WP_CLI::log( sprintf( 'Live:       %d', $stats['live'] ) );
+		WP_CLI::log( sprintf( 'Redirect:   %d', $stats['redirect'] ) );
+		WP_CLI::log( sprintf( 'Blocked:    %d  (HTTP 401/403/429 — usually platform anti-bot, not actually dead)', $stats['blocked'] ) );
+		WP_CLI::log( sprintf( 'Malformed:  %d  (URL did not parse — likely a bare handle or typo)', $stats['malformed'] ) );
+		WP_CLI::log( sprintf( 'DEAD:       %d', $stats['dead'] ) );
+
+		if ( ! empty( $dead ) ) {
+			WP_CLI::log( '' );
+			WP_CLI::log( '--- Dead links ---' );
+			foreach ( $dead as $line ) {
+				WP_CLI::log( '  ' . $line );
+			}
+		}
+
+		if ( ! empty( $blocked ) ) {
+			WP_CLI::log( '' );
+			WP_CLI::log( '--- Blocked (likely-live, manually verify) ---' );
+			foreach ( $blocked as $line ) {
+				WP_CLI::log( '  ' . $line );
+			}
+		}
+
+		WP_CLI::success( sprintf( 'Audit complete. %d dead, %d blocked-needs-review.', $stats['dead'], $stats['blocked'] ) );
+	}
 }
 
 /**
@@ -3603,3 +3836,4 @@ WP_CLI::add_command( 'tpj split-combo-photographers',     [ 'TPJ_CLI', 'split_co
 WP_CLI::add_command( 'tpj apply-photographer-instagram',  [ 'TPJ_CLI', 'apply_photographer_instagram' ] );
 WP_CLI::add_command( 'tpj seed-collections',              [ 'TPJ_CLI', 'seed_collections' ] );
 WP_CLI::add_command( 'tpj import-delta',                  [ 'TPJ_CLI', 'import_delta' ] );
+WP_CLI::add_command( 'tpj audit-photographer-links',      [ 'TPJ_CLI', 'audit_photographer_links' ] );
