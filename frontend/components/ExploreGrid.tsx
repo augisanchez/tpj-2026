@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { ArticleCard } from "./ArticleCard";
 import { EmptyState } from "./EmptyState";
 import {
@@ -230,19 +231,41 @@ export function ExploreGrid({ items }: Props) {
       ) : (
         <>
           <div className={styles.grid}>
-            {visible.map((item) => (
-              <ArticleCard
-                key={item.id}
-                variant="4up"
-                article={{
-                  title: item.title,
-                  date: item.date,
-                  href: `/${item.contentType}/${item.slug}`,
-                  contentTypeLabel: LABEL_BY_TYPE[item.contentType],
-                  featuredImage: item.featuredImage ?? undefined,
-                }}
-              />
-            ))}
+            {/* AnimatePresence + motion.div layout drives FLIP-style
+                reflow when filters/sort change. mode="popLayout"
+                removes exiting cards from layout flow immediately so
+                the remaining cards animate to their new grid
+                positions while the exit fade runs in parallel.
+                layout="position" instead of plain layout: only
+                animate movement, not size — the cards never resize
+                between filter states, and animating size on grid
+                children risks scrollbar jitter. */}
+            <AnimatePresence mode="popLayout" initial={false}>
+              {visible.map((item) => (
+                <motion.div
+                  key={item.id}
+                  layout="position"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{
+                    layout: { duration: 0.4, ease: [0.2, 0.6, 0.2, 1] },
+                    opacity: { duration: 0.25 },
+                  }}
+                >
+                  <ArticleCard
+                    variant="4up"
+                    article={{
+                      title: item.title,
+                      date: item.date,
+                      href: `/${item.contentType}/${item.slug}`,
+                      contentTypeLabel: LABEL_BY_TYPE[item.contentType],
+                      featuredImage: item.featuredImage ?? undefined,
+                    }}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
 
           {hasMore ? (
