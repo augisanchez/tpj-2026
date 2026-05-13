@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
-import { ArrivalScrollHint } from "@/components/ArrivalScrollHint";
 import { ArticleBody } from "@/components/ArticleBody";
 import { EssayIntro } from "@/components/EssayIntro";
 import { Hero } from "@/components/Hero";
@@ -35,7 +34,6 @@ export default async function EssayPage({ params }: Props) {
 
   return (
     <>
-      <ArrivalScrollHint />
       <ReadingProgress />
       <Hero
         contentTypeLabel="Photo Essay"

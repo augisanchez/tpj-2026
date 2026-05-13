@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
-import { ArrivalScrollHint } from "@/components/ArrivalScrollHint";
 import { EssayIntro } from "@/components/EssayIntro";
 import { Hero } from "@/components/Hero";
 import { InterviewBody } from "@/components/InterviewBody";
@@ -45,7 +44,6 @@ export default async function InterviewPage({ params }: Props) {
 
   return (
     <>
-      <ArrivalScrollHint />
       <ReadingProgress />
       <Hero
         contentTypeLabel="Interview"

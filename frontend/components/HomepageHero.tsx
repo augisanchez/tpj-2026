@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { markArrivalScrollFromHero } from "./ArrivalScrollHint";
 import { ContentTypeChip } from "./ContentTypeChip";
 import { TpjImage } from "./TpjImage";
 import styles from "./HomepageHero.module.css";
@@ -44,11 +41,7 @@ export function HomepageHero({
 
   return (
     <div className={styles.outer}>
-      <Link
-        href={href}
-        className={styles.card}
-        onClick={markArrivalScrollFromHero}
-      >
+      <Link href={href} className={styles.card}>
         {backgroundImage && (
           <TpjImage
             src={backgroundImage.src}

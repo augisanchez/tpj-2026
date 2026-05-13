@@ -1,10 +1,12 @@
-/* Single source of vertical rhythm on the homepage. Slightly tighter
-   than --space-section so sections breathe but don't over-pace. The
-   wrapper provides nav and footer clearance via padding, and the gap
-   handles every inter-section break, so individual sections shouldn't
-   add their own vertical padding or margin. */
+/* Single source of vertical rhythm on the homepage. Bumped 2026-05-13
+   to be more aggressive across the whole responsive spectrum — the
+   prior values pinned mobile/laptop spacing too close to the section
+   content. Floor 8rem (128px) at small phones, linear ramps to 18rem
+   (288px) at 1920px desktop. Wrapper provides nav and footer
+   clearance via padding; the gap handles every inter-section break,
+   so individual sections shouldn't add their own vertical padding. */
 .homepage {
-  --homepage-rhythm: clamp(5rem, 2rem + 5vw, 13rem);
+  --homepage-rhythm: clamp(8rem, 6rem + 10vw, 18rem);
   /* Inner indent for content sections (Keep Exploring, ThemeBrowser,
      PurposeStatement, Dive Deeper). Hero and InterviewQuoteRotator
      intentionally do NOT inherit this — they keep the existing page-
@@ -14,12 +16,6 @@
   flex-direction: column;
   gap: var(--homepage-rhythm);
   padding-bottom: var(--homepage-rhythm);
-}
-
-@media (max-width: 640px) {
-  .homepage {
-    --homepage-rhythm: 8rem;
-  }
 }
 
 /* Indented section: uses the homepage inner-indent var when rendered
