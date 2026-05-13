@@ -112,6 +112,46 @@ function tpj_render_photographer_backlinks_meta_box( $post ) {
 }
 
 /* -------------------------------------------------------------------- */
+/* Slug-change awareness on published Photographer edit screens.        */
+/* Picker spec step 3: protect against accidental slug renames that     */
+/* would break /photographer/<slug> URLs. The full server-side lock     */
+/* needs design work to cooperate with Gutenberg's REST save path; this */
+/* v1 surfaces a prominent warning notice instead so the editor sees    */
+/* the consequence before they commit. Cheap, immediate, and works in   */
+/* every editor surface (classic, Gutenberg, REST API).                 */
+/* -------------------------------------------------------------------- */
+
+add_action( 'admin_notices', function () {
+	$screen = get_current_screen();
+	if ( ! $screen || $screen->post_type !== 'photographer' ) {
+		return;
+	}
+	if ( ! in_array( $screen->base, [ 'post' ], true ) ) {
+		return;
+	}
+
+	global $post;
+	if ( ! $post || $post->post_status !== 'publish' ) {
+		return;
+	}
+
+	$slug = $post->post_name;
+	?>
+	<div class="notice notice-warning">
+		<p>
+			<strong>Slug change warning.</strong>
+			This photographer is published at
+			<code>/photographer/<?php echo esc_html( $slug ); ?>/</code>.
+			Renaming the slug breaks that URL and any external links
+			or bookmarks pointing at it. Only change the slug if you
+			really mean to — and let the team know so v1→v2 redirects
+			can be updated.
+		</p>
+	</div>
+	<?php
+} );
+
+/* -------------------------------------------------------------------- */
 /* Photographer picker meta box — on essay / interview / feature edit   */
 /* screens. Lets editors search the Photographer CPT and assign one or  */
 /* more as credits via a chip-based UI. Renders an empty shell server-  */
