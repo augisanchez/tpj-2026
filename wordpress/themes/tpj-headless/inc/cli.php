@@ -3488,6 +3488,135 @@ class TPJ_CLI {
 			$dry_run ? 'Dry run complete' : 'Done'
 		) );
 	}
+
+	/**
+	 * Trash the legacy v1 ACF field groups so the article edit UI in
+	 * WP admin only surfaces fields V2 actually consumes. This is the
+	 * reusable form of the local cleanup done by hand on 2026-05-13;
+	 * shipping it as a CLI makes it re-runnable on the production WP
+	 * post-cutover (where post IDs differ from the local DB).
+	 *
+	 * Identifies field groups by exact TITLE — those titles are stable
+	 * across the v1 dump and any post-cutover production state because
+	 * they're the editor-facing labels.
+	 *
+	 * Effect:
+	 *  - 6 ACF field groups (post_type=acf-field-group) → trash
+	 *  - Their child fields (post_type=acf-field) → trash
+	 *  - The 6 legacy v4 records (post_type=acf) with the same titles → trash
+	 *
+	 * Postmeta is NOT touched. The underlying article data (intro,
+	 * header_image, custom_css, photographer, interviewer, etc.) stays
+	 * in wp_postmeta because the frontend / GraphQL still reads some
+	 * of it (notably `intro`) and CLI tools still mine the rest for
+	 * migration. Removing the ACF UI just hides the legacy edit
+	 * surface from editors.
+	 *
+	 * Trashed records are recoverable from WP admin → Custom Fields
+	 * → Field Groups → Trash if anything turns out to be needed.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--dry-run]
+	 * : Print the field groups + child counts that would be trashed
+	 * without actually trashing.
+	 *
+	 * @when after_wp_load
+	 */
+	public function cleanup_acf_legacy( $args, $assoc_args ) {
+		$dry_run = isset( $assoc_args['dry-run'] );
+
+		// The 6 v1 ACF field groups V2 retires. Match by exact title;
+		// IDs differ across installs.
+		$titles_to_trash = [
+			'About Page Intro',
+			'Articles',
+			'Categories',
+			'Foreward / Intro',
+			'Team Members',
+			'Interview',
+		];
+
+		global $wpdb;
+
+		// Resolve titles → IDs across both modern (acf-field-group)
+		// and legacy v4 (acf) post types in publish status only;
+		// already-trashed entries are skipped.
+		$placeholders = implode( ',', array_fill( 0, count( $titles_to_trash ), '%s' ) );
+		$groups       = $wpdb->get_results( $wpdb->prepare(
+			"SELECT ID, post_title, post_type
+			 FROM {$wpdb->posts}
+			 WHERE post_type IN ('acf-field-group','acf')
+			   AND post_status = 'publish'
+			   AND post_title IN ($placeholders)
+			 ORDER BY post_type, post_title",
+			$titles_to_trash
+		) );
+
+		if ( empty( $groups ) ) {
+			WP_CLI::success( 'Nothing to clean up — no matching ACF field groups in publish status.' );
+			return;
+		}
+
+		// For each modern field group, find its child acf-field records
+		// (orphans after the group is trashed don't render in admin but
+		// clutter the DB).
+		$group_to_children = [];
+		foreach ( $groups as $g ) {
+			if ( $g->post_type !== 'acf-field-group' ) {
+				continue;
+			}
+			$child_ids = $wpdb->get_col( $wpdb->prepare(
+				"SELECT ID FROM {$wpdb->posts}
+				 WHERE post_type = 'acf-field'
+				   AND post_parent = %d
+				   AND post_status = 'publish'",
+				$g->ID
+			) );
+			$group_to_children[ $g->ID ] = $child_ids;
+		}
+
+		WP_CLI::log( $dry_run ? '[DRY RUN] Would trash:' : 'Trashing:' );
+		WP_CLI::log( '' );
+
+		$group_count = 0;
+		$child_count = 0;
+
+		foreach ( $groups as $g ) {
+			$children = $group_to_children[ $g->ID ] ?? [];
+			WP_CLI::log( sprintf(
+				'  %s #%-5d %-30s%s',
+				$g->post_type,
+				$g->ID,
+				$g->post_title,
+				empty( $children ) ? '' : sprintf( '  (%d child fields)', count( $children ) )
+			) );
+			$group_count++;
+			$child_count += count( $children );
+
+			if ( ! $dry_run ) {
+				wp_trash_post( $g->ID );
+				foreach ( $children as $child_id ) {
+					wp_trash_post( (int) $child_id );
+				}
+			}
+		}
+
+		WP_CLI::log( '' );
+		WP_CLI::log( sprintf(
+			'%s: %d field group records + %d child field records.',
+			$dry_run ? 'Would trash' : 'Trashed',
+			$group_count,
+			$child_count
+		) );
+		WP_CLI::log( 'Postmeta data preserved — only the admin edit UI is removed.' );
+
+		if ( $dry_run ) {
+			WP_CLI::success( 'Dry run complete. Re-run without --dry-run to apply.' );
+		} else {
+			WP_CLI::success( 'Done. Recoverable from WP admin → Custom Fields → Field Groups → Trash.' );
+		}
+	}
 }
 
 /**
@@ -4160,3 +4289,4 @@ WP_CLI::add_command( 'tpj seed-collections',              [ 'TPJ_CLI', 'seed_col
 WP_CLI::add_command( 'tpj import-delta',                  [ 'TPJ_CLI', 'import_delta' ] );
 WP_CLI::add_command( 'tpj audit-photographer-links',      [ 'TPJ_CLI', 'audit_photographer_links' ] );
 WP_CLI::add_command( 'tpj tag-themes',                    [ 'TPJ_CLI', 'tag_themes' ] );
+WP_CLI::add_command( 'tpj cleanup-acf-legacy',            [ 'TPJ_CLI', 'cleanup_acf_legacy' ] );
