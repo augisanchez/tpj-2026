@@ -30,19 +30,24 @@
   padding: 0 var(--homepage-padding-x, 32px);
 }
 
+/* Section header pattern shared with ThemeBrowser. Link sits inline
+   next to the title, sharing the baseline. flex-wrap drops the link
+   below on narrow viewports. */
 .sectionHeader {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-element);
+  flex-wrap: wrap;
+  gap: 16px;
   margin: 0 0 var(--space-element);
 }
 
 .eyebrow {
-  font-family: var(--font-ui), system-ui, sans-serif;
+  font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: var(--text-heading-3);
-  color: var(--muted);
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--text);
   margin: 0;
 }
 

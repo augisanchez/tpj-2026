@@ -2,11 +2,6 @@ import styles from "./EssayIntro.module.css";
 
 type Props = {
   text: string;
-  /**
-   * When true, the lede column constrains to 680px to match the
-   * Feature template's tight body column. Default 880px (essays).
-   */
-  narrow?: boolean;
 };
 
 /**
@@ -15,11 +10,10 @@ type Props = {
  * and the Submit pitch heading. Sources the v1 ACF "intro" textarea
  * via the GraphQL `articleIntro` field.
  */
-export function EssayIntro({ text, narrow = false }: Props) {
-  const textClass = `${styles.text}${narrow ? " " + styles.narrow : ""}`;
+export function EssayIntro({ text }: Props) {
   return (
     <section className={styles.intro}>
-      <p className={textClass}>{text.trim()}</p>
+      <p className={styles.text}>{text.trim()}</p>
     </section>
   );
 }

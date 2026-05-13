@@ -1,9 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { markArrivalScrollFromHero } from "./ArrivalScrollHint";
 import { ContentTypeChip } from "./ContentTypeChip";
+import { TpjImage } from "./TpjImage";
 import styles from "./HomepageHero.module.css";
 
 type Props = {
   href: string;
+  /** Curatorial label shown in the chip — "Latest Photo Essay",
+   *  "From the Archive", "Staff Pick", etc. Replaces the raw content
+   *  type so each carousel slide tells the visitor why this is here. */
   contentTypeLabel: string;
   title: string;
   date?: string;
@@ -37,13 +44,18 @@ export function HomepageHero({
 
   return (
     <div className={styles.outer}>
-      <Link href={href} className={styles.card}>
+      <Link
+        href={href}
+        className={styles.card}
+        onClick={markArrivalScrollFromHero}
+      >
         {backgroundImage && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            className={styles.image}
+          <TpjImage
             src={backgroundImage.src}
             alt={backgroundImage.alt}
+            sizes="100vw"
+            priority
+            className={styles.image}
           />
         )}
         <div className={styles.gradient} aria-hidden="true" />

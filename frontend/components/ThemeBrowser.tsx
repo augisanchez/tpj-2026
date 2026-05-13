@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { ArticleCard } from "./ArticleCard";
 import { THEMES } from "@/lib/themes";
@@ -57,6 +57,34 @@ const cardVariants: Variants = {
 export function ThemeBrowser({ groups }: Props) {
   const [activeSlug, setActiveSlug] = useState(THEMES[0].slug);
   const cards = groups[activeSlug] ?? [];
+  const tabRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
+
+  // ARIA APG tablist keyboard pattern: ArrowLeft/Right move focus
+  // between tabs and activate the focused tab (selection follows
+  // focus). Home/End jump to the first/last tab.
+  const handleTabKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    index: number
+  ) => {
+    if (
+      e.key !== "ArrowRight" &&
+      e.key !== "ArrowLeft" &&
+      e.key !== "Home" &&
+      e.key !== "End"
+    ) {
+      return;
+    }
+    e.preventDefault();
+    const len = THEMES.length;
+    let nextIndex = index;
+    if (e.key === "ArrowRight") nextIndex = (index + 1) % len;
+    else if (e.key === "ArrowLeft") nextIndex = (index - 1 + len) % len;
+    else if (e.key === "Home") nextIndex = 0;
+    else if (e.key === "End") nextIndex = len - 1;
+    const nextSlug = THEMES[nextIndex].slug;
+    setActiveSlug(nextSlug);
+    tabRefs.current.get(nextSlug)?.focus();
+  };
 
   return (
     <section className={styles.section}>
@@ -80,16 +108,23 @@ export function ThemeBrowser({ groups }: Props) {
         role="tablist"
         aria-label="Themes"
       >
-        {THEMES.map((theme) => {
+        {THEMES.map((theme, index) => {
           const isActive = theme.slug === activeSlug;
           return (
             <button
               key={theme.slug}
+              ref={(el) => {
+                tabRefs.current.set(theme.slug, el);
+              }}
               type="button"
               role="tab"
+              id={`theme-tab-${theme.slug}`}
               aria-selected={isActive}
+              aria-controls={`theme-panel-${theme.slug}`}
+              tabIndex={isActive ? 0 : -1}
               className={`${styles.chip}${isActive ? " " + styles.chipActive : ""}`}
               onClick={() => setActiveSlug(theme.slug)}
+              onKeyDown={(e) => handleTabKeyDown(e, index)}
             >
               {theme.name}
             </button>
@@ -128,6 +163,9 @@ export function ThemeBrowser({ groups }: Props) {
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSlug}
+          id={`theme-panel-${activeSlug}`}
+          role="tabpanel"
+          aria-labelledby={`theme-tab-${activeSlug}`}
           className={styles.cards}
           variants={containerVariants}
           initial="hidden"

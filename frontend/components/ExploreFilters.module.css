@@ -104,8 +104,11 @@
 }
 
 .themeSelect:focus {
-  outline: none;
   border-color: var(--text);
+}
+
+.themeSelect:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .themeSelectActive {

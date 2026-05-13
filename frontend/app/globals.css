@@ -3,7 +3,7 @@
   --bg: #f2f2f2;
   --surface: #ffffff;
   --text: #1a1814;
-  --muted: #888;
+  --muted: #6e6e6e;
   --border: #ddd;
   --placeholder: #d1d1d1;
   --chip-bg: #e4ffb1;
@@ -23,9 +23,9 @@
   --text-heading-1:  clamp(2rem, 1.25rem + 3vw, 4rem);
   --text-heading-2:  clamp(1.5rem, 1.125rem + 1.5vw, 2.5rem);
   --text-heading-3:  clamp(1.25rem, 1rem + 0.75vw, 1.75rem);
-  --text-intro:      clamp(1.1875rem, 1rem + 0.5vw, 1.5rem);
-  --text-body:       clamp(1.0625rem, 0.95rem + 0.5vw, 1.3125rem);
-  --text-caption:    clamp(0.875rem, 0.8rem + 0.15vw, 1rem);
+  --text-intro:      clamp(1.1875rem, 1rem + 0.7vw, 1.75rem);
+  --text-body:       clamp(1.0625rem, 0.9rem + 0.55vw, 1.4375rem);
+  --text-caption:    clamp(0.875rem, 0.8rem + 0.3vw, 1.125rem);
   --text-ui:         clamp(0.75rem, 0.7rem + 0.1vw, 0.875rem);
   --text-label:      clamp(0.625rem, 0.6rem + 0.075vw, 0.75rem);
 
@@ -62,6 +62,20 @@ body {
   padding: 0;
   background: var(--bg);
   color: var(--text);
+}
+
+/* Site-wide keyboard focus ring (Build Plan §"Focus states"). Visible
+   only on :focus-visible so click/touch focus doesn't draw a ring. */
+:focus-visible {
+  outline: 2px solid var(--chip-bg);
+  outline-offset: 2px;
+}
+
+/* The <main> region is programmatically focused by the skip link;
+   no ring needed since the URL change + scroll position is the cue. */
+main:focus,
+main:focus-visible {
+  outline: none;
 }
 
 body {

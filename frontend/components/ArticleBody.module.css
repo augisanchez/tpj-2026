@@ -6,7 +6,7 @@
 }
 
 .body > * {
-  max-width: 680px;
+  max-width: 760px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -27,50 +27,6 @@
   margin-top: 64px;
 }
 
-/* Feature variant — every block (prose AND figures) shares the same
-   centered column so the page reads as one tight, deliberate
-   text-forward layout. Selectors use `.body.centered` (specificity
-   0,3,0 with the trailing class) so they beat the default
-   `.body > .fig*` rules that otherwise push figures to full body
-   width. Vertical rhythm matches essay/interview — the only thing
-   different on Feature is the column constraint. */
-.body.centered > *,
-.body.centered > :global(.fig),
-.body.centered > :global(.fig-fullbleed),
-.body.centered > :global(.fig-twothirds),
-.body.centered > :global(.fig-two-thirds),
-.body.centered > :global(.fig-twoup),
-.body.centered > :global(.fig-two-up),
-.body.centered > :global(.fig-three-up) {
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Multi-column figure variants don't have room to breathe inside a
-   680px column, so collapse to single-column on the Feature variant. */
-.body.centered > :global(.fig-twoup),
-.body.centered > :global(.fig-two-up),
-.body.centered > :global(.fig-three-up) {
-  grid-template-columns: 1fr;
-}
-
-/* Feature variant runs at a slower reading pace than essays/interviews
-   — the body is mostly text, so we give paragraphs and figures more
-   vertical breathing room. */
-.body.centered > * + * {
-  margin-top: 56px;
-}
-
-.body.centered > :global(.fig),
-.body.centered > :global(.fig-fullbleed),
-.body.centered > :global(.fig-twothirds),
-.body.centered > :global(.fig-two-thirds),
-.body.centered > :global(.fig-twoup),
-.body.centered > :global(.fig-two-up),
-.body.centered > :global(.fig-three-up) {
-  margin-top: 112px;
-}
 
 .body p {
   font-family: var(--font-serif), Georgia, serif;
@@ -78,7 +34,7 @@
   font-size: var(--text-body);
   line-height: 1.7;
   color: var(--text);
-  margin: 0;
+  margin-block: 0;
 }
 
 .body p:first-child {
@@ -93,7 +49,7 @@
   line-height: 1.3;
   letter-spacing: -0.01em;
   color: var(--text);
-  margin: 0;
+  margin-block: 0;
   padding: 0;
   border: 0;
 }
@@ -106,7 +62,7 @@
 }
 
 .body figure {
-  margin: 0;
+  margin-block: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -119,7 +75,7 @@
   line-height: 1.5;
   letter-spacing: 0.01em;
   color: var(--muted);
-  margin: 0;
+  margin-block: 0;
 }
 
 /* [fig] variants — width per class
@@ -152,7 +108,7 @@
   line-height: 1.5;
   letter-spacing: 0.01em;
   color: var(--muted);
-  margin: 0;
+  margin-block: 0;
 }
 
 /* Default fig and fullbleed both span the full body content area,
@@ -208,7 +164,7 @@
   .body > :global(.fig-margin) {
     float: none;
     width: 100%;
-    max-width: 680px;
+    max-width: 760px;
     margin: 0 auto;
   }
 }
@@ -251,7 +207,8 @@
   font-size: 48px;
   line-height: 1.05;
   letter-spacing: -0.01em;
-  margin: 24px 0 0;
+  margin-top: 24px;
+  margin-bottom: 0;
 }
 
 .body h3 {
@@ -259,7 +216,8 @@
   font-weight: 700;
   font-size: 32px;
   line-height: 1.1;
-  margin: 16px 0 0;
+  margin-top: 16px;
+  margin-bottom: 0;
 }
 
 @media (max-width: 768px) {

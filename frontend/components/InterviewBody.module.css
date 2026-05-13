@@ -10,7 +10,7 @@
 
 .body > * {
   width: 100%;
-  max-width: 680px;
+  max-width: 760px;
   margin: 0;
 }
 
@@ -102,16 +102,25 @@
   gap: 16px;
 }
 
+/* Figure widths now match essays (was 66% / 680px-constrained until
+   2026-05-13). Default .fig and .fig-fullbleed both span the full
+   container; .fig-twothirds takes 66% of container; multi-column
+   variants span 100% with their grid. Prose stays at the 760px cap
+   from `.body > *`. */
+.body > :global(.fig),
 .body > :global(.fig-fullbleed) {
   max-width: 100%;
 }
 
 .body > :global(.fig-twothirds),
-.body > :global(.fig-two-thirds),
+.body > :global(.fig-two-thirds) {
+  max-width: 66%;
+}
+
 .body > :global(.fig-twoup),
 .body > :global(.fig-two-up),
 .body > :global(.fig-three-up) {
-  max-width: 66%;
+  max-width: 100%;
 }
 
 .body > :global(.fig-twoup),
@@ -145,7 +154,7 @@
 }
 
 .body > :global(.fig-margin) {
-  max-width: 680px;
+  max-width: 760px;
 }
 
 @media (max-width: 768px) {

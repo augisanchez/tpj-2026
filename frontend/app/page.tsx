@@ -1,15 +1,17 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ArticleCard } from "@/components/ArticleCard";
-import { HomepageHero } from "@/components/HomepageHero";
+import { HomepageHeroCarousel, type HeroSlide } from "@/components/HomepageHeroCarousel";
 import { InterviewQuoteRotator } from "@/components/InterviewQuoteRotator";
 import { PurposeStatement } from "@/components/PurposeStatement";
 import { ScrollCue } from "@/components/ScrollCue";
 import { StaggerReveal } from "@/components/StaggerReveal";
 import { ThemeBrowser } from "@/components/ThemeBrowser";
 import { FALLBACK_PHOTOGRAPHER } from "@/lib/photographer-fallback";
+import { fetchArchivalArticles } from "@/lib/queries/archival-articles";
 import { fetchArchiveFeature } from "@/lib/queries/archive-feature";
 import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
+import { fetchStaffPicks } from "@/lib/queries/staff-pick";
 import { fetchHomepageQuotes } from "@/lib/queries/homepage-quotes";
 import { fetchRecentEssays } from "@/lib/queries/recent-essays";
 import {
@@ -117,6 +119,8 @@ export default async function Home() {
   const [
     essays,
     articles,
+    archivalArticles,
+    staffPicks,
     spotlightFromDb,
     archiveFeature,
     interviewQuotes,
@@ -127,6 +131,16 @@ export default async function Home() {
     // enough variety that the 11 theme groups don't visibly overlap.
     fetchRecentEssays(50),
     fetchRecentArticles(15),
+    // Older essays + interviews for the Dive Deeper featured-card
+    // slots. Pulls from outside the recent-feed window so the same
+    // visual doesn't surface in Keep Exploring or the ThemeBrowser
+    // groups adjacent on the homepage.
+    fetchArchivalArticles(80, 2),
+    // Articles flagged tpj_staff_pick=1, random order. First entry
+    // powers slide 3 of the homepage hero carousel; remaining entries
+    // weight Dive Deeper's featured-essay selection. Empty list when
+    // no articles are flagged.
+    fetchStaffPicks(6),
     fetchSpotlightPhotographer(),
     fetchArchiveFeature(),
     fetchHomepageQuotes(),
@@ -144,6 +158,78 @@ export default async function Home() {
   const exploreArticles = articles.slice(1, 4);
   const themePool = essays;
   const themeGroups = buildThemeGroups(taggedThemeGroups, themePool);
+
+  // Build the hero carousel slides. Three positions:
+  //   1. Latest piece (whatever was just published — essay/interview/feature)
+  //   2. From the archive (random pick >2 years old)
+  //   3. Staff pick (editor-flagged)
+  // Each slide degrades independently: missing latest → drop slide 1,
+  // missing archival → drop slide 2, missing staff pick → drop slide 3.
+  // A single slide renders as a static hero (no carousel chrome).
+  const heroSlides: HeroSlide[] = [];
+
+  if (heroArticle) {
+    heroSlides.push({
+      key: `latest-${heroArticle.id}`,
+      href: articleHref(heroArticle),
+      contentTypeLabel: `Latest ${articleLabel(heroArticle)}`,
+      title: heroArticle.title,
+      date: heroArticle.date,
+      excerpt: summarize(heroArticle.excerpt, 220),
+      photographerName: heroArticle.photographerName,
+      backgroundImage: heroArticle.featuredImage ?? undefined,
+    });
+  }
+
+  const archivalForHero =
+    archivalArticles.length > 0
+      ? archivalArticles[Math.floor(Math.random() * archivalArticles.length)]
+      : null;
+  if (archivalForHero) {
+    heroSlides.push({
+      key: `archival-${archivalForHero.contentType}-${archivalForHero.id}`,
+      href: articleHref(archivalForHero),
+      contentTypeLabel: "From the Archive",
+      title: archivalForHero.title,
+      date: archivalForHero.date,
+      excerpt: summarize(archivalForHero.excerpt, 220),
+      photographerName: archivalForHero.photographerName,
+      backgroundImage: archivalForHero.featuredImage ?? undefined,
+    });
+  }
+
+  // Slide 3: staff pick if any exist; otherwise fall back to the
+  // latest article of a different content type than slide 1, so the
+  // carousel still rotates through three pieces and shows content
+  // variety. If even that's not available (single content type in
+  // the feed), drop the third slide entirely.
+  const carouselStaffPick = staffPicks[0] ?? null;
+  if (carouselStaffPick) {
+    heroSlides.push({
+      key: `staff-pick-${carouselStaffPick.contentType}-${carouselStaffPick.id}`,
+      href: `/${carouselStaffPick.contentType}/${carouselStaffPick.slug}`,
+      contentTypeLabel: "Staff Pick",
+      title: carouselStaffPick.title,
+      date: carouselStaffPick.date,
+      excerpt: summarize(carouselStaffPick.excerpt, 220),
+      photographerName: carouselStaffPick.photographerName,
+      backgroundImage: carouselStaffPick.featuredImage ?? undefined,
+    });
+  } else if (heroArticle) {
+    const fallback = articles.find((a) => a.contentType !== heroArticle.contentType);
+    if (fallback) {
+      heroSlides.push({
+        key: `fallback-${fallback.contentType}-${fallback.id}`,
+        href: articleHref(fallback),
+        contentTypeLabel: `Latest ${articleLabel(fallback)}`,
+        title: fallback.title,
+        date: fallback.date,
+        excerpt: summarize(fallback.excerpt, 220),
+        photographerName: fallback.photographerName,
+        backgroundImage: fallback.featuredImage ?? undefined,
+      });
+    }
+  }
 
   // Dive Deeper: 6 cards in two rows. Mix of curated entry points
   // (photographer spotlight, archive feature) and discovery prompts
@@ -205,30 +291,59 @@ export default async function Home() {
     });
   }
 
-  // Two random essays from the pool, excluding anything already shown
-  // anywhere on the page (hero, Keep Exploring, the archive feature
-  // already added to featuredCards above). Dedup by href because the
-  // recent-articles and recent-essays queries return different GraphQL
+  // Two articles for the Dive Deeper featured-essay slots. Staff
+  // picks are preferred when available — the editorial flag is the
+  // strongest signal we have for "this is worth resurfacing." Fall
+  // back to the >2-year-old archival pool when no fresh staff picks
+  // remain. Dedup by href since the recent-articles, recent-essays,
+  // archival, and staff-picks queries return different GraphQL
   // global-id shapes for the same post; href is the only stable join.
   const shownHrefs = new Set<string>([
     heroArticle ? articleHref(heroArticle) : null,
     ...exploreArticles.map(articleHref),
     ...featuredCards.map((c) => c.href),
   ].filter((x): x is string => Boolean(x)));
-  const essayCandidates = essays.filter(
-    (e) => !shownHrefs.has(`/essay/${e.slug}`)
+
+  const staffPickHrefBuilder = (a: typeof staffPicks[number]) =>
+    `/${a.contentType}/${a.slug}`;
+  const staffPickCandidates = staffPicks.filter(
+    (a) => !shownHrefs.has(staffPickHrefBuilder(a))
   );
-  const featuredEssays = pickRandom(essayCandidates, 2);
-  for (const essay of featuredEssays) {
+  const archivalCandidates = archivalArticles.filter(
+    (a) => !shownHrefs.has(articleHref(a))
+  );
+
+  // Pull from staff picks first, then top up from the archival pool
+  // if we don't have enough staff picks to fill both slots.
+  const FEATURED_SLOTS = 2;
+  const fromStaff = staffPickCandidates.slice(0, FEATURED_SLOTS);
+  const remainingSlots = FEATURED_SLOTS - fromStaff.length;
+  const fromArchival = remainingSlots > 0
+    ? pickRandom(archivalCandidates, remainingSlots)
+    : [];
+
+  for (const article of fromStaff) {
     featuredCards.push({
-      key: `essay-${essay.id}`,
-      title: essay.title,
-      date: essay.date,
-      href: `/essay/${essay.slug}`,
-      contentTypeLabel: "Photo Essay",
-      description: summarize(essay.excerpt, 160),
+      key: `staff-${article.contentType}-${article.id}`,
+      title: article.title,
+      date: article.date,
+      href: staffPickHrefBuilder(article),
+      contentTypeLabel: articleLabel(article),
+      description: summarize(article.excerpt, 160),
       showDate: true,
-      featuredImage: essay.featuredImage ?? undefined,
+      featuredImage: article.featuredImage ?? undefined,
+    });
+  }
+  for (const article of fromArchival) {
+    featuredCards.push({
+      key: `archival-${article.contentType}-${article.id}`,
+      title: article.title,
+      date: article.date,
+      href: articleHref(article),
+      contentTypeLabel: articleLabel(article),
+      description: summarize(article.excerpt, 160),
+      showDate: true,
+      featuredImage: article.featuredImage ?? undefined,
     });
   }
 
@@ -247,17 +362,7 @@ export default async function Home() {
 
   return (
     <div className={styles.homepage}>
-      {heroArticle && (
-        <HomepageHero
-          href={articleHref(heroArticle)}
-          contentTypeLabel={articleLabel(heroArticle)}
-          title={heroArticle.title}
-          date={heroArticle.date}
-          excerpt={summarize(heroArticle.excerpt, 220)}
-          photographerName={heroArticle.photographerName}
-          backgroundImage={heroArticle.featuredImage ?? undefined}
-        />
-      )}
+      {heroSlides.length > 0 && <HomepageHeroCarousel slides={heroSlides} />}
 
       <ScrollCue />
 

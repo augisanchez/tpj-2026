@@ -72,6 +72,12 @@ export function ImageViewer({ containerRef }: Props) {
   const [fading, setFading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const imagesRef = useRef<ViewerImage[]>([]);
+  // Trigger element saved when the viewer opens so we can return
+  // focus to it on close — WCAG 2.4.3 (focus order) compliance for
+  // modal dialogs.
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // Motion values drive the image's translation. We track x and y
   // separately so we can react to vertical drag (close gesture) and
@@ -98,21 +104,47 @@ export function ImageViewer({ containerRef }: Props) {
       const idx = map.get(img);
       if (idx === undefined) return;
       e.preventDefault();
+      triggerRef.current = img;
+      setIndex(idx);
+      setOpen(true);
+    };
+
+    const keyHandler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target || target.tagName !== "IMG") return;
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const img = target as HTMLImageElement;
+      const idx = map.get(img);
+      if (idx === undefined) return;
+      e.preventDefault();
+      triggerRef.current = img;
       setIndex(idx);
       setOpen(true);
     };
 
     root.addEventListener("click", handler);
+    root.addEventListener("keydown", keyHandler);
 
-    // Cursor + a11y polish: mark images as clickable
+    // Cursor + a11y: mark images as clickable buttons with an
+    // accessible name. WP legacy archive often has empty alt
+    // attributes — fall back to a generic label so the role="button"
+    // is still operable by screen readers (WCAG 4.1.2).
     map.forEach((_, img) => {
       img.style.cursor = "zoom-in";
       img.setAttribute("role", "button");
       img.setAttribute("tabindex", "0");
+      const alt = img.getAttribute("alt")?.trim();
+      img.setAttribute(
+        "aria-label",
+        alt && alt !== ""
+          ? `Open photograph: ${alt}`
+          : "Open photograph in viewer"
+      );
     });
 
     return () => {
       root.removeEventListener("click", handler);
+      root.removeEventListener("keydown", keyHandler);
     };
   }, [containerRef]);
 
@@ -175,14 +207,50 @@ export function ImageViewer({ containerRef }: Props) {
     [close, swap, y]
   );
 
-  // Keyboard navigation and body scroll lock when open
+  // Keyboard navigation, body scroll lock, focus trap, and focus
+  // restoration when open. WCAG 2.1.2 (no keyboard trap to background)
+  // + 2.4.3 (focus order: return to trigger after close).
   useEffect(() => {
     if (!open) return;
 
+    // Move focus to the close button so screen readers announce the
+    // dialog's purpose immediately, and Tab cycles within the modal.
+    closeButtonRef.current?.focus();
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-      else if (e.key === "ArrowRight") swap(1);
-      else if (e.key === "ArrowLeft") swap(-1);
+      if (e.key === "Escape") {
+        close();
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        swap(1);
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        swap(-1);
+        return;
+      }
+      if (e.key !== "Tab") return;
+
+      // Focus trap: keep keyboard focus inside the overlay. Cycle to
+      // the first tabbable on Tab past the last, and to the last on
+      // Shift+Tab before the first.
+      const overlay = overlayRef.current;
+      if (!overlay) return;
+      const focusables = overlay.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
 
     document.addEventListener("keydown", onKey);
@@ -191,6 +259,9 @@ export function ImageViewer({ containerRef }: Props) {
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      // Restore focus to the image that opened the viewer so keyboard
+      // users land back at their place in the article.
+      triggerRef.current?.focus();
     };
   }, [open, close, swap]);
 
@@ -202,6 +273,7 @@ export function ImageViewer({ containerRef }: Props) {
 
   return createPortal(
     <div
+      ref={overlayRef}
       className={`${styles.overlay}${open ? " " + styles.overlayOpen : ""}`}
       onClick={close}
       role="dialog"
@@ -215,6 +287,7 @@ export function ImageViewer({ containerRef }: Props) {
       )}
 
       <button
+        ref={closeButtonRef}
         type="button"
         aria-label="Close viewer"
         className={styles.close}

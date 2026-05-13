@@ -14,13 +14,14 @@
   gap: 12px;
 }
 
-/* Title row: title left, "Explore themes" link right, matching the
-   Keep Exploring section header pattern. */
+/* Title row: link sits immediately to the right of the title, sharing
+   the typographic baseline. The display title is large enough that
+   pushing the link to the far edge of the section looked isolated. */
 .headerTop {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-element);
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .exploreLink {
@@ -139,8 +140,11 @@
 }
 
 .select:focus {
-  outline: none;
   border-color: var(--text);
+}
+
+.select:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .selectChevron {

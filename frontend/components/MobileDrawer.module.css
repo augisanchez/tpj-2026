@@ -14,7 +14,11 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.content:focus {
+/* The dialog content receives focus on open as part of the focus
+   trap. Suppress the ring on the container — child links still pick
+   up the global :focus-visible ring when tabbed. */
+.content:focus,
+.content:focus-visible {
   outline: none;
 }
 

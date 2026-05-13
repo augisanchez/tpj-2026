@@ -28,7 +28,6 @@ export function InterviewQuoteRotator({ quotes }: Props) {
             alt={pick.image.alt}
           />
         )}
-        <div className={styles.overlay} aria-hidden="true" />
         <div className={styles.copy}>
           <blockquote className={styles.quote}>
             <p>&ldquo;{pick.quote}&rdquo;</p>

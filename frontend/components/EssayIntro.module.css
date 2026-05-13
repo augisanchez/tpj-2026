@@ -16,12 +16,6 @@
   white-space: pre-wrap;
 }
 
-/* Narrow variant — used by the Feature template so the lede aligns
-   with the 680px body column below it. */
-.text.narrow {
-  max-width: 680px;
-}
-
 @media (max-width: 768px) {
   .intro {
     padding: 48px 16px 0;

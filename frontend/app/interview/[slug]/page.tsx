@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
+import { ArrivalScrollHint } from "@/components/ArrivalScrollHint";
 import { EssayIntro } from "@/components/EssayIntro";
 import { Hero } from "@/components/Hero";
 import { InterviewBody } from "@/components/InterviewBody";
@@ -32,18 +33,25 @@ export default async function InterviewPage({ params }: Props) {
   const photographerDisplayName =
     interview.photographer?.name ?? interview.photographerName;
 
+  const bylineParts: string[] = [];
+  if (interview.interviewer) {
+    bylineParts.push(`Interview by ${interview.interviewer}`);
+  }
+  if (photographerDisplayName) {
+    bylineParts.push(`Photographs by ${photographerDisplayName}`);
+  }
+  bylineParts.push(formattedDate);
+  const byline = bylineParts.join("  ·  ");
+
   return (
     <>
+      <ArrivalScrollHint />
       <ReadingProgress />
       <Hero
         contentTypeLabel="Interview"
         title={interview.title}
-        byline={
-          photographerDisplayName
-            ? `Photographs by ${photographerDisplayName}  ·  ${formattedDate}`
-            : formattedDate
-        }
-        backgroundImage={interview.featuredImage ?? undefined}
+        byline={byline}
+        backgroundImage={interview.heroImage ?? interview.featuredImage ?? undefined}
       />
 
       {interview.intro && <EssayIntro text={interview.intro} />}

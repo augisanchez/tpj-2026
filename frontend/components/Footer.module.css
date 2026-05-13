@@ -38,7 +38,9 @@
   font-weight: 500;
   font-size: 12px;
   letter-spacing: 0.02em;
-  color: var(--muted);
+  /* Footer bg is #e5e5e5 (darker than body); --muted (#6e6e6e) only
+     hits 4.05:1 against it. Darken for AA compliance. */
+  color: #555;
   margin: 0;
 }
 

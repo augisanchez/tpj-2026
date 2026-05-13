@@ -9,6 +9,7 @@ export type ExploreItem = {
   date: string;
   contentType: "essay" | "interview" | "feature";
   featuredImage: { src: string; alt: string } | null;
+  themes: string[];
 };
 
 const ExploreQuery = gql`
@@ -29,6 +30,11 @@ const ExploreQuery = gql`
             altText
           }
         }
+        themes {
+          nodes {
+            slug
+          }
+        }
       }
     }
     interviews(
@@ -45,6 +51,11 @@ const ExploreQuery = gql`
           node {
             sourceUrl
             altText
+          }
+        }
+        themes {
+          nodes {
+            slug
           }
         }
       }
@@ -65,6 +76,11 @@ const ExploreQuery = gql`
             altText
           }
         }
+        themes {
+          nodes {
+            slug
+          }
+        }
       }
     }
   }
@@ -79,6 +95,7 @@ type RawNode = {
   featuredImage: {
     node: { sourceUrl: string | null; altText: string | null } | null;
   } | null;
+  themes: { nodes: { slug: string | null }[] | null } | null;
 };
 
 type Response = {
@@ -93,6 +110,10 @@ function toItem(
 ): ExploreItem {
   const fi = node.featuredImage?.node;
   const src = fi ? rewriteMediaUrl(fi.sourceUrl) : null;
+  const themes =
+    node.themes?.nodes
+      ?.map((n) => n.slug)
+      .filter((s): s is string => typeof s === "string" && s.length > 0) ?? [];
   return {
     id: node.id,
     title: node.title,
@@ -102,6 +123,7 @@ function toItem(
     featuredImage: src
       ? { src, alt: fi?.altText || node.title }
       : null,
+    themes,
   };
 }
 

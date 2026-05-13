@@ -370,11 +370,65 @@ add_action( 'graphql_register_types', function () {
 		return $out;
 	};
 
+	$author_resolver = function ( $post ) {
+		$id = is_object( $post ) ? ( $post->ID ?? 0 ) : 0;
+		if ( $id === 0 ) return null;
+		// Read the unified key first; fall back to the legacy
+		// Feature-only key so existing data renders correctly until
+		// `wp tpj migrate-byline-author` runs.
+		$value = get_post_meta( $id, 'tpj_byline_author', true );
+		if ( ! is_string( $value ) || trim( $value ) === '' ) {
+			$value = get_post_meta( $id, 'tpj_feature_writer', true );
+		}
+		$trimmed = is_string( $value ) ? trim( $value ) : '';
+		return $trimmed !== '' ? $trimmed : null;
+	};
+
+	$hero_image_resolver = function ( $post ) {
+		$id = is_object( $post ) ? ( $post->ID ?? 0 ) : 0;
+		if ( $id === 0 ) return null;
+		// Fallback chain: new override → v1 ACF header_image → WP
+		// featured (_thumbnail_id). Returns an attachment Post model
+		// so consumers get the same shape as featuredImage.node.
+		$attachment_id = (int) get_post_meta( $id, '_tpj_hero_image_id', true );
+		if ( ! $attachment_id ) {
+			$attachment_id = (int) get_post_meta( $id, 'header_image', true );
+		}
+		if ( ! $attachment_id ) {
+			$attachment_id = (int) get_post_thumbnail_id( $id );
+		}
+		if ( ! $attachment_id ) return null;
+		$attachment = get_post( $attachment_id );
+		if ( ! $attachment || $attachment->post_type !== 'attachment' ) {
+			return null;
+		}
+		return new \WPGraphQL\Model\Post( $attachment );
+	};
+
 	foreach ( [ 'Essay', 'Interview', 'Feature' ] as $type ) {
 		register_graphql_field( $type, 'articleIntro', [
 			'type'        => 'String',
 			'description' => 'Editorial intro / lede stored as the v1 ACF intro field.',
 			'resolve'     => $intro_resolver,
+		] );
+		register_graphql_field( $type, 'articleAuthor', [
+			'type'        => 'String',
+			'description' => 'Byline credit for the prose author. Interviewer on Interview, Writer on Feature. Empty on Essay (photo-led). Reads `tpj_byline_author` with `tpj_feature_writer` legacy fallback.',
+			'resolve'     => $author_resolver,
+		] );
+		register_graphql_field( $type, 'heroImage', [
+			'type'        => 'MediaItem',
+			'description' => 'Image shown at the top of the article. Falls back through `_tpj_hero_image_id` → v1 `header_image` → `_thumbnail_id` (WP featured). Use this on detail pages instead of `featuredImage` so v1 archive renders the correct hero crop.',
+			'resolve'     => $hero_image_resolver,
+		] );
+		register_graphql_field( $type, 'staffPick', [
+			'type'        => 'Boolean',
+			'description' => 'Editorial flag set by the team to highlight a piece on the homepage hero carousel and weight it in Dive Deeper selection.',
+			'resolve'     => function ( $post ) {
+				$id = is_object( $post ) ? ( $post->ID ?? 0 ) : 0;
+				if ( $id === 0 ) return false;
+				return (bool) get_post_meta( $id, 'tpj_staff_pick', true );
+			},
 		] );
 		register_graphql_field( $type, 'photographerName', [
 			'type'        => 'String',
@@ -398,20 +452,13 @@ add_action( 'graphql_register_types', function () {
 		] );
 	}
 
-	// Feature-specific writer credit. Used for book reviews, travel
-	// essays, and other written Features where the byline is the
-	// writer rather than the photographer. Stored on the post as
-	// `tpj_feature_writer` meta, set via the Feature Details meta box.
+	// Deprecated alias for `articleAuthor`. Kept so existing
+	// Feature queries don't break. Reads the same unified key with
+	// the same legacy fallback as articleAuthor.
 	register_graphql_field( 'Feature', 'tpjFeatureWriter', [
 		'type'        => 'String',
-		'description' => 'Writer / author credit for written Features. Distinct from the photographer credit; both can appear in the byline.',
-		'resolve'     => function ( $post ) {
-			$id = is_object( $post ) ? ( $post->ID ?? 0 ) : 0;
-			if ( $id === 0 ) return null;
-			$value = get_post_meta( $id, 'tpj_feature_writer', true );
-			$trimmed = is_string( $value ) ? trim( $value ) : '';
-			return $trimmed !== '' ? $trimmed : null;
-		},
+		'description' => 'Deprecated. Use `articleAuthor` instead. Same value, unified across Interview + Feature.',
+		'resolve'     => $author_resolver,
 	] );
 
 	// Essays filtered by a tpj-theme slug. WPGraphQL 2.x dropped the
@@ -452,7 +499,51 @@ add_action( 'graphql_register_types', function () {
 					'operator' => 'IN',
 				] ],
 			] );
-			return $posts;
+			// Wrap raw WP_Post in WPGraphQL's Post model so field
+			// resolvers (id, title, slug, etc.) can extract values
+			// the same way they do for the auto-generated connections.
+			return array_map( fn( $post ) => new \WPGraphQL\Model\Post( $post ), $posts );
+		},
+	] );
+
+	// Staff-picked articles across essay/interview/feature, in
+	// random order per ISR cache. Powers the homepage hero
+	// carousel's "Staff Pick" slide and Dive Deeper's weighted
+	// featured-essay slots. The `ContentNode` return type is
+	// WPGraphQL's polymorphic interface implemented by every CPT,
+	// so the frontend uses inline fragments to read post-type-
+	// specific fields.
+	register_graphql_field( 'RootQuery', 'staffPicks', [
+		'type'        => [ 'list_of' => 'ContentNode' ],
+		'description' => 'Articles flagged as staff picks (`tpj_staff_pick` meta), random order. Returns an empty list when nothing is flagged.',
+		'args'        => [
+			'first' => [
+				'type'        => 'Int',
+				'description' => 'Maximum number to return. Defaults to 6.',
+			],
+		],
+		'resolve'     => function ( $root, $args ) {
+			$first = isset( $args['first'] ) ? max( 1, min( 50, (int) $args['first'] ) ) : 6;
+			$ids = get_posts( [
+				'post_type'      => [ 'essay', 'interview', 'feature' ],
+				'post_status'    => 'publish',
+				'posts_per_page' => $first,
+				'orderby'        => 'rand',
+				'fields'         => 'ids',
+				'meta_query'     => [ [
+					'key'     => 'tpj_staff_pick',
+					'value'   => '1',
+					'compare' => '=',
+				] ],
+			] );
+			$out = [];
+			foreach ( $ids as $id ) {
+				$post = get_post( $id );
+				if ( $post ) {
+					$out[] = new \WPGraphQL\Model\Post( $post );
+				}
+			}
+			return $out;
 		},
 	] );
 } );

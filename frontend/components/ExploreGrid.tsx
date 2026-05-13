@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  useMotionValue,
+} from "motion/react";
 import { ArticleCard } from "./ArticleCard";
 import { EmptyState } from "./EmptyState";
 import {
@@ -11,7 +16,6 @@ import {
   type ExploreSort,
 } from "./ExploreFilters";
 import { ExploreFiltersSheet } from "./ExploreFiltersSheet";
-import { THEMES } from "@/lib/themes";
 import type { ExploreItem } from "@/lib/queries/explore";
 import styles from "./ExploreGrid.module.css";
 
@@ -26,18 +30,6 @@ const LOAD_INCREMENT = 12;
 // Bumped from v1 when the filter field was renamed to `theme`. Older
 // saved state from v1 is simply ignored on restore.
 const STORAGE_KEY = "tpj-explore-state-v2";
-
-/**
- * Placeholder theme assignment until AI tagging runs (Build Plan Step 12).
- * Hashes the article id and maps to one of the 11 themes so the theme
- * filter is functional during the prototype phase. Replace with a real
- * `tpj-theme` taxonomy lookup once tagging exists.
- */
-function placeholderThemeSlug(id: string): string {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return THEMES[h % THEMES.length].slug;
-}
 
 function shuffle<T>(arr: T[]): T[] {
   const out = [...arr];
@@ -79,6 +71,12 @@ export function ExploreGrid({ items }: Props) {
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const restoredRef = useRef(false);
+
+  // Animated count for the result counter. When filters change the
+  // displayed number ramps from its previous value to the new one
+  // over ~350ms — a quick visual cue that the filter took effect.
+  const countMV = useMotionValue(items.length);
+  const [displayCount, setDisplayCount] = useState(items.length);
 
   // ── State persistence: restore on mount ──
   // Render with INITIAL_BATCH on first paint to avoid hydration mismatch,
@@ -149,8 +147,7 @@ export function ExploreGrid({ items }: Props) {
   const filtered = useMemo(() => {
     let next = items;
     if (type !== "all") next = next.filter((i) => i.contentType === type);
-    if (theme !== "all")
-      next = next.filter((i) => placeholderThemeSlug(i.id) === theme);
+    if (theme !== "all") next = next.filter((i) => i.themes.includes(theme));
     return next;
   }, [items, type, theme]);
 
@@ -169,6 +166,19 @@ export function ExploreGrid({ items }: Props) {
     if (!restoredRef.current) return;
     setVisibleCount(INITIAL_BATCH);
   }, [type, theme, sort, shuffleSeed]);
+
+  // Animate the result count toward the new filtered total. The
+  // motion value drives setDisplayCount via onUpdate so the render
+  // tracks integer steps. Tween (not spring) so the ramp is
+  // predictable and stops cleanly at the target.
+  useEffect(() => {
+    const controls = animate(countMV, ordered.length, {
+      duration: 0.35,
+      ease: [0.2, 0.6, 0.2, 1],
+      onUpdate: (v) => setDisplayCount(Math.round(v)),
+    });
+    return () => controls.stop();
+  }, [ordered.length, countMV]);
 
   // IntersectionObserver-driven infinite scroll. Triggers when the
   // sentinel comes within 400px of the viewport.
@@ -225,6 +235,12 @@ export function ExploreGrid({ items }: Props) {
           resultCount={ordered.length}
         />
       </div>
+
+      <p className={styles.count} aria-live="polite">
+        {displayCount === items.length
+          ? `${items.length} pieces in the archive`
+          : `${displayCount} of ${items.length} pieces`}
+      </p>
 
       {ordered.length === 0 ? (
         <EmptyState heading="Nothing matches those filters yet." />

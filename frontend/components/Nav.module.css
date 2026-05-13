@@ -110,6 +110,19 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
+/* Below 900px the 5 desktop links squeeze the wordmark uncomfortably,
+   so the hamburger takes over earlier than the prior 640px breakpoint.
+   Wordmark stays visible in the 641–900px band (plenty of room with
+   only the hamburger + search to its right). */
+@media (max-width: 900px) {
+  .desktopLink {
+    display: none;
+  }
+  .hamburger {
+    display: flex;
+  }
+}
+
 @media (max-width: 640px) {
   .nav {
     height: 56px;
@@ -123,12 +136,6 @@
   }
   .links {
     gap: 16px;
-  }
-  .desktopLink {
-    display: none;
-  }
-  .hamburger {
-    display: flex;
   }
 }
 

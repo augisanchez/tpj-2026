@@ -1,12 +1,13 @@
-/* Fixed to the viewport, anchored 32px above the bottom edge. The
-   cue is a general "more below" affordance — independent of the
-   hero — and fades out once the visitor has scrolled past 80px so it
-   doesn't follow them down. */
+/* Fixed to the viewport, anchored bottom-right (was bottom-center
+   until 2026-05-13 — moved out of the center column once the
+   homepage hero carousel landed dots there). The cue is a general
+   "more below" affordance, independent of the hero, and fades out
+   once the visitor has scrolled past 80px so it doesn't follow them
+   down. */
 .cue {
   position: fixed;
-  left: 50%;
+  right: 32px;
   bottom: 32px;
-  transform: translateX(-50%);
   z-index: 80;
   display: inline-flex;
   align-items: center;

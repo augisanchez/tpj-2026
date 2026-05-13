@@ -21,8 +21,8 @@ const FeatureBySlugQuery = gql`
       content
       excerpt
       articleIntro
+      articleAuthor
       photographerName
-      tpjFeatureWriter
       ${LinkedPhotographerFields}
       ${LinkedPhotographersFields}
       featuredImage {
@@ -35,19 +35,33 @@ const FeatureBySlugQuery = gql`
           }
         }
       }
+      heroImage {
+        sourceUrl
+        altText
+        mediaDetails {
+          width
+          height
+        }
+      }
     }
   }
 `;
 
 /**
- * Feature posts can carry a writer/author credit in addition to (or
+ * Feature posts can carry a writer credit in addition to (or
  * instead of) a photographer credit — book reviews, travel essays,
- * etc. The writer name comes from `tpj_feature_writer` post meta and
- * is exposed by WPGraphQL as `tpjFeatureWriter`.
+ * etc. Stored as `tpj_byline_author` post meta with legacy fallback
+ * to `tpj_feature_writer`; exposed by WPGraphQL as `articleAuthor`.
  */
 export type Feature = Essay & {
   writer: string | null;
 };
+
+type RawHeroImage = {
+  sourceUrl: string | null;
+  altText: string | null;
+  mediaDetails?: { width: number | null; height: number | null } | null;
+} | null;
 
 type RawFeature = {
   id: string;
@@ -57,8 +71,8 @@ type RawFeature = {
   content: string | null;
   excerpt: string | null;
   articleIntro: string | null;
+  articleAuthor: string | null;
   photographerName: string | null;
-  tpjFeatureWriter: string | null;
   linkedPhotographer: RawLinkedPhotographer | null;
   linkedPhotographers: RawLinkedPhotographer[] | null;
   featuredImage: {
@@ -68,6 +82,7 @@ type RawFeature = {
       mediaDetails?: { width: number | null; height: number | null } | null;
     } | null;
   } | null;
+  heroImage: RawHeroImage;
 };
 
 type Response = { feature: RawFeature | null };
@@ -90,10 +105,9 @@ export async function fetchFeatureBySlug(slug: string): Promise<Feature | null> 
   const body = photographers.length > 0 ? stripPhotographerBlob(rawBody) : rawBody;
 
   const intro = raw.articleIntro ? raw.articleIntro.trim() : null;
-
-  const writer = raw.tpjFeatureWriter
-    ? raw.tpjFeatureWriter.trim() || null
-    : null;
+  const writer = raw.articleAuthor ? raw.articleAuthor.trim() || null : null;
+  const hero = raw.heroImage;
+  const heroSrc = hero ? rewriteMediaUrl(hero.sourceUrl) : null;
 
   return {
     id: raw.id,
@@ -113,6 +127,14 @@ export async function fetchFeatureBySlug(slug: string): Promise<Feature | null> 
           alt: fi?.altText || raw.title,
           width: fi?.mediaDetails?.width ?? undefined,
           height: fi?.mediaDetails?.height ?? undefined,
+        }
+      : null,
+    heroImage: heroSrc
+      ? {
+          src: heroSrc,
+          alt: hero?.altText || raw.title,
+          width: hero?.mediaDetails?.width ?? undefined,
+          height: hero?.mediaDetails?.height ?? undefined,
         }
       : null,
   };

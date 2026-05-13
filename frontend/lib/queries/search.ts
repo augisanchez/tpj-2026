@@ -88,6 +88,7 @@ function toItem(
     date: node.date,
     contentType,
     featuredImage: src ? { src, alt: fi?.altText || node.title } : null,
+    themes: [],
   };
 }
 

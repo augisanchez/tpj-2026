@@ -18,8 +18,8 @@ require_once __DIR__ . '/inc/graphql.php';
 require_once __DIR__ . '/inc/photographer-meta.php';
 require_once __DIR__ . '/inc/photographer-admin.php';
 require_once __DIR__ . '/inc/rest-photographer.php';
-require_once __DIR__ . '/inc/feature-meta.php';
-require_once __DIR__ . '/inc/article-meta.php';
+require_once __DIR__ . '/inc/article-panels.php';
+require_once __DIR__ . '/inc/article-admin.php';
 require_once __DIR__ . '/inc/upload-guardrails.php';
 require_once __DIR__ . '/inc/cli.php';
 

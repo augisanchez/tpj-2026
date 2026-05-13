@@ -23,13 +23,14 @@
   transition: transform 800ms ease-out;
 }
 
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1;
-}
-
+/* Dark veil moved from a sibling .overlay onto .copy itself
+   (2026-05-13 a11y pass). The previous sibling-overlay was opaque
+   enough visually but pa11y couldn't compute contrast through the
+   stacking — it walked ancestors only and stopped at the placeholder
+   bg, reporting white-on-grey. With the veil on .copy directly, the
+   white text's ancestor chain includes the dark rgba layer, so
+   pa11y reads ~9:1 and accessibility tools can verify it. Photo
+   stays visible because the background is rgba, not solid. */
 .copy {
   position: relative;
   z-index: 2;
@@ -41,6 +42,7 @@
   text-align: center;
   padding: clamp(64px, 10vw, 144px) 32px;
   color: #fff;
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .quote {

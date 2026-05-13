@@ -34,6 +34,14 @@ const EssayBySlugQuery = gql`
           }
         }
       }
+      heroImage {
+        sourceUrl
+        altText
+        mediaDetails {
+          width
+          height
+        }
+      }
     }
   }
 `;
@@ -50,7 +58,14 @@ export type Essay = {
   photographer: Photographer | null;
   photographers: Photographer[];
   featuredImage: FeaturedImage | null;
+  heroImage: FeaturedImage | null;
 };
+
+type RawHeroImage = {
+  sourceUrl: string | null;
+  altText: string | null;
+  mediaDetails?: { width: number | null; height: number | null } | null;
+} | null;
 
 type RawEssay = {
   id: string;
@@ -70,6 +85,7 @@ type RawEssay = {
       mediaDetails?: { width: number | null; height: number | null } | null;
     } | null;
   } | null;
+  heroImage: RawHeroImage;
 };
 
 type Response = { essay: RawEssay | null };
@@ -93,6 +109,9 @@ export async function fetchEssayBySlug(slug: string): Promise<Essay | null> {
 
   const intro = raw.articleIntro ? raw.articleIntro.trim() : null;
 
+  const hero = raw.heroImage;
+  const heroSrc = hero ? rewriteMediaUrl(hero.sourceUrl) : null;
+
   return {
     id: raw.id,
     title: raw.title,
@@ -110,6 +129,14 @@ export async function fetchEssayBySlug(slug: string): Promise<Essay | null> {
           alt: fi?.altText || raw.title,
           width: fi?.mediaDetails?.width ?? undefined,
           height: fi?.mediaDetails?.height ?? undefined,
+        }
+      : null,
+    heroImage: heroSrc
+      ? {
+          src: heroSrc,
+          alt: hero?.altText || raw.title,
+          width: hero?.mediaDetails?.width ?? undefined,
+          height: hero?.mediaDetails?.height ?? undefined,
         }
       : null,
   };

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
+import { ArrivalScrollHint } from "@/components/ArrivalScrollHint";
 import { ArticleBody } from "@/components/ArticleBody";
 import { EssayIntro } from "@/components/EssayIntro";
 import { Hero } from "@/components/Hero";
@@ -61,17 +62,18 @@ export default async function FeaturePage({ params }: Props) {
 
   return (
     <>
+      <ArrivalScrollHint />
       <ReadingProgress />
       <Hero
         contentTypeLabel="Feature"
         title={feature.title}
         byline={byline}
-        backgroundImage={feature.featuredImage ?? undefined}
+        backgroundImage={feature.heroImage ?? feature.featuredImage ?? undefined}
       />
 
-      {feature.intro && <EssayIntro text={feature.intro} narrow />}
+      {feature.intro && <EssayIntro text={feature.intro} />}
 
-      <ArticleBody html={feature.body} centered />
+      <ArticleBody html={feature.body} />
 
       {feature.photographers.length > 0 && (
         <AboutPhotographerSection photographers={feature.photographers} />

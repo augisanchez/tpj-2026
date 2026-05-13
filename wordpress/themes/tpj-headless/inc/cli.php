@@ -3490,6 +3490,153 @@ class TPJ_CLI {
 	}
 
 	/**
+	 * Migrate v1 category assignments → V2 tpj-genre terms.
+	 *
+	 * Approved 2026-04-27, hadn't been executed until 2026-05-13. Maps
+	 * the six v1 categories the Build Plan calls genre-equivalent. The
+	 * last two are interpretive — `conceptual → experimental` (both
+	 * idea-driven, non-literal imagery) and `environmental → landscape`
+	 * (environmental photography is largely landscape work). The four
+	 * orphan v1 categories (tpj-spotlight, celebrity, event, reviews,
+	 * etc.) intentionally don't map — articles in them rely on theme
+	 * tagging plus photographer linkage for discoverability.
+	 *
+	 * Idempotent: uses wp_set_object_terms(..., append=true), so
+	 * articles dual-categorized in v1 (e.g. Portrait + Fashion) get
+	 * both genres without one overwriting the other.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--dry-run]
+	 * : Print mapping counts without writing terms.
+	 *
+	 * @when after_wp_load
+	 */
+	public function migrate_genres( $args, $assoc_args ) {
+		$dry_run = isset( $assoc_args['dry-run'] );
+
+		$map = [
+			'portrait'      => 'portraiture',
+			'fashion'       => 'fashion',
+			'documentary'   => 'documentary',
+			'fine-art'      => 'fine-art',
+			'conceptual'    => 'experimental',
+			'environmental' => 'landscape',
+		];
+
+		// Sanity-check every target slug exists before touching anything.
+		foreach ( $map as $from => $to ) {
+			if ( ! get_term_by( 'slug', $to, 'tpj-genre' ) ) {
+				WP_CLI::error( sprintf(
+					"Target tpj-genre slug '%s' missing. Check inc/taxonomies.php registration.",
+					$to
+				) );
+			}
+		}
+
+		WP_CLI::log( sprintf( 'Mode: %s', $dry_run ? 'DRY RUN' : 'APPLY' ) );
+		$total = 0;
+		foreach ( $map as $cat_slug => $genre_slug ) {
+			$ids = ( new WP_Query( [
+				'post_type'      => [ 'essay', 'interview', 'feature' ],
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'category_name'  => $cat_slug,
+			] ) )->posts;
+
+			$n      = count( $ids );
+			$total += $n;
+			WP_CLI::log( sprintf( '  %-14s → %-14s : %d articles', $cat_slug, $genre_slug, $n ) );
+
+			if ( ! $dry_run ) {
+				foreach ( $ids as $id ) {
+					wp_set_object_terms( $id, $genre_slug, 'tpj-genre', /* append */ true );
+				}
+			}
+		}
+
+		WP_CLI::log( '' );
+		WP_CLI::log( sprintf( 'Total category→genre assignments: %d', $total ) );
+
+		if ( ! $dry_run ) {
+			WP_CLI::log( '' );
+			WP_CLI::log( 'Per-genre coverage after migration:' );
+			foreach ( array_unique( array_values( $map ) ) as $genre_slug ) {
+				$n = ( new WP_Query( [
+					'post_type'      => [ 'essay', 'interview', 'feature' ],
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+					'tax_query'      => [ [
+						'taxonomy' => 'tpj-genre',
+						'field'    => 'slug',
+						'terms'    => $genre_slug,
+					] ],
+				] ) )->found_posts;
+				WP_CLI::log( sprintf( '  %-14s %d', $genre_slug, $n ) );
+			}
+		}
+
+		WP_CLI::success( $dry_run ? 'Dry run complete. Re-run without --dry-run to apply.' : 'Done.' );
+	}
+
+	/**
+	 * One-shot migration of the legacy Feature-only `tpj_feature_writer`
+	 * postmeta into the unified `tpj_byline_author` key used by both
+	 * Interview (interviewer credit) and Feature (writer credit). The
+	 * GraphQL resolver reads either key during the transition window
+	 * so this is safe to defer; running it once cleans up the data
+	 * layer so the fallback can eventually be removed.
+	 *
+	 * Idempotent. Skips features where `tpj_byline_author` is already
+	 * set (would otherwise overwrite editorial work done in the
+	 * panel).
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--dry-run]
+	 * : Print the migration plan without writing.
+	 *
+	 * @when after_wp_load
+	 */
+	public function migrate_byline_author( $args, $assoc_args ) {
+		$dry_run = isset( $assoc_args['dry-run'] );
+
+		$ids = ( new WP_Query( [
+			'post_type'      => 'feature',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+		] ) )->posts;
+
+		$stats = [ 'copied' => 0, 'skipped_present' => 0, 'skipped_empty' => 0 ];
+		foreach ( $ids as $id ) {
+			$legacy = (string) get_post_meta( $id, 'tpj_feature_writer', true );
+			$legacy = trim( $legacy );
+			if ( $legacy === '' ) {
+				$stats['skipped_empty']++;
+				continue;
+			}
+			$current = (string) get_post_meta( $id, 'tpj_byline_author', true );
+			if ( trim( $current ) !== '' ) {
+				$stats['skipped_present']++;
+				continue;
+			}
+			if ( ! $dry_run ) {
+				update_post_meta( $id, 'tpj_byline_author', $legacy );
+			}
+			$stats['copied']++;
+		}
+
+		WP_CLI::log( sprintf( 'Features scanned:        %d', count( $ids ) ) );
+		WP_CLI::log( sprintf( '%s: %d', $dry_run ? 'Would copy' : 'Copied  ', $stats['copied'] ) );
+		WP_CLI::log( sprintf( 'Skipped (new key set):    %d', $stats['skipped_present'] ) );
+		WP_CLI::log( sprintf( 'Skipped (no legacy value): %d', $stats['skipped_empty'] ) );
+		WP_CLI::success( $dry_run ? 'Dry run complete.' : 'Done.' );
+	}
+
+	/**
 	 * Trash the legacy v1 ACF field groups so the article edit UI in
 	 * WP admin only surfaces fields V2 actually consumes. This is the
 	 * reusable form of the local cleanup done by hand on 2026-05-13;
@@ -3872,18 +4019,57 @@ function tpj_anthropic_classify( $prompt, $api_key, $model ) {
 	$text = (string) $decoded['content'][0]['text'];
 
 	// The model is asked for JSON-only but occasionally wraps it in
-	// markdown fences or explanatory prose. Extract the outermost
-	// {...} block before parsing.
-	if ( ! preg_match( '/\{.*\}/s', $text, $m ) ) {
+	// markdown fences or trails it with second-guessing prose. Walk to
+	// the first balanced {...} block and parse that — a greedy regex
+	// spans across a trailing prose `}` and produces garbage.
+	$json_blob = tpj_extract_first_json_object( $text );
+	if ( $json_blob === null ) {
 		return new WP_Error( 'tpj_anthropic_parse', 'No JSON object in model output: ' . mb_substr( $text, 0, 200 ) );
 	}
 
-	$parsed = json_decode( $m[0], true );
+	$parsed = json_decode( $json_blob, true );
 	if ( ! is_array( $parsed ) ) {
-		return new WP_Error( 'tpj_anthropic_parse', 'Could not decode JSON: ' . mb_substr( $m[0], 0, 200 ) );
+		return new WP_Error( 'tpj_anthropic_parse', 'Could not decode JSON: ' . mb_substr( $json_blob, 0, 200 ) );
 	}
 
 	return $parsed;
+}
+
+function tpj_extract_first_json_object( $text ) {
+	$start = strpos( $text, '{' );
+	if ( $start === false ) {
+		return null;
+	}
+	$depth     = 0;
+	$in_string = false;
+	$escape    = false;
+	$len       = strlen( $text );
+	for ( $i = $start; $i < $len; $i++ ) {
+		$ch = $text[ $i ];
+		if ( $escape ) {
+			$escape = false;
+			continue;
+		}
+		if ( $in_string ) {
+			if ( $ch === '\\' ) {
+				$escape = true;
+			} elseif ( $ch === '"' ) {
+				$in_string = false;
+			}
+			continue;
+		}
+		if ( $ch === '"' ) {
+			$in_string = true;
+		} elseif ( $ch === '{' ) {
+			$depth++;
+		} elseif ( $ch === '}' ) {
+			$depth--;
+			if ( $depth === 0 ) {
+				return substr( $text, $start, $i - $start + 1 );
+			}
+		}
+	}
+	return null;
 }
 
 /**
@@ -4418,5 +4604,7 @@ WP_CLI::add_command( 'tpj seed-collections',              [ 'TPJ_CLI', 'seed_col
 WP_CLI::add_command( 'tpj import-delta',                  [ 'TPJ_CLI', 'import_delta' ] );
 WP_CLI::add_command( 'tpj audit-photographer-links',      [ 'TPJ_CLI', 'audit_photographer_links' ] );
 WP_CLI::add_command( 'tpj tag-themes',                    [ 'TPJ_CLI', 'tag_themes' ] );
+WP_CLI::add_command( 'tpj migrate-genres',                [ 'TPJ_CLI', 'migrate_genres' ] );
+WP_CLI::add_command( 'tpj migrate-byline-author',         [ 'TPJ_CLI', 'migrate_byline_author' ] );
 WP_CLI::add_command( 'tpj cleanup-acf-legacy',            [ 'TPJ_CLI', 'cleanup_acf_legacy' ] );
 WP_CLI::add_command( 'tpj bio-outliers',                 [ 'TPJ_CLI', 'bio_outliers' ] );

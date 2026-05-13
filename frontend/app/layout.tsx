@@ -3,7 +3,9 @@ import { Oswald, Inter, Source_Serif_4 } from "next/font/google";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { PageTransition } from "@/components/PageTransition";
+import { RouteAnnouncer } from "@/components/RouteAnnouncer";
 import { RouteCurtain } from "@/components/RouteCurtain";
+import { SkipToContent } from "@/components/SkipToContent";
 import "./globals.css";
 
 const oswald = Oswald({
@@ -44,10 +46,14 @@ export default function RootLayout({
       className={`${oswald.variable} ${inter.variable} ${sourceSerif.variable}`}
     >
       <body suppressHydrationWarning>
+        <SkipToContent />
         <Nav />
-        <PageTransition>{children}</PageTransition>
+        <main id="main-content" tabIndex={-1}>
+          <PageTransition>{children}</PageTransition>
+        </main>
         <Footer />
         <RouteCurtain />
+        <RouteAnnouncer />
       </body>
     </html>
   );

@@ -19,9 +19,6 @@ export default async function ExplorePage() {
           Every photo essay, interview, and feature published in TPJ since
           2012.
         </p>
-        <p className={styles.count}>
-          {items.length} pieces in the archive
-        </p>
       </header>
 
       <ExploreGrid items={items} />
