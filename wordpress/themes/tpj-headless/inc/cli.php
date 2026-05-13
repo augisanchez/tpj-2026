@@ -3304,6 +3304,328 @@ class TPJ_CLI {
 
 		WP_CLI::success( sprintf( 'Audit complete. %d dead, %d blocked-needs-review.', $stats['dead'], $stats['blocked'] ) );
 	}
+
+	/**
+	 * AI theme-tagger. Walks every published essay/interview/feature
+	 * not yet tagged, asks the Anthropic API to pick up to 3 themes
+	 * from the curated list, and writes the result as tpj-theme
+	 * taxonomy terms. AI reasoning is stored in postmeta
+	 * `_tpj_theme_ai_reason` so editorial can review later.
+	 *
+	 * Editorial direction (2026-05-04): aim for 20-30 best-fit
+	 * essays per theme, not exhaustive coverage. Not every article
+	 * needs a theme — the AI returns an empty array when nothing
+	 * fits, and the article stays untagged.
+	 *
+	 * API key: set once via `wp option set tpj_anthropic_api_key sk-ant-...`
+	 * or pass `--api-key=sk-ant-...` per invocation. Key never logged.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--dry-run]
+	 * : Print decisions without writing terms or postmeta.
+	 *
+	 * [--force]
+	 * : Re-tag articles that already have tpj-theme terms set.
+	 *
+	 * [--only=<ids>]
+	 * : Comma-separated post IDs to tag. Implies --force.
+	 *
+	 * [--limit=<n>]
+	 * : Stop after N articles. Useful for testing prompt quality
+	 * before committing to the full archive.
+	 *
+	 * [--model=<id>]
+	 * : Anthropic model to call. Default: claude-haiku-4-5 (cheapest,
+	 * plenty smart for this classification task).
+	 *
+	 * [--api-key=<key>]
+	 * : Override the WP option for a single invocation.
+	 *
+	 * [--sleep-ms=<ms>]
+	 * : Pause between API calls. Default 300ms — under Anthropic's
+	 * rate limit on every paid tier. Bump if you hit 429s.
+	 *
+	 * @when after_wp_load
+	 */
+	public function tag_themes( $args, $assoc_args ) {
+		$dry_run  = isset( $assoc_args['dry-run'] );
+		$force    = isset( $assoc_args['force'] );
+		$limit    = isset( $assoc_args['limit'] ) ? max( 1, (int) $assoc_args['limit'] ) : 0;
+		$model    = (string) ( $assoc_args['model'] ?? 'claude-haiku-4-5' );
+		$sleep_ms = max( 0, (int) ( $assoc_args['sleep-ms'] ?? 300 ) );
+
+		$only = null;
+		if ( isset( $assoc_args['only'] ) ) {
+			$only = array_filter( array_map( 'intval', explode( ',', $assoc_args['only'] ) ) );
+			$force = true; // --only implies --force; user explicitly asked for these IDs.
+		}
+
+		$api_key = (string) ( $assoc_args['api-key'] ?? get_option( 'tpj_anthropic_api_key', '' ) );
+		if ( $api_key === '' ) {
+			WP_CLI::error( 'No Anthropic API key. Set with: wp option set tpj_anthropic_api_key sk-ant-…  (or pass --api-key=…)' );
+		}
+
+		$themes = tpj_get_theme_definitions();
+
+		$query_args = [
+			'post_type'      => [ 'essay', 'interview', 'feature' ],
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		];
+		if ( $only ) {
+			$query_args['post__in'] = $only;
+		}
+		if ( ! $force && ! $only ) {
+			// Skip already-tagged articles — idempotent across runs.
+			$query_args['tax_query'] = [ [
+				'taxonomy' => 'tpj-theme',
+				'operator' => 'NOT EXISTS',
+			] ];
+		}
+
+		$posts = get_posts( $query_args );
+		if ( $limit > 0 ) {
+			$posts = array_slice( $posts, 0, $limit );
+		}
+
+		if ( empty( $posts ) ) {
+			WP_CLI::success( 'Nothing to tag — everything already has theme terms (or no candidates matched).' );
+			return;
+		}
+
+		WP_CLI::log( sprintf(
+			'Tagging %d %s with %s. Mode: %s.',
+			count( $posts ),
+			count( $posts ) === 1 ? 'article' : 'articles',
+			$model,
+			$dry_run ? 'DRY RUN' : 'APPLY'
+		) );
+
+		$stats   = [ 'tagged' => 0, 'untagged' => 0, 'errors' => 0 ];
+		$tag_counts = [];
+
+		foreach ( $posts as $post ) {
+			$prompt = tpj_build_theme_tag_prompt( $post, $themes );
+			$result = tpj_anthropic_classify( $prompt, $api_key, $model );
+
+			if ( is_wp_error( $result ) ) {
+				WP_CLI::warning( sprintf(
+					'#%d "%s" — %s',
+					$post->ID,
+					$post->post_title,
+					$result->get_error_message()
+				) );
+				$stats['errors']++;
+				if ( $sleep_ms > 0 ) {
+					usleep( $sleep_ms * 1000 );
+				}
+				continue;
+			}
+
+			$picked = isset( $result['themes'] ) && is_array( $result['themes'] )
+				? $result['themes']
+				: [];
+			$reason = (string) ( $result['reason'] ?? '' );
+
+			// Validate slugs against the curated list. Drops hallucinations.
+			$valid_slugs = array_map( fn( $t ) => $t['slug'], $themes );
+			$picked      = array_values( array_intersect( $picked, $valid_slugs ) );
+			// Cap at 3 — defensive in case the model returns more.
+			$picked = array_slice( $picked, 0, 3 );
+
+			if ( empty( $picked ) ) {
+				WP_CLI::log( sprintf(
+					'  #%-5d "%s" → [none]  %s',
+					$post->ID,
+					$post->post_title,
+					$reason !== '' ? '— ' . $reason : ''
+				) );
+				$stats['untagged']++;
+			} else {
+				WP_CLI::log( sprintf(
+					'  #%-5d "%s" → [%s]  %s',
+					$post->ID,
+					$post->post_title,
+					implode( ', ', $picked ),
+					$reason !== '' ? '— ' . $reason : ''
+				) );
+				$stats['tagged']++;
+				foreach ( $picked as $slug ) {
+					$tag_counts[ $slug ] = ( $tag_counts[ $slug ] ?? 0 ) + 1;
+				}
+
+				if ( ! $dry_run ) {
+					wp_set_object_terms( $post->ID, $picked, 'tpj-theme', false );
+					update_post_meta( $post->ID, '_tpj_theme_ai_reason', $reason );
+				}
+			}
+
+			if ( $sleep_ms > 0 ) {
+				usleep( $sleep_ms * 1000 );
+			}
+		}
+
+		WP_CLI::log( '' );
+		WP_CLI::log( '======= TAGGING SUMMARY =======' );
+		WP_CLI::log( sprintf( '%s:   %d', $dry_run ? 'Would tag' : 'Tagged', $stats['tagged'] ) );
+		WP_CLI::log( sprintf( 'Untagged: %d  (model judged no theme fit)', $stats['untagged'] ) );
+		WP_CLI::log( sprintf( 'Errors:   %d', $stats['errors'] ) );
+
+		if ( ! empty( $tag_counts ) ) {
+			ksort( $tag_counts );
+			WP_CLI::log( '' );
+			WP_CLI::log( 'Per-theme counts:' );
+			foreach ( $tag_counts as $slug => $n ) {
+				WP_CLI::log( sprintf( '  %-12s %d', $slug, $n ) );
+			}
+		}
+
+		WP_CLI::success( sprintf(
+			'%s. Re-run without --dry-run to apply.',
+			$dry_run ? 'Dry run complete' : 'Done'
+		) );
+	}
+}
+
+/**
+ * Canonical theme list for AI tagging. MIRRORS frontend/lib/themes.ts;
+ * sync the frontend if these slugs or prompts change. The matching
+ * tpj-theme taxonomy terms are seeded in inc/taxonomies.php on theme
+ * activation.
+ */
+function tpj_get_theme_definitions() {
+	return [
+		[ 'slug' => 'identity',    'prompt' => 'What does a face show, and what does it refuse to give away?' ],
+		[ 'slug' => 'intimacy',    'prompt' => 'How close can a camera get before the moment turns its head?' ],
+		[ 'slug' => 'memory',      'prompt' => 'What do the photographs we keep say about who we were, and who we are afraid to forget?' ],
+		[ 'slug' => 'youth',       'prompt' => 'What does it mean to be photographed while you are still becoming?' ],
+		[ 'slug' => 'isolation',   'prompt' => 'What is found in standing apart, and what is lost?' ],
+		[ 'slug' => 'place',       'prompt' => 'How does a place make the people who live in it?' ],
+		[ 'slug' => 'performance', 'prompt' => 'Where does the role end and the person begin?' ],
+		[ 'slug' => 'night',       'prompt' => 'What only shows itself after the lights go out?' ],
+		[ 'slug' => 'desire',      'prompt' => "What does the body say that hasn't been said yet?" ],
+		[ 'slug' => 'labor',       'prompt' => 'What is the cost of the work we do, and the work that does us?' ],
+		[ 'slug' => 'family',      'prompt' => 'Who do we belong to, and who do we become in their gaze?' ],
+	];
+}
+
+/**
+ * Build the classification prompt for one article. Feeds the model
+ * title + best-available text excerpt (preferring the article's intro
+ * meta, falling back to native excerpt, falling back to the first
+ * ~800 chars of stripped post_content). Articles with very little
+ * text get tagged from what's available — the model is OK to return
+ * an empty array when it doesn't have enough to judge.
+ */
+function tpj_build_theme_tag_prompt( $post, $themes ) {
+	$title = (string) $post->post_title;
+
+	// Excerpt: prefer the editor-curated intro (legacy `intro` meta is
+	// the lede); fall back to native excerpt; fall back to stripped
+	// body. Capped at 1000 chars so the model focuses on the opening
+	// gesture of the piece rather than getting lost in the figure
+	// shortcodes mid-essay.
+	$excerpt = trim( (string) get_post_meta( $post->ID, 'intro', true ) );
+	if ( $excerpt === '' ) {
+		$excerpt = trim( wp_strip_all_tags( (string) $post->post_excerpt ) );
+	}
+	if ( strlen( $excerpt ) < 60 ) {
+		$body = wp_strip_all_tags( (string) $post->post_content );
+		$body = preg_replace( '/\s+/', ' ', $body );
+		$body = trim( (string) $body );
+		if ( $body !== '' ) {
+			$excerpt = mb_substr( $body, 0, 1000 );
+		}
+	}
+	if ( mb_strlen( $excerpt ) > 1200 ) {
+		$excerpt = mb_substr( $excerpt, 0, 1200 ) . '…';
+	}
+
+	$theme_lines = [];
+	foreach ( $themes as $t ) {
+		$theme_lines[] = sprintf( '- %s: %s', $t['slug'], $t['prompt'] );
+	}
+
+	$type_label = [
+		'essay'     => 'Photo Essay',
+		'interview' => 'Interview',
+		'feature'   => 'Feature',
+	][ $post->post_type ] ?? ucfirst( $post->post_type );
+
+	return "You are tagging a piece for an editorial photography publication. "
+		. "Read the article below and pick up to 3 themes from the list that fit best. "
+		. "Return an empty array if no theme genuinely fits — not every article needs a theme.\n\n"
+		. "Editorial direction: aim for the strongest matches, not the loosest. "
+		. "Each theme should aim for 20-30 curated essays across the archive; better to leave a marginal piece untagged than dilute the collections.\n\n"
+		. "Available themes (use these exact slugs):\n"
+		. implode( "\n", $theme_lines ) . "\n\n"
+		. "Article:\n"
+		. "Title: " . $title . "\n"
+		. "Type: " . $type_label . "\n"
+		. "Text: " . ( $excerpt !== '' ? $excerpt : '(no text available — title only)' ) . "\n\n"
+		. "Respond with strict JSON only — no markdown, no commentary outside the JSON:\n"
+		. '{"themes": ["slug1", "slug2"], "reason": "one short sentence explaining the fit"}';
+}
+
+/**
+ * Call the Anthropic Messages API. Returns the parsed result on
+ * success or a WP_Error on any failure (network, non-200, unparseable
+ * JSON). API key never logged.
+ */
+function tpj_anthropic_classify( $prompt, $api_key, $model ) {
+	$response = wp_remote_post( 'https://api.anthropic.com/v1/messages', [
+		'timeout' => 60,
+		'headers' => [
+			'x-api-key'         => $api_key,
+			'anthropic-version' => '2023-06-01',
+			'content-type'      => 'application/json',
+		],
+		'body' => wp_json_encode( [
+			'model'      => $model,
+			'max_tokens' => 400,
+			'messages'   => [
+				[ 'role' => 'user', 'content' => $prompt ],
+			],
+		] ),
+	] );
+
+	if ( is_wp_error( $response ) ) {
+		return new WP_Error( 'tpj_anthropic_network', $response->get_error_message() );
+	}
+
+	$code = (int) wp_remote_retrieve_response_code( $response );
+	$body = wp_remote_retrieve_body( $response );
+	if ( $code !== 200 ) {
+		// Truncate body for logging — error messages can be verbose.
+		return new WP_Error(
+			'tpj_anthropic_http',
+			sprintf( 'HTTP %d: %s', $code, mb_substr( $body, 0, 200 ) )
+		);
+	}
+
+	$decoded = json_decode( $body, true );
+	if ( ! is_array( $decoded ) || empty( $decoded['content'][0]['text'] ) ) {
+		return new WP_Error( 'tpj_anthropic_shape', 'Response did not include expected content.' );
+	}
+
+	$text = (string) $decoded['content'][0]['text'];
+
+	// The model is asked for JSON-only but occasionally wraps it in
+	// markdown fences or explanatory prose. Extract the outermost
+	// {...} block before parsing.
+	if ( ! preg_match( '/\{.*\}/s', $text, $m ) ) {
+		return new WP_Error( 'tpj_anthropic_parse', 'No JSON object in model output: ' . mb_substr( $text, 0, 200 ) );
+	}
+
+	$parsed = json_decode( $m[0], true );
+	if ( ! is_array( $parsed ) ) {
+		return new WP_Error( 'tpj_anthropic_parse', 'Could not decode JSON: ' . mb_substr( $m[0], 0, 200 ) );
+	}
+
+	return $parsed;
 }
 
 /**
@@ -3837,3 +4159,4 @@ WP_CLI::add_command( 'tpj apply-photographer-instagram',  [ 'TPJ_CLI', 'apply_ph
 WP_CLI::add_command( 'tpj seed-collections',              [ 'TPJ_CLI', 'seed_collections' ] );
 WP_CLI::add_command( 'tpj import-delta',                  [ 'TPJ_CLI', 'import_delta' ] );
 WP_CLI::add_command( 'tpj audit-photographer-links',      [ 'TPJ_CLI', 'audit_photographer_links' ] );
+WP_CLI::add_command( 'tpj tag-themes',                    [ 'TPJ_CLI', 'tag_themes' ] );
