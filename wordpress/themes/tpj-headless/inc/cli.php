@@ -3617,6 +3617,135 @@ class TPJ_CLI {
 			WP_CLI::success( 'Done. Recoverable from WP admin → Custom Fields → Field Groups → Trash.' );
 		}
 	}
+
+	/**
+	 * List published Photographer CPTs with empty `post_content` (bios)
+	 * — the irreducible residual after the v1-dump circletar recovery
+	 * pass ran. These records need authored bios pasted in manually
+	 * from external sources; this command lists them alphabetically
+	 * with article count, first-linked-article title for context, and
+	 * the direct admin edit URL so the editor can blast through them.
+	 *
+	 * Excludes zero-article orphans (trash candidates, not editing
+	 * targets) unless --include-orphans is passed.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--include-orphans]
+	 * : Also list photographer records with 0 linked articles. These
+	 * are usually trash candidates, not editing targets — kept off by
+	 * default to focus the list on real work.
+	 *
+	 * [--format=<format>]
+	 * : Output format. table (default), csv, count.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - count
+	 * ---
+	 *
+	 * @when after_wp_load
+	 */
+	public function bio_outliers( $args, $assoc_args ) {
+		$include_orphans = isset( $assoc_args['include-orphans'] );
+		$format          = (string) ( $assoc_args['format'] ?? 'table' );
+
+		global $wpdb;
+
+		// Two-step lookup: photographers first, then per-record count +
+		// latest article. Avoids the collation mismatch that hits a
+		// correlated subquery comparing wp_posts.ID (cast to CHAR in
+		// default collation) against wp_postmeta.meta_value
+		// (utf8mb4_unicode_520_ci on this site).
+		$photographers = $wpdb->get_results( "
+			SELECT ID, post_title, post_name
+			FROM {$wpdb->posts}
+			WHERE post_type = 'photographer'
+			  AND post_status = 'publish'
+			  AND ( post_content IS NULL OR post_content = '' )
+			ORDER BY post_title
+		" );
+
+		$rows = [];
+		foreach ( $photographers as $p ) {
+			$id    = (int) $p->ID;
+			$count = (int) $wpdb->get_var( $wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->postmeta}
+				 WHERE meta_key = 'tpj_photographer' AND meta_value = %s",
+				(string) $id
+			) );
+			$latest = (string) $wpdb->get_var( $wpdb->prepare(
+				"SELECT a.post_title
+				 FROM {$wpdb->postmeta} pm
+				 JOIN {$wpdb->posts} a ON a.ID = pm.post_id
+				 WHERE pm.meta_key = 'tpj_photographer'
+				   AND pm.meta_value = %s
+				   AND a.post_status = 'publish'
+				 ORDER BY a.post_date DESC
+				 LIMIT 1",
+				(string) $id
+			) );
+			$p->article_count  = $count;
+			$p->latest_article = $latest;
+			$rows[] = $p;
+		}
+
+		if ( ! $include_orphans ) {
+			$rows = array_values( array_filter( $rows, fn( $r ) => (int) $r->article_count > 0 ) );
+		}
+
+		if ( $format === 'count' ) {
+			WP_CLI::log( (string) count( $rows ) );
+			return;
+		}
+
+		if ( $format === 'csv' ) {
+			WP_CLI::log( 'id,name,slug,article_count,latest_article,edit_url' );
+			foreach ( $rows as $r ) {
+				WP_CLI::log( implode( ',', [
+					$r->ID,
+					'"' . str_replace( '"', '""', $r->post_title ) . '"',
+					$r->post_name,
+					$r->article_count,
+					'"' . str_replace( '"', '""', $r->latest_article ?? '' ) . '"',
+					admin_url( 'post.php?post=' . (int) $r->ID . '&action=edit' ),
+				] ) );
+			}
+			return;
+		}
+
+		// Default: table format
+		if ( empty( $rows ) ) {
+			WP_CLI::success( 'No empty-bio photographer records found.' );
+			return;
+		}
+
+		WP_CLI::log( sprintf( '%d photographer%s with empty bios:', count( $rows ), count( $rows ) === 1 ? '' : 's' ) );
+		WP_CLI::log( '' );
+		foreach ( $rows as $r ) {
+			$plural   = (int) $r->article_count === 1 ? '' : 's';
+			$latest   = $r->latest_article ? '"' . mb_strimwidth( $r->latest_article, 0, 40, '…' ) . '"' : '—';
+			$edit_url = admin_url( 'post.php?post=' . (int) $r->ID . '&action=edit' );
+
+			WP_CLI::log( sprintf(
+				'  #%-6d  %-30s  %d article%s   latest: %s',
+				$r->ID,
+				mb_strimwidth( $r->post_title, 0, 30, '…' ),
+				$r->article_count,
+				$plural,
+				$latest
+			) );
+			WP_CLI::log( sprintf( '          %s', $edit_url ) );
+		}
+		WP_CLI::log( '' );
+		WP_CLI::success( sprintf(
+			'%d empty-bio photographer%s. Pass --include-orphans to also see zero-article records.',
+			count( $rows ),
+			count( $rows ) === 1 ? '' : 's'
+		) );
+	}
 }
 
 /**
@@ -4290,3 +4419,4 @@ WP_CLI::add_command( 'tpj import-delta',                  [ 'TPJ_CLI', 'import_d
 WP_CLI::add_command( 'tpj audit-photographer-links',      [ 'TPJ_CLI', 'audit_photographer_links' ] );
 WP_CLI::add_command( 'tpj tag-themes',                    [ 'TPJ_CLI', 'tag_themes' ] );
 WP_CLI::add_command( 'tpj cleanup-acf-legacy',            [ 'TPJ_CLI', 'cleanup_acf_legacy' ] );
+WP_CLI::add_command( 'tpj bio-outliers',                 [ 'TPJ_CLI', 'bio_outliers' ] );
