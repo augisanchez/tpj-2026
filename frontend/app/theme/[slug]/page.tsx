@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/ArticleCard";
 import { EmptyState } from "@/components/EmptyState";
 import { THEMES } from "@/lib/themes";
-import { fetchRecentEssays } from "@/lib/queries/recent-essays";
+import { fetchEssaysByTheme } from "@/lib/queries/essays-by-theme";
 import styles from "@/components/ThemePage.module.css";
 
 type Props = {
@@ -18,10 +18,10 @@ export default async function ThemePage({ params }: Props) {
   const theme = THEMES.find((t) => t.slug === slug);
   if (!theme) notFound();
 
-  // Until AI theme tagging runs (Build Plan Step 12), each theme page
-  // shows the same recent-essays feed. Filter by tpj-theme term once
-  // tagging is in place.
-  const essays = await fetchRecentEssays(12);
+  // Real AI-tagged essays for this theme (Build Plan Step 12 /
+  // `wp tpj tag-themes`). Before the tagger has run for the archive,
+  // this returns an empty array and the EmptyState below renders.
+  const essays = await fetchEssaysByTheme(slug, 24);
 
   return (
     <>

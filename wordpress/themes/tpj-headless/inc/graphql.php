@@ -413,4 +413,46 @@ add_action( 'graphql_register_types', function () {
 			return $trimmed !== '' ? $trimmed : null;
 		},
 	] );
+
+	// Essays filtered by a tpj-theme slug. WPGraphQL 2.x dropped the
+	// auto-generated `themesIn` where-arg on the essays connection
+	// and the introspectable replacement (`taxQuery`) isn't exposed
+	// in this build either. This custom root field plugs the gap so
+	// the homepage ThemeBrowser and /theme/<slug> page can request
+	// AI-tagged essays without a server-side schema upgrade.
+	register_graphql_field( 'RootQuery', 'essaysByThemeSlug', [
+		'type'        => [ 'list_of' => 'Essay' ],
+		'description' => 'Essays tagged with the given tpj-theme slug, newest first. Returns an empty list when nothing is tagged yet for that slug — pairs with the homepage random-sample fallback during the tagger rollout.',
+		'args' => [
+			'themeSlug' => [
+				'type'        => [ 'non_null' => 'String' ],
+				'description' => 'tpj-theme term slug, e.g. "identity".',
+			],
+			'first' => [
+				'type'        => 'Int',
+				'description' => 'Maximum number of essays to return. Defaults to 12.',
+			],
+		],
+		'resolve' => function ( $root, $args ) {
+			$slug  = isset( $args['themeSlug'] ) ? sanitize_title( (string) $args['themeSlug'] ) : '';
+			$first = isset( $args['first'] ) ? max( 1, min( 100, (int) $args['first'] ) ) : 12;
+			if ( $slug === '' ) {
+				return [];
+			}
+			$posts = get_posts( [
+				'post_type'      => 'essay',
+				'post_status'    => 'publish',
+				'posts_per_page' => $first,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+				'tax_query'      => [ [
+					'taxonomy' => 'tpj-theme',
+					'field'    => 'slug',
+					'terms'    => [ $slug ],
+					'operator' => 'IN',
+				] ],
+			] );
+			return $posts;
+		},
+	] );
 } );

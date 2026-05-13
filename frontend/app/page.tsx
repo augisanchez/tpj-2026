@@ -9,6 +9,7 @@ import { StaggerReveal } from "@/components/StaggerReveal";
 import { ThemeBrowser } from "@/components/ThemeBrowser";
 import { FALLBACK_PHOTOGRAPHER } from "@/lib/photographer-fallback";
 import { fetchArchiveFeature } from "@/lib/queries/archive-feature";
+import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
 import { fetchHomepageQuotes } from "@/lib/queries/homepage-quotes";
 import { fetchRecentEssays } from "@/lib/queries/recent-essays";
 import {
@@ -77,19 +78,37 @@ function pickRandom<T>(pool: T[], n: number): T[] {
 }
 
 /**
- * Build a 3-essay group per theme. Until per-theme tagging ships (Build
- * Plan Step 12), each theme pulls a random sample from the recent
- * essays pool rather than a deterministic slice — surfaces a wider mix
- * of the archive across page loads (within the ISR cache window) and
- * makes chip switches feel less like the same pool reordered. When
- * real tagging lands, swap this for a theme-filtered fetch.
+ * Build a 3-essay group per theme. Prefers AI-tagged groupings
+ * (Build Plan Step 12: `wp tpj tag-themes` writes tpj-theme taxonomy
+ * terms via Claude classification). For any theme that has fewer
+ * than 3 tagged essays, falls back to a random sample from the
+ * recent-essays pool so the ThemeBrowser still has cards to render
+ * during the transition period (or on a theme that genuinely doesn't
+ * fit the archive's content). Once every theme has reliable
+ * coverage, the random fallback path becomes dead code and can be
+ * removed.
  */
 function buildThemeGroups(
+  taggedGroups: Record<string, RecentEssay[]>,
   themePool: RecentEssay[]
 ): Record<string, RecentEssay[]> {
   const result: Record<string, RecentEssay[]> = {};
   for (const theme of THEMES) {
-    result[theme.slug] = pickRandom(themePool, 3);
+    const tagged = taggedGroups[theme.slug] ?? [];
+    if (tagged.length >= 3) {
+      result[theme.slug] = tagged.slice(0, 3);
+    } else if (tagged.length > 0) {
+      // Partial coverage: combine tagged with a random top-up so the
+      // group has 3 cards. Tagged ones lead.
+      const have = new Set(tagged.map((e) => e.id));
+      const filler = pickRandom(
+        themePool.filter((e) => !have.has(e.id)),
+        3 - tagged.length
+      );
+      result[theme.slug] = [...tagged, ...filler];
+    } else {
+      result[theme.slug] = pickRandom(themePool, 3);
+    }
   }
   return result;
 }
@@ -101,21 +120,30 @@ export default async function Home() {
     spotlightFromDb,
     archiveFeature,
     interviewQuotes,
+    taggedThemeGroups,
   ] = await Promise.all([
-    // Pool used for the ThemeBrowser random sampling. Each theme picks
-    // 3 of these per ISR cache window; 50 gives enough variety that the
-    // 11 theme groups don't visibly overlap.
+    // Pool used as a fallback for themes with no/few tagged essays.
+    // Each theme picks 3 of these per ISR cache window; 50 gives
+    // enough variety that the 11 theme groups don't visibly overlap.
     fetchRecentEssays(50),
     fetchRecentArticles(15),
     fetchSpotlightPhotographer(),
     fetchArchiveFeature(),
     fetchHomepageQuotes(),
+    // Real per-theme groupings from the tpj-theme taxonomy. Empty
+    // arrays per slug before `wp tpj tag-themes` has run; the
+    // buildThemeGroups fallback fills in from `essays` so the UI
+    // still has cards.
+    fetchEssaysByThemes(
+      THEMES.map((t) => t.slug),
+      6
+    ),
   ]);
   const spotlight = spotlightFromDb ?? FALLBACK_PHOTOGRAPHER;
   const heroArticle = articles[0];
   const exploreArticles = articles.slice(1, 4);
   const themePool = essays;
-  const themeGroups = buildThemeGroups(themePool);
+  const themeGroups = buildThemeGroups(taggedThemeGroups, themePool);
 
   // Dive Deeper: 6 cards in two rows. Mix of curated entry points
   // (photographer spotlight, archive feature) and discovery prompts
