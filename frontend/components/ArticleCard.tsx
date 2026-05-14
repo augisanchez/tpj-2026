@@ -5,12 +5,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
-import {
-  cardSpring,
-  imageScaleVariants,
-  titleAccentTransition,
-  titleAccentVariants,
-} from "@/lib/card-motion";
+import { cardSpring, imageScaleVariants } from "@/lib/card-motion";
 import styles from "./ArticleCard.module.css";
 
 const MotionLink = motion.create(Link);
@@ -130,16 +125,7 @@ export function ArticleCard({
           label={article.contentTypeLabel}
           size={CHIP_SIZE_BY_VARIANT[variant]}
         />
-        <h3 className={titleClass}>
-          {article.title}
-          <motion.span
-            className={styles.titleAccent}
-            aria-hidden="true"
-            variants={titleAccentVariants}
-            transition={titleAccentTransition}
-            style={{ originX: 0 }}
-          />
-        </h3>
+        <h3 className={titleClass}>{article.title}</h3>
         {article.description && (
           <p className={styles.description}>{article.description}</p>
         )}

@@ -91,20 +91,6 @@
   letter-spacing: -0.01em;
   color: var(--text);
   margin: 0;
-  transition: color 150ms ease-out;
-  position: relative;
-  display: inline-block;
-}
-
-.cardNameAccent {
-  display: block;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -6px;
-  height: 3px;
-  background: var(--chip-bg);
-  pointer-events: none;
 }
 
 .cardPrompt {

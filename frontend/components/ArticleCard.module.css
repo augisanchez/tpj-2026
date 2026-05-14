@@ -142,22 +142,6 @@
   letter-spacing: -0.01em;
   margin: 8px 0 0 0;
   overflow-wrap: anywhere;
-  position: relative;
-}
-
-/* Lime underline that draws in on card hover (motion-driven via
-   titleAccentVariants on a motion.span inside the title). Sits a
-   hair below the descender baseline so it doesn't crash into
-   lowercase tails. */
-.titleAccent {
-  display: block;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -6px;
-  height: 3px;
-  background: var(--chip-bg);
-  pointer-events: none;
 }
 
 .description {

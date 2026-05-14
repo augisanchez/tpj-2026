@@ -3,12 +3,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ThemeThumbnail } from "./ThemeThumbnail";
-import {
-  cardSpring,
-  imageScaleVariants,
-  titleAccentTransition,
-  titleAccentVariants,
-} from "@/lib/card-motion";
+import { cardSpring, imageScaleVariants } from "@/lib/card-motion";
 import styles from "./ThemesIndex.module.css";
 
 const MotionLink = motion.create(Link);
@@ -25,7 +20,7 @@ type Props = {
  * Single theme card on the /themes index. Extracted into its own
  * client component so the surrounding async server page can stay
  * server-rendered while the card opts into motion (spring scale on
- * the composite thumbnail + lime title accent that draws in).
+ * the composite thumbnail).
  */
 export function ThemeIndexCard({ slug, name, prompt, count, images }: Props) {
   return (
@@ -49,16 +44,7 @@ export function ThemeIndexCard({ slug, name, prompt, count, images }: Props) {
             {count} {count === 1 ? "article" : "articles"}
           </p>
         )}
-        <h2 className={styles.cardName}>
-          {name}
-          <motion.span
-            className={styles.cardNameAccent}
-            aria-hidden="true"
-            variants={titleAccentVariants}
-            transition={titleAccentTransition}
-            style={{ originX: 0 }}
-          />
-        </h2>
+        <h2 className={styles.cardName}>{name}</h2>
         <p className={styles.cardPrompt}>{prompt}</p>
       </div>
     </MotionLink>
