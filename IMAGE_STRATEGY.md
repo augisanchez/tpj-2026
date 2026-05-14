@@ -28,21 +28,29 @@ is identical to today. Flip the env var and Cloudflare takes over.
 
 ## Phase A — Cloudflare CDN cutover (low-risk, deploy when ready)
 
-### A1. Reality check: how does media flow today?
+### A1. URL reality (already confirmed 2026-05-14)
 
-Open the WP admin and find the S3 plugin (likely **WP Offload Media** or
-**W3 Total Cache → CDN tab**). Note:
+Audited the local DB (a copy of production) to verify URL shapes
+before designing the cutover. Confirmed:
 
-- The **public URL pattern** for media. One of:
-  - `https://thephotographicjournal.com/wp-content/uploads/...` (WP serving
-    + Apache/Nginx proxy → S3 on the backend), or
-  - `https://<bucket>.s3.amazonaws.com/...` (direct S3), or
-  - `https://<id>.cloudfront.net/...` (CloudFront in front of S3).
-- The **bucket name + region**.
-- Whether **CloudFront is already in front of S3**. If yes, we're
-  replacing CloudFront with Cloudflare; both can't co-exist.
+- **Attachment GUIDs** all point at
+  `https://thephotographicjournal.com/wp-content/uploads/...`.
+- **In-content `<img src>`** values come in three shapes:
+  - canonical `https://thephotographicjournal.com/wp-content/uploads/...`
+  - bare relative `/wp-content/uploads/...` (no host)
+  - legacy `http://tpj.wpengine.com/wp-content/uploads/...` (~64 articles)
+- **Zero direct S3 or CloudFront URLs.** Whatever S3 plugin runs in
+  production (likely **WP Offload Media**, but we don't need to know
+  for Phase A) handles S3 as a storage backend — every in-content URL
+  stays on the WP origin.
 
-This determines the CNAME target in A3.
+This means Cloudflare can sit in front of the WP origin and pull images
+from there. We don't need to know the S3 bucket name, region, or
+endpoint for Phase A. Phase B needs that info; Phase A does not.
+
+`rewriteMediaUrlsInHtml` in `lib/media.ts` already canonicalises all
+three shapes to the prod origin, so `rewriteArticleBodyImages` picks
+them up uniformly.
 
 ### A2. Cloudflare zone
 
@@ -58,10 +66,18 @@ In Cloudflare → DNS → Records → Add:
 
 - Type: `CNAME`
 - Name: `media`
-- Target: whatever serves images today (the bucket URL from A1, or the
-  CloudFront distribution, or the apex domain — pick the most direct).
+- Target: `thephotographicjournal.com` (the WP origin). Cloudflare
+  pulls images from the WP host; whatever the WP host does with S3
+  internally is invisible to us.
 - Proxy status: **Proxied (orange cloud)**. Critical — without this
   Cloudflare can't transform images.
+
+*Note: this routes image cache-miss reads through the WP host. For a
+heavily-trafficked WP host that's a real load consideration, but
+Cloudflare caches at the edge per image+transform so once a variant
+is hot, the WP host doesn't see it again. If the WP host is on a
+managed service with rate limits, watch the origin egress for the
+first 24h after cutover.*
 
 ### A4. Enable Image Resizing
 
@@ -137,6 +153,23 @@ R2's win is zero egress fees. That matters at scale and doesn't matter
 for correctness. Don't change two things at once. Run Phase A for at
 least a couple of weeks, watch the CDN behave, then do this.
 
+### B0. First, identify the prod S3 plugin
+
+Phase B needs to know what currently moves uploads into S3 on the WP
+host. The local install doesn't have it (only ACF + WPGraphQL +
+WPGraphQL-ACF are active locally), so check the **production** WP
+admin → Plugins. Likely candidates:
+
+- **WP Offload Media** (Delicious Brains, most common)
+- **S3 Uploads** (humanmade)
+- **Media Cloud** / **ILAB Media Tools**
+- **W3 Total Cache** with the CDN tab pointed at S3
+- Or no plugin at all — could be an s3fs mount or filesystem proxy at
+  the web-server level.
+
+Note the plugin name + version, the S3 bucket name, and the region.
+That's the input for B3.
+
 ### B1. Create R2 bucket
 
 Cloudflare dashboard → R2 → Create bucket. Suggested name: `tpj-media`.
@@ -155,8 +188,7 @@ Expect 30min–several hours depending on archive size. Re-runnable —
 
 ### B3. Update WP upload plugin
 
-Whatever currently writes to S3 (WP Offload Media etc.) — point it at
-R2's S3-compatible endpoint:
+Point the plugin identified in B0 at R2's S3-compatible endpoint:
 
 - Endpoint URL: `https://<your-cf-account-id>.r2.cloudflarestorage.com`
 - Access key / secret: R2 API token (create one in R2 settings)
@@ -165,6 +197,10 @@ R2's S3-compatible endpoint:
 
 Upload one test image through WP admin. Verify it lands in R2 (check
 bucket contents in CF dashboard).
+
+If production turns out to be running s3fs / mount-based S3 (no
+plugin), Phase B becomes: change the mount target from S3 to R2's
+S3-compatible endpoint. Same conceptual move, different mechanic.
 
 ### B4. Repoint the CDN
 
@@ -208,28 +244,31 @@ real savings land.
 
 ---
 
-## What I'd verify against the WP plugin reality before Phase A
+## Audit appendix — DB findings 2026-05-14
 
-The article-body HTML rewriter (`rewriteArticleBodyImages` in
-`lib/media.ts`) assumes the `<img src>` values in WP-rendered HTML
-match one of the URL shapes `cdnImageUrl` accepts. After URL
-canonicalisation those will all be
-`https://thephotographicjournal.com/wp-content/uploads/...`.
+Sampled the local DB (a copy of production) to verify in-content URL
+shapes before designing the cutover. The article-body rewriter
+(`rewriteArticleBodyImages` in `lib/media.ts`) only fires on URLs that
+`rewriteMediaUrlsInHtml` first canonicalises to the prod origin, so
+this audit was about confirming no surprise URL shapes exist.
 
-If your S3 plugin rewrites the in-content URLs to point directly at
-S3 or CloudFront (e.g. `s3-bucket.s3.amazonaws.com` or
-`d123.cloudfront.net`), the rewriter won't recognise them and will
-fall through to the original URL — they'll work but won't get the
-CDN treatment. Two fixes if that's the case:
+| URL pattern in `post_content`                                     | Article count |
+| ----------------------------------------------------------------- | ------------- |
+| `https://thephotographicjournal.com/wp-content/uploads/...`       | 343           |
+| Bare `/wp-content/uploads/...` (no host)                          | 362           |
+| `http://tpj.wpengine.com/wp-content/uploads/...` (legacy staging) | 64            |
+| `s3.amazonaws.com`                                                | **0**         |
+| `cloudfront.net`                                                  | **0**         |
 
-1. Configure the WP plugin to keep `wp-content/uploads/...` URLs in
-   post HTML (most plugins have a "rewrite URLs in content" toggle —
-   turn it OFF). Cloudflare will pull from S3 via the CNAME.
-2. Or, expand `rewriteMediaUrl` in `lib/media.ts` with another branch
-   for the actual URL prefix in your DB.
+All three present shapes are handled by `rewriteMediaUrlsInHtml`
+(canonicalised to the prod origin) before the CDN rewriter runs, so
+**every in-content image will pick up the CDN treatment post-cutover**.
+No code changes needed.
 
-Open a published article in WP admin, switch to Code view, look at
-an `<img src>`. That tells you which shape you're dealing with.
+If a future post somehow gets authored with a direct-S3 or CloudFront
+URL (e.g. a copy-paste from elsewhere), the rewriter will fall through
+and that image will load uncached without transforms. To catch it: add
+a branch to `rewriteMediaUrl` in `lib/media.ts` for the offending host.
 
 ---
 
