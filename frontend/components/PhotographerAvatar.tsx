@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TpjImage } from "./TpjImage";
 import styles from "./PhotographerAvatar.module.css";
 
 type Props = {
@@ -35,11 +36,12 @@ export function PhotographerAvatar({ name, portrait, className }: Props) {
 
   if (portrait && !errored) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <TpjImage
         className={className}
         src={portrait.src}
         alt={portrait.alt}
+        sizes="200px"
+        widths={[96, 200, 400]}
         onError={() => setErrored(true)}
       />
     );

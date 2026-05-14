@@ -1,6 +1,6 @@
 import { gql } from "graphql-request";
 import { wpClient } from "../api";
-import { rewriteMediaUrl, rewriteMediaUrlsInHtml } from "../media";
+import { prepareArticleBodyHtml, rewriteMediaUrl } from "../media";
 import type { Essay } from "./essay-by-slug";
 import type { Photographer } from "@/lib/photographer-types";
 import {
@@ -101,7 +101,7 @@ export async function fetchFeatureBySlug(slug: string): Promise<Feature | null> 
     photographerName: photographerNameTrimmed,
   });
 
-  const rawBody = raw.content ? rewriteMediaUrlsInHtml(raw.content) : "";
+  const rawBody = raw.content ? prepareArticleBodyHtml(raw.content) : "";
   const body = photographers.length > 0 ? stripPhotographerBlob(rawBody) : rawBody;
 
   const intro = raw.articleIntro ? raw.articleIntro.trim() : null;

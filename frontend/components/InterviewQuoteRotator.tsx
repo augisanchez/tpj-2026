@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TpjImage } from "./TpjImage";
 import styles from "./InterviewQuoteRotator.module.css";
 
 export type InterviewQuote = {
@@ -21,11 +22,11 @@ export function InterviewQuoteRotator({ quotes }: Props) {
     <section className={styles.section} aria-label="Interview excerpt">
       <Link href={`/interview/${pick.slug}`} className={styles.block}>
         {pick.image && (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <TpjImage
             className={styles.image}
             src={pick.image.src}
             alt={pick.image.alt}
+            sizes="100vw"
           />
         )}
         <div className={styles.copy}>

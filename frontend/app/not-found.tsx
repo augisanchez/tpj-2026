@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { fetchRecentEssays } from "@/lib/queries/recent-essays";
+import { TpjImage } from "@/components/TpjImage";
 import styles from "@/components/NotFoundPage.module.css";
 
 // Force dynamic rendering so a different essay's hero is picked on each
@@ -26,11 +27,12 @@ export default async function NotFound() {
   return (
     <Link href="/" className={styles.cover}>
       {choice?.featuredImage && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <TpjImage
           className={styles.bg}
           src={choice.featuredImage.src}
           alt={choice.featuredImage.alt}
+          sizes="100vw"
+          priority
         />
       )}
       <div className={styles.gradient} aria-hidden="true" />

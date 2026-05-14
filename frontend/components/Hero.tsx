@@ -1,4 +1,5 @@
 import { ContentTypeChip } from "./ContentTypeChip";
+import { TpjImage } from "./TpjImage";
 import styles from "./Hero.module.css";
 
 type Props = {
@@ -20,11 +21,12 @@ export function Hero({
     <div className={styles.outer}>
       <div className={styles.card}>
         {backgroundImage && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <TpjImage
             className={styles.image}
             src={backgroundImage.src}
             alt={backgroundImage.alt}
+            sizes="100vw"
+            priority
           />
         )}
         <div className={styles.gradient} aria-hidden="true" />
