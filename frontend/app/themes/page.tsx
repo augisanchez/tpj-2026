@@ -32,7 +32,7 @@ export default async function ThemesIndexPage() {
       </header>
 
       <div className={styles.grid}>
-        {THEMES.map((theme, i) => {
+        {THEMES.map((theme) => {
           const essays = themeGroups[theme.slug] ?? [];
           const images = essays
             .map((e) =>
@@ -41,6 +41,7 @@ export default async function ThemesIndexPage() {
                 : null
             )
             .filter((img): img is { src: string; alt: string } => img !== null);
+          const count = themeCounts[theme.slug];
 
           return (
             <Link
@@ -50,16 +51,11 @@ export default async function ThemesIndexPage() {
             >
               <ThemeThumbnail images={images} className={styles.cardThumb} />
               <div className={styles.cardText}>
-                <p className={styles.cardNumber}>
-                  {String(i + 1).padStart(2, "0")}
-                  {themeCounts[theme.slug] != null && (
-                    <>
-                      <span className={styles.cardNumberSep}>·</span>
-                      {themeCounts[theme.slug]}{" "}
-                      {themeCounts[theme.slug] === 1 ? "article" : "articles"}
-                    </>
-                  )}
-                </p>
+                {count != null && (
+                  <p className={styles.cardCount}>
+                    {count} {count === 1 ? "article" : "articles"}
+                  </p>
+                )}
                 <h2 className={styles.cardName}>{theme.name}</h2>
                 <p className={styles.cardPrompt}>{theme.prompt}</p>
               </div>

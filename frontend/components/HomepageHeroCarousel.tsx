@@ -121,11 +121,11 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
 
   if (slides.length === 0) return null;
   if (slides.length === 1) {
-    const slide = slides[0];
-    return <HomepageHero {...slide} />;
+    const { key: _k, ...heroProps } = slides[0];
+    return <HomepageHero {...heroProps} />;
   }
 
-  const active = slides[index];
+  const { key: activeKey, ...activeHeroProps } = slides[index];
 
   return (
     <div
@@ -139,7 +139,7 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
     >
       <AnimatePresence mode="wait" initial={false} custom={direction}>
         <motion.div
-          key={active.key}
+          key={activeKey}
           custom={direction}
           variants={slideVariants}
           initial="enter"
@@ -147,7 +147,7 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
           exit="exit"
           className={styles.slide}
         >
-          <HomepageHero {...active} />
+          <HomepageHero {...activeHeroProps} />
         </motion.div>
       </AnimatePresence>
 
