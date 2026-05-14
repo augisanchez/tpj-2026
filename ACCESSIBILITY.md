@@ -16,18 +16,63 @@ literary editorial content.
 
 ## Approach
 
+### Tools used in the May 2026 pass
+
+| Tool                       | Where it runs    | Role                                                                                                                                                                                                                                                                                                              |
+| -------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **pa11y** (9.1.1)          | CLI via `npx`    | Primary automated checker. Drives Chrome via Puppeteer and runs the WCAG2AA rule suite from HTML\_CodeSniffer. Used for baseline measurement and as the regression gate.                                                                                                                                          |
+| **@axe-core/cli** (4.11.3) | CLI via `npx`    | Independent automated checker for a second opinion, especially on ARIA-specific rules pa11y is weaker at. Cross-checked the same four routes.                                                                                                                                                                     |
+| **Tally** (Equal Entry)    | Chrome extension | Interactive in-browser scanner. Used during remediation as a live-feedback loop: point at a flagged element on the page, see which rule it tripped, fix it, watch the count drop. Complements the CLI tools (which run on demand against the rendered DOM) by surfacing issues continuously as you click around. |
+| **Headless Chrome**        | system-installed | Renders live pages so pa11y and axe-core see the hydrated React DOM, not the server-rendered HTML alone. Required at `/Applications/Google Chrome.app`.                                                                                                                                                            |
+
+Neither pa11y nor @axe-core/cli is installed as a `package.json`
+dependency — both run via `npx` so the lockfile stays clean. Tally is
+installed as a browser extension, not part of the repo.
+
+**Why three tools and not one.** Each catches a different slice. pa11y
+ships HTML\_CodeSniffer's rule set, axe-core ships Deque's, and Tally
+surfaces issues interactively while you author. Running pa11y alone
+would have missed several ARIA-specific issues axe-core caught, and
+the live in-browser loop with Tally was where most of the remediation
+actually happened — the CLI tools served as before/after measurement.
+
 ### Baseline measurement
 
-Before any remediation, ran pa11y against four representative routes:
-homepage, essay, interview, feature. Initial result: **89 errors** across
-the four pages. Most violations were concentrated in three categories:
-text contrast (the muted token), interactive elements without accessible
-names, and missing skip-link infrastructure.
+Before any remediation, ran pa11y against four representative routes
+(homepage, essay, interview, feature). Initial result: **89 errors**
+across the four pages. Most violations clustered in three categories:
+text contrast (the muted token), interactive elements without
+accessible names, and missing skip-link infrastructure. Re-running
+@axe-core/cli against the same routes surfaced an overlapping but not
+identical set, which is the value of running both — each catches
+patterns the other misses.
 
-Used pa11y as the primary checker because its rule coverage maps closely
-to HTML_CodeSniffer's WCAG2AA suite. Cross-checked with @axe-core/cli on
-the same routes for a second opinion on aria-specific issues. Both tools
-are runnable via `npx`; neither is installed as a dependency.
+After remediation: **0 errors** in pa11y on all four routes.
+
+### What automated tooling does not cover
+
+Automated checkers verify mechanical rules: contrast ratios, presence
+of accessible names, valid ARIA relationships, label-to-input
+association, alt-attribute presence. They cannot verify the things
+that matter most for actual users of assistive tech:
+
+- **Focus order matches visual order.** Tools confirm focusability;
+  they do not confirm the sequence makes sense.
+- **Focus return after modal close.** Tools catch tab-traps; they
+  do not catch focus landing in the wrong place after dismissal.
+- **Reading order of grouped content** (card title, byline,
+  description, date) as a screen reader announces it.
+- **Whether `prefers-reduced-motion` actually reduces the right
+  motion, and not other motion that carries meaning.**
+- **Color independence of meaning** when status or affordance is
+  conveyed by color.
+
+Recommended manual checks for any future pass: keyboard tab-through
+of every interactive surface, VoiceOver (or NVDA) on the homepage and
+one article page including modal open/close, Chrome DevTools' "Emulate
+reduced motion" and "Emulate vision deficiencies" rendering settings.
+None of these were documented as run during the May 2026 pass; if
+they were, this section should be updated to note when and by whom.
 
 ### Decision principles
 
@@ -218,6 +263,12 @@ npx @axe-core/cli http://localhost:3000/
 Chrome must be installed at `/Applications/Google Chrome.app` (or
 adjust the PUPPETEER_EXECUTABLE_PATH env var). Both tools run
 headless.
+
+For interactive in-browser verification, open the page in Chrome and
+run **Tally** (Equal Entry's extension) from the toolbar. Tally is the
+right tool while iterating on a fix — it surfaces issues live as you
+edit and reload — and the right complement to a CLI run, which gives
+the clean before/after count.
 
 Add new routes to the verify list as the site grows:
 
