@@ -18,23 +18,23 @@ literary editorial content.
 
 ### Tools used in the May 2026 pass
 
-| Tool                       | Where it runs    | Role                                                                                                                                                                                                                                                                                                              |
-| -------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **pa11y** (9.1.1)          | CLI via `npx`    | Primary automated checker. Drives Chrome via Puppeteer and runs the WCAG2AA rule suite from HTML\_CodeSniffer. Used for baseline measurement and as the regression gate.                                                                                                                                          |
-| **@axe-core/cli** (4.11.3) | CLI via `npx`    | Independent automated checker for a second opinion, especially on ARIA-specific rules pa11y is weaker at. Cross-checked the same four routes.                                                                                                                                                                     |
-| **Tally** (Equal Entry)    | Chrome extension | Interactive in-browser scanner. Used during remediation as a live-feedback loop: point at a flagged element on the page, see which rule it tripped, fix it, watch the count drop. Complements the CLI tools (which run on demand against the rendered DOM) by surfacing issues continuously as you click around. |
-| **Headless Chrome**        | system-installed | Renders live pages so pa11y and axe-core see the hydrated React DOM, not the server-rendered HTML alone. Required at `/Applications/Google Chrome.app`.                                                                                                                                                            |
+| Tool                       | Where it runs    | Role                                                                                                                                                                                          |
+| -------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **pa11y** (9.1.1)          | CLI via `npx`    | Primary automated checker. Drives Chrome via Puppeteer and runs the WCAG2AA rule suite from HTML\_CodeSniffer. Used for the baseline measurement, the iterative remediation loop, and the regression gate after the pass. |
+| **@axe-core/cli** (4.11.3) | CLI via `npx`    | Independent automated checker for a second opinion, especially on ARIA-specific rules pa11y is weaker at. Cross-checked the same four routes.                                                |
+| **Headless Chrome**        | system-installed | Renders live pages so pa11y and axe-core see the hydrated React DOM, not the server-rendered HTML alone. Required at `/Applications/Google Chrome.app`.                                       |
 
 Neither pa11y nor @axe-core/cli is installed as a `package.json`
-dependency — both run via `npx` so the lockfile stays clean. Tally is
-installed as a browser extension, not part of the repo.
+dependency — both run via `npx` so the lockfile stays clean. The
+tradeoff is a first-run download; in exchange there's no upgrade
+maintenance and no transitive dep surface.
 
-**Why three tools and not one.** Each catches a different slice. pa11y
-ships HTML\_CodeSniffer's rule set, axe-core ships Deque's, and Tally
-surfaces issues interactively while you author. Running pa11y alone
-would have missed several ARIA-specific issues axe-core caught, and
-the live in-browser loop with Tally was where most of the remediation
-actually happened — the CLI tools served as before/after measurement.
+**Why two tools and not one.** Each ships a different rule set —
+pa11y wraps HTML\_CodeSniffer, axe-core uses Deque's engine. Running
+pa11y alone would have missed several ARIA-specific issues axe-core
+caught. Both surface roughly the same contrast and accessible-name
+failures, but their ARIA coverage diverges enough that cross-checking
+is worth the second run.
 
 ### Baseline measurement
 
@@ -263,12 +263,6 @@ npx @axe-core/cli http://localhost:3000/
 Chrome must be installed at `/Applications/Google Chrome.app` (or
 adjust the PUPPETEER_EXECUTABLE_PATH env var). Both tools run
 headless.
-
-For interactive in-browser verification, open the page in Chrome and
-run **Tally** (Equal Entry's extension) from the toolbar. Tally is the
-right tool while iterating on a fix — it surfaces issues live as you
-edit and reload — and the right complement to a CLI run, which gives
-the clean before/after count.
 
 Add new routes to the verify list as the site grows:
 
