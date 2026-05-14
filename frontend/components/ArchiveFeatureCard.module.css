@@ -27,9 +27,6 @@
   .card:hover::after {
     box-shadow: inset 0 0 0 12px var(--text);
   }
-  .card:hover .image {
-    transform: scale(1.03);
-  }
   .card:hover .ctaArrow {
     transform: translateX(4px);
   }
@@ -50,7 +47,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 600ms ease-out;
 }
 
 .text {

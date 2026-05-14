@@ -60,12 +60,11 @@
   min-width: 0;
 }
 
+/* Wraps the composite ThemeThumbnail so the motion.div can be the
+   scale target (parent variant comes from MotionLink whileHover). */
 .cardThumb {
-  transition: transform 400ms ease-out;
-}
-
-.card:hover .cardThumb {
-  transform: scale(1.015);
+  width: 100%;
+  aspect-ratio: 1 / 1;
 }
 
 .cardText {
@@ -93,6 +92,19 @@
   color: var(--text);
   margin: 0;
   transition: color 150ms ease-out;
+  position: relative;
+  display: inline-block;
+}
+
+.cardNameAccent {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 3px;
+  background: var(--chip-bg);
+  pointer-events: none;
 }
 
 .cardPrompt {

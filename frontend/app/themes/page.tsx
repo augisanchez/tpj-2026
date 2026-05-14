@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ThemeThumbnail } from "@/components/ThemeThumbnail";
+import { ThemeIndexCard } from "@/components/ThemeIndexCard";
 import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
 import { fetchThemeCounts } from "@/lib/queries/theme-counts";
 import { THEMES } from "@/lib/themes";
@@ -44,22 +43,14 @@ export default async function ThemesIndexPage() {
           const count = themeCounts[theme.slug];
 
           return (
-            <Link
+            <ThemeIndexCard
               key={theme.slug}
-              href={`/theme/${theme.slug}`}
-              className={styles.card}
-            >
-              <ThemeThumbnail images={images} className={styles.cardThumb} />
-              <div className={styles.cardText}>
-                {count != null && (
-                  <p className={styles.cardCount}>
-                    {count} {count === 1 ? "article" : "articles"}
-                  </p>
-                )}
-                <h2 className={styles.cardName}>{theme.name}</h2>
-                <p className={styles.cardPrompt}>{theme.prompt}</p>
-              </div>
-            </Link>
+              slug={theme.slug}
+              name={theme.name}
+              prompt={theme.prompt}
+              count={count ?? null}
+              images={images}
+            />
           );
         })}
       </div>

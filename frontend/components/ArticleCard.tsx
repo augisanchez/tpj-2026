@@ -2,9 +2,18 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { motion } from "motion/react";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
+import {
+  cardSpring,
+  imageScaleVariants,
+  titleAccentTransition,
+  titleAccentVariants,
+} from "@/lib/card-motion";
 import styles from "./ArticleCard.module.css";
+
+const MotionLink = motion.create(Link);
 
 export type ArticleCardVariant =
   | "1up"
@@ -75,20 +84,34 @@ export function ArticleCard({
   }`;
 
   return (
-    <Link href={article.href} className={styles.card}>
+    <MotionLink
+      href={article.href}
+      className={styles.card}
+      initial="rest"
+      animate="rest"
+      whileHover="hover"
+    >
       <div className={styles.imageBlock}>
         <div className={wrapperClass}>
           {hasComposite ? (
-            <ThemeThumbnail images={compositeImages!} fillParent />
+            <motion.div
+              className={styles.motionImageScale}
+              variants={imageScaleVariants}
+              transition={cardSpring}
+            >
+              <ThemeThumbnail images={compositeImages!} fillParent />
+            </motion.div>
           ) : (
             article.featuredImage && (
-              <img
+              <motion.img
                 className={`${styles.image}${imageLoaded ? " " + styles.imageLoaded : ""}`}
                 src={article.featuredImage.src}
                 alt={article.featuredImage.alt}
                 loading="lazy"
                 onLoad={() => setImageLoaded(true)}
                 onError={() => setImageLoaded(true)}
+                variants={imageScaleVariants}
+                transition={cardSpring}
               />
             )
           )}
@@ -107,7 +130,16 @@ export function ArticleCard({
           label={article.contentTypeLabel}
           size={CHIP_SIZE_BY_VARIANT[variant]}
         />
-        <h3 className={titleClass}>{article.title}</h3>
+        <h3 className={titleClass}>
+          {article.title}
+          <motion.span
+            className={styles.titleAccent}
+            aria-hidden="true"
+            variants={titleAccentVariants}
+            transition={titleAccentTransition}
+            style={{ originX: 0 }}
+          />
+        </h3>
         {article.description && (
           <p className={styles.description}>{article.description}</p>
         )}
@@ -117,6 +149,6 @@ export function ArticleCard({
           </time>
         )}
       </div>
-    </Link>
+    </MotionLink>
   );
 }

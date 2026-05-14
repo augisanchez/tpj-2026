@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "motion/react";
 import { ContentTypeChip } from "./ContentTypeChip";
 import { TpjImage } from "./TpjImage";
+import { cardSpring, imageScaleVariants } from "@/lib/card-motion";
 import styles from "./HomepageHero.module.css";
+
+const MotionLink = motion.create(Link);
 
 type Props = {
   href: string;
@@ -41,15 +47,27 @@ export function HomepageHero({
 
   return (
     <div className={styles.outer}>
-      <Link href={href} className={styles.card}>
+      <MotionLink
+        href={href}
+        className={styles.card}
+        initial="rest"
+        animate="rest"
+        whileHover="hover"
+      >
         {backgroundImage && (
-          <TpjImage
-            src={backgroundImage.src}
-            alt={backgroundImage.alt}
-            sizes="100vw"
-            priority
-            className={styles.image}
-          />
+          <motion.div
+            className={styles.imageWrap}
+            variants={imageScaleVariants}
+            transition={cardSpring}
+          >
+            <TpjImage
+              src={backgroundImage.src}
+              alt={backgroundImage.alt}
+              sizes="100vw"
+              priority
+              className={styles.image}
+            />
+          </motion.div>
         )}
         <div className={styles.gradient} aria-hidden="true" />
         <div className={styles.stack}>
@@ -58,7 +76,7 @@ export function HomepageHero({
           {excerpt && <p className={styles.subtitle}>{excerpt}</p>}
           {byline && <p className={styles.byline}>{byline}</p>}
         </div>
-      </Link>
+      </MotionLink>
     </div>
   );
 }

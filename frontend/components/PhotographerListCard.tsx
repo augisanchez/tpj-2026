@@ -1,6 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "motion/react";
 import { PhotographerAvatar } from "./PhotographerAvatar";
+import { cardSpring, imageScaleVariants } from "@/lib/card-motion";
 import styles from "./PhotographerListCard.module.css";
+
+const MotionLink = motion.create(Link);
 
 type Props = {
   name: string;
@@ -39,14 +45,24 @@ export function PhotographerListCard({
 }: Props) {
   const className = `${styles.card}${centered ? " " + styles.centered : ""}`;
   return (
-    <Link href={`/photographer/${slug}`} className={className}>
-      <div className={styles.portraitWrapper}>
+    <MotionLink
+      href={`/photographer/${slug}`}
+      className={className}
+      initial="rest"
+      animate="rest"
+      whileHover="hover"
+    >
+      <motion.div
+        className={styles.portraitWrapper}
+        variants={imageScaleVariants}
+        transition={cardSpring}
+      >
         <PhotographerAvatar
           name={name}
           portrait={portrait ?? undefined}
           className={styles.portrait}
         />
-      </div>
+      </motion.div>
       <h3 className={styles.cardName}>{name}</h3>
       {!compact && bio && <p className={styles.cardBio}>{bio}</p>}
       {articleCount > 0 && (
@@ -57,6 +73,6 @@ export function PhotographerListCard({
           </span>
         </p>
       )}
-    </Link>
+    </MotionLink>
   );
 }

@@ -106,21 +106,24 @@
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: transform 600ms ease-out, opacity 400ms ease-out;
+  transition: opacity 400ms ease-out;
 }
 
 .imageLoaded {
   opacity: 1;
 }
 
-.card:hover .image {
-  transform: scale(1.015);
+/* Wraps a non-img image element (e.g. ThemeThumbnail composite) so
+   motion's scale variant can target a single element rather than
+   trying to transform the inner grid. */
+.motionImageScale {
+  width: 100%;
+  height: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .image {
     opacity: 1;
-    transition: transform 600ms ease-out;
   }
   .imageWrapperLoading {
     animation: none;
@@ -139,6 +142,22 @@
   letter-spacing: -0.01em;
   margin: 8px 0 0 0;
   overflow-wrap: anywhere;
+  position: relative;
+}
+
+/* Lime underline that draws in on card hover (motion-driven via
+   titleAccentVariants on a motion.span inside the title). Sits a
+   hair below the descender baseline so it doesn't crash into
+   lowercase tails. */
+.titleAccent {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 3px;
+  background: var(--chip-bg);
+  pointer-events: none;
 }
 
 .description {

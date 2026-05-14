@@ -1,3 +1,4 @@
+import { ShopProductCard } from "@/components/ShopProductCard";
 import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/ShopPage.module.css";
 
@@ -95,33 +96,12 @@ export default function ShopPage() {
 
       <main className={styles.page}>
         <div className={styles.grid}>
-          {PRODUCTS.map((product) => {
-            const isExternal = product.href.startsWith("http");
-            return (
-              <a
-                key={`${product.title}-${product.variant}`}
-                href={product.href}
-                className={styles.card}
-                target={isExternal ? "_blank" : undefined}
-                rel={isExternal ? "noopener noreferrer" : undefined}
-              >
-                <div className={styles.cardImage}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={product.image} alt={product.title} />
-                </div>
-                <div className={styles.cardLabel}>
-                  <h2 className={styles.cardTitle}>{product.title}</h2>
-                  <p className={styles.cardVariant}>{product.variant}</p>
-                </div>
-                <p className={styles.cardCta}>
-                  {product.cta ?? "Shop"}
-                  <span className={styles.cardCtaArrow} aria-hidden="true">
-                    {isExternal ? "↗" : "→"}
-                  </span>
-                </p>
-              </a>
-            );
-          })}
+          {PRODUCTS.map((product) => (
+            <ShopProductCard
+              key={`${product.title}-${product.variant}`}
+              {...product}
+            />
+          ))}
         </div>
       </main>
     </>

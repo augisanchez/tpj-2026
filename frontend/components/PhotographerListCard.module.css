@@ -33,13 +33,9 @@
   height: 100%;
   object-fit: cover;
   object-position: center top;
-  transition: transform 600ms ease-out;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .card:hover .portrait {
-    transform: scale(1.03);
-  }
   .card:hover .cardCountArrow {
     transform: translateX(4px);
   }
