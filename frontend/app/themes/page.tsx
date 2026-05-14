@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ThemeThumbnail } from "@/components/ThemeThumbnail";
+import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
 import { THEMES } from "@/lib/themes";
 import styles from "@/components/ThemesIndex.module.css";
 
@@ -8,7 +10,14 @@ export const metadata = {
     "Eleven themes that thread through the TPJ archive.",
 };
 
-export default function ThemesIndexPage() {
+export default async function ThemesIndexPage() {
+  // Pull 4 tagged essays per theme for the composite thumbnail.
+  // fetchEssaysByThemes runs all 11 queries in parallel; ~150ms typical.
+  const themeGroups = await fetchEssaysByThemes(
+    THEMES.map((t) => t.slug),
+    4
+  );
+
   return (
     <>
       <header className={styles.intro}>
@@ -21,22 +30,34 @@ export default function ThemesIndexPage() {
         </p>
       </header>
 
-      <div className={styles.list}>
-        {THEMES.map((theme, i) => (
-          <Link
-            key={theme.slug}
-            href={`/theme/${theme.slug}`}
-            className={styles.row}
-          >
-            <span className={styles.rowNumber}>
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <span className={styles.rowText}>
-              <span className={styles.rowName}>{theme.name}</span>
-              <span className={styles.rowPrompt}>{theme.prompt}</span>
-            </span>
-          </Link>
-        ))}
+      <div className={styles.grid}>
+        {THEMES.map((theme, i) => {
+          const essays = themeGroups[theme.slug] ?? [];
+          const images = essays
+            .map((e) =>
+              e.featuredImage
+                ? { src: e.featuredImage.src, alt: e.featuredImage.alt }
+                : null
+            )
+            .filter((img): img is { src: string; alt: string } => img !== null);
+
+          return (
+            <Link
+              key={theme.slug}
+              href={`/theme/${theme.slug}`}
+              className={styles.card}
+            >
+              <ThemeThumbnail images={images} className={styles.cardThumb} />
+              <div className={styles.cardText}>
+                <p className={styles.cardNumber}>
+                  {String(i + 1).padStart(2, "0")}
+                </p>
+                <h2 className={styles.cardName}>{theme.name}</h2>
+                <p className={styles.cardPrompt}>{theme.prompt}</p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </>
   );

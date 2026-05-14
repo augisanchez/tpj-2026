@@ -38,47 +38,56 @@
   margin: 0;
 }
 
-.list {
+/* Grid of theme cards — Spotify-playlist treatment with a 2×2
+   composite thumbnail per theme. 3 columns at desktop, 2 at tablet,
+   1 at mobile. */
+.grid {
   max-width: var(--content-max);
   margin: 0 auto;
   padding: 24px 32px 120px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  column-gap: 80px;
-  row-gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 32px;
+  row-gap: 64px;
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 80px 1fr;
-  gap: 32px;
-  padding: 32px 0;
-  border-top: 1px solid var(--border);
-  align-items: flex-start;
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   text-decoration: none;
   color: inherit;
+  min-width: 0;
 }
 
-.rowNumber {
+.cardThumb {
+  transition: transform 400ms ease-out;
+}
+
+.card:hover .cardThumb {
+  transform: scale(1.015);
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardNumber {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 4px 0 0;
+  margin: 0;
 }
 
-.rowText {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.rowName {
+.cardName {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(32px, 4vw, 56px);
+  font-size: clamp(24px, 1rem + 1.2vw, 36px);
   line-height: 1.05;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -86,24 +95,20 @@
   transition: color 150ms ease-out;
 }
 
-.rowPrompt {
+.cardPrompt {
   font-family: var(--font-serif), Georgia, serif;
   font-style: italic;
   font-weight: 400;
-  font-size: var(--text-body);
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.45;
   color: var(--muted);
   margin: 0;
 }
 
-.row:hover .rowName {
-  color: var(--text);
-}
-
 @media (max-width: 1024px) {
-  .list {
-    grid-template-columns: 1fr;
-    column-gap: 0;
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 48px;
   }
 }
 
@@ -111,12 +116,9 @@
   .intro {
     padding: 64px 16px 24px;
   }
-  .list {
+  .grid {
+    grid-template-columns: 1fr;
     padding: 16px 16px 64px;
-  }
-  .row {
-    grid-template-columns: 56px 1fr;
-    gap: 16px;
-    padding: 24px 0;
+    row-gap: 40px;
   }
 }
