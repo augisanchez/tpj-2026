@@ -8,6 +8,16 @@
   gap: 2px;
 }
 
+/* Drops the internal aspect-ratio so the parent's shape governs.
+   Used inside ArticleCard where the imageWrapper already enforces
+   a 4/3 aspect. */
+.fill {
+  aspect-ratio: auto;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
 .cell {
   position: relative;
   overflow: hidden;

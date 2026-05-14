@@ -46,23 +46,6 @@ function summarize(
 }
 
 /**
- * Stand-in article count per theme. Until Step 12 (AI theme tagging)
- * ships and real per-theme counts exist, deterministically hash the
- * slug into a plausible-looking value (18-32) so the homepage Theme
- * cards can render their collection badge with varied numbers instead
- * of every theme showing the same stand-in length of 3. Replace this
- * with the real per-theme fetch when tagging lands; the call site
- * doesn't need to change.
- */
-function themeBadgeCount(slug: string): number {
-  let hash = 0;
-  for (let i = 0; i < slug.length; i++) {
-    hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
-  }
-  return 18 + (hash % 15); // 18..32
-}
-
-/**
  * Random sample of `n` items from `pool` without duplicates within the
  * sample. Returns fewer when the pool is short.
  */
@@ -244,8 +227,7 @@ export default async function Home() {
     description?: string;
     showDate: boolean;
     featuredImage?: { src: string; alt: string };
-    stacked?: boolean;
-    badgeCount?: number;
+    compositeImages?: { src: string; alt: string }[];
   }> = [];
 
   featuredCards.push({
@@ -272,11 +254,20 @@ export default async function Home() {
     });
   }
 
-  // Two random themes, each with a cover image borrowed from its
-  // (stand-in) essay group until per-theme tagging ships.
+  // Two random themes, each with a Spotify-playlist-style 2×2
+  // composite of its top tagged articles. The composite reads as a
+  // collection at a glance, so we don't need the prior fake stacked-
+  // paper effect or the count badge.
   const featuredThemes = pickRandom(THEMES, 2);
   for (const theme of featuredThemes) {
-    const themeCover = themeGroups[theme.slug]?.[0]?.featuredImage ?? undefined;
+    const groupImages = (themeGroups[theme.slug] ?? [])
+      .map((e) =>
+        e.featuredImage
+          ? { src: e.featuredImage.src, alt: e.featuredImage.alt }
+          : null
+      )
+      .filter((i): i is { src: string; alt: string } => i !== null)
+      .slice(0, 4);
     featuredCards.push({
       key: `theme-${theme.slug}`,
       title: theme.name,
@@ -285,9 +276,7 @@ export default async function Home() {
       contentTypeLabel: "Theme",
       description: theme.prompt,
       showDate: false,
-      featuredImage: themeCover,
-      stacked: true,
-      badgeCount: themeBadgeCount(theme.slug),
+      compositeImages: groupImages,
     });
   }
 
@@ -417,8 +406,7 @@ export default async function Home() {
               key={card.key}
               variant="3up"
               showDate={card.showDate}
-              stacked={card.stacked}
-              badgeCount={card.badgeCount}
+              compositeImages={card.compositeImages}
               article={{
                 title: card.title,
                 date: card.date,

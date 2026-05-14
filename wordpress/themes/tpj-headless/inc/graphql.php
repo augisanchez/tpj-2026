@@ -506,6 +506,23 @@ add_action( 'graphql_register_types', function () {
 		},
 	] );
 
+	// Per-theme article counts (essay + interview + feature combined).
+	// WPGraphQL's default `count` on the term reflects every post type
+	// the taxonomy is attached to, which is what we want — but the
+	// term's `count` isn't exposed by default on the auto-generated
+	// Theme type. This adds it.
+	register_graphql_field( 'Theme', 'articleCount', [
+		'type'        => 'Int',
+		'description' => 'Total articles (essay + interview + feature) tagged with this theme.',
+		'resolve'     => function ( $term ) {
+			$term_id = is_object( $term ) ? ( $term->term_id ?? 0 ) : 0;
+			if ( $term_id === 0 ) return 0;
+			$obj = get_term( $term_id, 'tpj-theme' );
+			if ( is_wp_error( $obj ) || ! $obj ) return 0;
+			return (int) $obj->count;
+		},
+	] );
+
 	// Staff-picked articles across essay/interview/feature, in
 	// random order per ISR cache. Powers the homepage hero
 	// carousel's "Staff Pick" slide and Dive Deeper's weighted

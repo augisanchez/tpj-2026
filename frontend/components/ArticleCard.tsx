@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
+import { ThemeThumbnail } from "./ThemeThumbnail";
 import styles from "./ArticleCard.module.css";
 
 export type ArticleCardVariant =
@@ -27,12 +28,12 @@ type Props = {
   variant?: ArticleCardVariant;
   showDate?: boolean;
   /**
-   * Render with stacked-paper lines beneath the image, so the card
-   * reads as a collection (e.g. a Theme grouping multiple articles)
-   * rather than a single piece. Two inset horizontal rules sit below
-   * the bottom edge of the image.
+   * Composite thumbnail mode: when provided, render a 2×2
+   * collection-of-images instead of the single featuredImage. Used
+   * on Theme cards in Dive Deeper so the card reads as a
+   * collection at a glance (Spotify-playlist treatment).
    */
-  stacked?: boolean;
+  compositeImages?: { src: string; alt: string }[];
   /**
    * Article count badge rendered in the bottom-right of the image.
    * Use on collection cards (Themes) to reinforce that the link
@@ -54,10 +55,11 @@ export function ArticleCard({
   article,
   variant = "4up",
   showDate = true,
-  stacked = false,
+  compositeImages,
   badgeCount,
 }: Props) {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const hasComposite = Boolean(compositeImages && compositeImages.length > 0);
   const hasImage = Boolean(article.featuredImage);
   const titleClass = `${styles.title} ${styles[`title${variant}` as const]}`;
   const formattedDate = new Date(article.date).toLocaleDateString(undefined, {
@@ -67,26 +69,28 @@ export function ArticleCard({
   });
 
   const wrapperClass = `${styles.imageWrapper}${
-    hasImage && !imageLoaded ? " " + styles.imageWrapperLoading : ""
-  }`;
-
-  const imageBlockClass = `${styles.imageBlock}${
-    stacked ? " " + styles.imageBlockStacked : ""
+    hasImage && !imageLoaded && !hasComposite
+      ? " " + styles.imageWrapperLoading
+      : ""
   }`;
 
   return (
     <Link href={article.href} className={styles.card}>
-      <div className={imageBlockClass}>
+      <div className={styles.imageBlock}>
         <div className={wrapperClass}>
-          {article.featuredImage && (
-            <img
-              className={`${styles.image}${imageLoaded ? " " + styles.imageLoaded : ""}`}
-              src={article.featuredImage.src}
-              alt={article.featuredImage.alt}
-              loading="lazy"
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageLoaded(true)}
-            />
+          {hasComposite ? (
+            <ThemeThumbnail images={compositeImages!} fillParent />
+          ) : (
+            article.featuredImage && (
+              <img
+                className={`${styles.image}${imageLoaded ? " " + styles.imageLoaded : ""}`}
+                src={article.featuredImage.src}
+                alt={article.featuredImage.alt}
+                loading="lazy"
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageLoaded(true)}
+              />
+            )
           )}
           {typeof badgeCount === "number" && badgeCount > 0 && (
             <span
@@ -97,12 +101,6 @@ export function ArticleCard({
             </span>
           )}
         </div>
-        {stacked && (
-          <div className={styles.stackLines} aria-hidden="true">
-            <span className={styles.stackLine} />
-            <span className={styles.stackLine} />
-          </div>
-        )}
       </div>
       <div className={styles.textStack}>
         <ContentTypeChip

@@ -34,42 +34,6 @@
   flex-direction: column;
 }
 
-/* Stacked-paper variant: square off the image's bottom corners so the
-   first stack line attaches flush against it. The image's top corners
-   keep their 8px rounding; the stack lines below carry the matching
-   8px on their own bottom corners. The end result reads as a card
-   sitting on top of two narrower cards, each peeking out below. Used
-   on Theme cards in Dive Deeper to signal "this links to a
-   collection" rather than a single piece. */
-.imageBlockStacked > .imageWrapper {
-  border-radius: 8px 8px 0 0;
-}
-
-.stackLines {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  pointer-events: none;
-}
-
-.stackLine {
-  display: block;
-  height: 6px;
-  background: var(--text);
-  /* Match the card's bottom corner radius so each layer reads as the
-     edge of another rounded card behind it. Top corners stay square
-     to butt cleanly against the layer above. */
-  border-radius: 0 0 8px 8px;
-}
-
-.stackLine:nth-child(1) {
-  margin: 0 14px;
-}
-
-.stackLine:nth-child(2) {
-  margin: 0 28px;
-}
-
 /* Collection-count badge: small dark-grey circle in the bottom-right
    of the image, with the article count rendered in the display
    (title) font. Used on Theme cards in Dive Deeper to reinforce

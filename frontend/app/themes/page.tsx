@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ThemeThumbnail } from "@/components/ThemeThumbnail";
 import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
+import { fetchThemeCounts } from "@/lib/queries/theme-counts";
 import { THEMES } from "@/lib/themes";
 import styles from "@/components/ThemesIndex.module.css";
 
@@ -11,12 +12,12 @@ export const metadata = {
 };
 
 export default async function ThemesIndexPage() {
-  // Pull 4 tagged essays per theme for the composite thumbnail.
-  // fetchEssaysByThemes runs all 11 queries in parallel; ~150ms typical.
-  const themeGroups = await fetchEssaysByThemes(
-    THEMES.map((t) => t.slug),
-    4
-  );
+  // Pull 4 tagged essays per theme for the composite thumbnail +
+  // per-theme article counts for the collection-size label.
+  const [themeGroups, themeCounts] = await Promise.all([
+    fetchEssaysByThemes(THEMES.map((t) => t.slug), 4),
+    fetchThemeCounts(),
+  ]);
 
   return (
     <>
@@ -51,6 +52,13 @@ export default async function ThemesIndexPage() {
               <div className={styles.cardText}>
                 <p className={styles.cardNumber}>
                   {String(i + 1).padStart(2, "0")}
+                  {themeCounts[theme.slug] != null && (
+                    <>
+                      <span className={styles.cardNumberSep}>·</span>
+                      {themeCounts[theme.slug]}{" "}
+                      {themeCounts[theme.slug] === 1 ? "article" : "articles"}
+                    </>
+                  )}
                 </p>
                 <h2 className={styles.cardName}>{theme.name}</h2>
                 <p className={styles.cardPrompt}>{theme.prompt}</p>

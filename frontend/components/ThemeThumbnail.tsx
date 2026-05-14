@@ -6,6 +6,12 @@ type ThumbImage = { src: string; alt: string };
 type Props = {
   images: ThumbImage[];
   className?: string;
+  /**
+   * When true, fill the parent's box instead of enforcing a 1:1
+   * aspect ratio internally. Used when embedding inside a card
+   * whose imageWrapper already constrains the shape.
+   */
+  fillParent?: boolean;
 };
 
 /**
@@ -23,14 +29,15 @@ type Props = {
  * Pairs with TpjImage so the eventual Cloudflare Image Resizing
  * cutover transparently picks up responsive srcsets.
  */
-export function ThemeThumbnail({ images, className }: Props) {
+export function ThemeThumbnail({ images, className, fillParent = false }: Props) {
   const cells = images.slice(0, 4);
   const variantClass =
     styles[`count${cells.length}` as keyof typeof styles] ?? "";
-  const wrapperClass = `${styles.grid} ${variantClass}${className ? " " + className : ""}`;
+  const fillClass = fillParent ? " " + styles.fill : "";
+  const wrapperClass = `${styles.grid} ${variantClass}${fillClass}${className ? " " + className : ""}`;
 
   if (cells.length === 0) {
-    return <div className={`${styles.grid} ${styles.empty}${className ? " " + className : ""}`} />;
+    return <div className={`${styles.grid}${fillClass} ${styles.empty}${className ? " " + className : ""}`} />;
   }
 
   return (

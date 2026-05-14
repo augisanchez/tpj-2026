@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  type Variants,
+} from "motion/react";
+import { useDrag } from "@use-gesture/react";
 import { HomepageHero } from "./HomepageHero";
 import styles from "./HomepageHeroCarousel.module.css";
 
@@ -24,6 +30,29 @@ type Props = {
 };
 
 const DEFAULT_INTERVAL = 7000;
+const SWIPE_DISTANCE = 60;
+const SWIPE_VELOCITY = 0.3;
+
+// Direction-aware slide variants: incoming slide flies in from the
+// side matching the navigation direction, outgoing slide flies away
+// to the opposite side. 1 = next, -1 = prev. Subtle 36px translate
+// keeps the motion editorial rather than aggressive.
+const slideVariants: Variants = {
+  enter: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? 36 : -36,
+  }),
+  active: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.55, ease: [0.2, 0.6, 0.2, 1] },
+  },
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? -36 : 36,
+    transition: { duration: 0.35, ease: [0.4, 0, 1, 1] },
+  }),
+};
 
 /**
  * Rotates through up to three homepage hero slides:
@@ -42,17 +71,53 @@ const DEFAULT_INTERVAL = 7000;
 export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: Props) {
   const reducedMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
+  // Direction sign that the AnimatePresence variants use to decide
+  // which side to slide in/out from. +1 next, -1 prev. Reset on
+  // every transition end via the AnimatePresence onExitComplete.
+  const [direction, setDirection] = useState(1);
   const [paused, setPaused] = useState(false);
+
+  const advance = (delta: number) => {
+    setDirection(delta > 0 ? 1 : -1);
+    setIndex((i) => (i + delta + slides.length) % slides.length);
+  };
+
+  const goTo = (next: number) => {
+    setDirection(next > index ? 1 : -1);
+    setIndex(next);
+  };
 
   useEffect(() => {
     if (slides.length <= 1) return;
     if (reducedMotion) return;
     if (paused) return;
     const id = window.setInterval(() => {
+      setDirection(1);
       setIndex((i) => (i + 1) % slides.length);
     }, intervalMs);
     return () => window.clearInterval(id);
   }, [slides.length, intervalMs, paused, reducedMotion]);
+
+  // Swipe gestures for touch + pointer drag. Crossing 60px of drag
+  // distance OR 0.3 velocity in either direction advances. Vertical
+  // movement is ignored so vertical page scroll still works inside
+  // the carousel surface.
+  const bindDrag = useDrag(
+    ({ last, movement: [mx], velocity: [vx], direction: [dx] }) => {
+      if (!last) return;
+      if (slides.length <= 1) return;
+      const distance = Math.abs(mx);
+      const speed = Math.abs(vx);
+      if (distance < SWIPE_DISTANCE && speed < SWIPE_VELOCITY) return;
+      const dir = dx < 0 ? 1 : -1; // swipe left → next
+      advance(dir);
+    },
+    {
+      axis: "x",
+      filterTaps: true,
+      pointer: { touch: true },
+    }
+  );
 
   if (slides.length === 0) return null;
   if (slides.length === 1) {
@@ -69,14 +134,17 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
+      {...bindDrag()}
+      style={{ touchAction: "pan-y" }}
     >
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="wait" initial={false} custom={direction}>
         <motion.div
           key={active.key}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.45, ease: [0.2, 0.6, 0.2, 1] }}
+          custom={direction}
+          variants={slideVariants}
+          initial="enter"
+          animate="active"
+          exit="exit"
           className={styles.slide}
         >
           <HomepageHero {...active} />
@@ -99,7 +167,7 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
               aria-label={`Show slide ${i + 1} of ${slides.length}: ${slide.contentTypeLabel}`}
               tabIndex={isActive ? 0 : -1}
               className={`${styles.dot}${isActive ? " " + styles.dotActive : ""}`}
-              onClick={() => setIndex(i)}
+              onClick={() => goTo(i)}
             />
           );
         })}
