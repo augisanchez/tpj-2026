@@ -34,100 +34,30 @@
   margin: 0;
 }
 
-/* Channels list */
-
-.channels {
-  list-style: none;
-  margin: 0 auto 96px;
-  padding: 0;
-  max-width: 880px;
-  counter-reset: channel;
-}
-
-.channel {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 32px;
-  padding: 40px 0;
-  border-top: 1px solid var(--border);
-  align-items: baseline;
-  counter-increment: channel;
-}
-
-.channel:last-child {
-  border-bottom: 1px solid var(--border);
-}
-
-.channel::before {
-  content: counter(channel, decimal-leading-zero);
+.note {
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-}
-
-.channelText {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.channelLabel {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: var(--text-caption);
+  line-height: 1.55;
   color: var(--muted);
   margin: 0;
 }
 
-.channelDescription {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 400;
-  font-size: var(--text-body);
-  line-height: 1.65;
+.noteLink {
   color: var(--text);
-  margin: 0;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms ease-out,
+    text-decoration-thickness 150ms ease-out;
 }
 
-.channelLink {
-  font-family: var(--font-display), Impact, sans-serif;
-  font-weight: 700;
-  font-size: clamp(22px, 2.5vw, 32px);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  color: var(--text);
-  text-decoration: none;
-  margin: 8px 0 0;
-  display: inline-block;
-  overflow-wrap: anywhere;
-  border-bottom: 2px solid var(--text);
-  padding-bottom: 4px;
-  transition: color 150ms ease-out, border-color 150ms ease-out,
-    border-bottom-width 150ms ease-out;
-  align-self: flex-start;
-}
-
-.channelLink:hover {
-  border-bottom-color: var(--chip-bg);
-  border-bottom-width: 6px;
+.noteLink:hover {
+  text-decoration-color: var(--chip-bg);
+  text-decoration-thickness: 3px;
 }
 
 @media (max-width: 768px) {
   .page {
     padding: 64px 16px;
-  }
-  .channel {
-    grid-template-columns: 48px 1fr;
-    gap: 16px;
-    padding: 28px 0;
-  }
-}
-
-@media (max-width: 640px) {
-  .channelLink {
-    font-size: 20px;
   }
 }

@@ -1,0 +1,288 @@
+.form {
+  max-width: 880px;
+  margin: 0 auto 96px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: clamp(24px, 4vw, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.eyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.field > legend {
+  padding: 0;
+  margin-bottom: 6px;
+}
+
+.chipGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.chipInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.chipLabel {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-ui);
+  font-weight: 600;
+  color: var(--chip-text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 16px;
+  transition: background 150ms ease-out, color 150ms ease-out,
+    border-color 150ms ease-out;
+  user-select: none;
+}
+
+.chip:hover .chipLabel {
+  background: var(--chip-bg);
+  border-color: var(--chip-bg);
+}
+
+.chipInput:checked + .chipLabel {
+  background: var(--chip-active);
+  color: var(--chip-active-text);
+  border-color: var(--chip-active);
+}
+
+.chipInput:focus-visible + .chipLabel {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.label {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: var(--text-ui);
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.input,
+.textarea {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: border-color 150ms ease-out;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--text);
+}
+
+.input[aria-invalid="true"],
+.textarea[aria-invalid="true"] {
+  border-color: #b00020;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 144px;
+}
+
+.helperRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.helperText {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-caption);
+  color: var(--muted);
+  margin: 0;
+}
+
+.wordCount {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-caption);
+  color: var(--muted);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.wordCountOver {
+  color: #b00020;
+  font-weight: 700;
+}
+
+.errorText {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-caption);
+  color: #b00020;
+  margin: 0;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 8px 0 0;
+  width: 100%;
+  height: 0;
+}
+
+.checkboxField {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: var(--text);
+  cursor: pointer;
+}
+
+.checkboxLabel {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-caption);
+  color: var(--text);
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.formError {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-body);
+  color: #b00020;
+  margin: 0;
+  padding: 12px 16px;
+  background: rgba(176, 0, 32, 0.06);
+  border-radius: 8px;
+}
+
+.submit {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: var(--text-body);
+  letter-spacing: 0.02em;
+  background: var(--text);
+  color: var(--surface);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: background 150ms ease-out, color 150ms ease-out;
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--chip-bg);
+  color: var(--text);
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.success {
+  max-width: 880px;
+  margin: 0 auto 96px;
+  background: var(--chip-bg);
+  border-radius: 16px;
+  padding: 40px clamp(24px, 4vw, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.successEyebrow {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 0;
+}
+
+.successHeadline {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--text);
+  margin: 0;
+}
+
+.successBody {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,3 +1,4 @@
+import { SubmissionForm } from "@/components/SubmissionForm";
 import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/SubmitPage.module.css";
 
@@ -9,9 +10,14 @@ export const metadata = {
 
 const GUIDELINES: { title: string; detail?: string }[] = [
   {
+    title: "Photo essays only.",
+    detail:
+      "We publish photography, not writing. Essays that are mostly text, criticism, or commentary aren’t a fit, even if they include images.",
+  },
+  {
     title: "Any theme you like.",
     detail:
-      "We avoid trying to constrain our photographers’ process too much, but we do prefer work that has a strong POV, a good deal of energy in the subjects and settings, and are especially fond of photos which strongly convey emotion and/or thematic subtext.",
+      "We try not to box in our photographers, but we do love work with a strong POV, real energy in its subjects and settings, and photos that carry emotion or some kind of thematic undercurrent.",
   },
   {
     title: "A narrative or thematic connection across the images.",
@@ -24,58 +30,48 @@ const GUIDELINES: { title: string; detail?: string }[] = [
   },
   {
     title: "An intro of no more than 200 words.",
-    detail: "May be edited by staff.",
+    detail: "We may tighten it up.",
   },
   {
     title: "A title.",
-    detail: "May also be edited by staff.",
+    detail: "We may tweak that too.",
   },
   {
-    title: "A profile picture.",
-  },
-  {
-    title:
-      "We reserve the right to reject the photo essay any time before publication.",
+    title: "We reserve the right to reject any essay before publication.",
+    detail: "It happens, and it’s nothing personal.",
   },
 ];
 
 export default function SubmitPage() {
   return (
     <>
-      <SupportingPageBanner title="Submit">
+      <SupportingPageBanner
+        title="Submissions"
+        titleClassName={styles.bannerTitle}
+      >
         <p>
-          Submissions are always open. We accept photo essays of all shapes
-          and sizes.
+          We’re always reading. Send us photo essays of all shapes and
+          sizes.
         </p>
       </SupportingPageBanner>
 
       <main className={styles.page}>
         <section className={styles.pitch}>
           <h2 className={styles.pitchHeading}>
-            Would you like to be published in TPJ?
-            <br />
-            Send us pix, let us kibbitz, make some magic.
+            Would you like to be published in TPJ? Send us pix, let us
+            kibbitz, make some magic.
           </h2>
           <p className={styles.paragraph}>
-            We are always reading. If you have a body of work you think
-            belongs in TPJ, we want to see it. Read the guidelines below
-            before sending so that your essay arrives in the format we can
-            review the fastest.
+            If you’ve got a body of work you think belongs here, we want
+            to see it. Have a quick look at the guidelines first so your
+            essay lands in our laps the way we can review it fastest.
           </p>
+          <p className={styles.paragraph}>
+            Send us something that sounds like you. The louder and
+            stranger and more itself, the better.
+          </p>
+          <p className={styles.paragraph}>We love you.</p>
         </section>
-
-        <aside className={styles.howTo}>
-          <p className={styles.howToEyebrow}>How to send</p>
-          <p className={styles.howToBody}>
-            Send your essay via WeTransfer to:
-          </p>
-          <a
-            className={styles.howToEmail}
-            href="mailto:submissions@thephotographicjournal.com"
-          >
-            submissions@thephotographicjournal.com
-          </a>
-        </aside>
 
         <header className={styles.guidelinesHeading}>
           <p className={styles.guidelinesEyebrow}>Guidelines</p>
@@ -97,13 +93,7 @@ export default function SubmitPage() {
           ))}
         </ol>
 
-        <section className={styles.closing}>
-          <p className={styles.closingHeadline}>
-            Submissions are always open. Send us something that expresses
-            who you are as loudly and wonderfully as possible.
-          </p>
-          <p className={styles.closingHeart}>We love you.</p>
-        </section>
+        <SubmissionForm />
       </main>
     </>
   );
