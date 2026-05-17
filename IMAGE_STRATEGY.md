@@ -26,9 +26,13 @@ is identical to today. Flip the env var and Cloudflare takes over.
 
 ---
 
-## Phase A — Cloudflare CDN cutover (low-risk, deploy when ready)
+## Phase A — Cloudflare CDN cutover (low-risk, staged before production)
 
-### A1. URL reality (already confirmed 2026-05-14)
+**Full step-by-step walkthrough lives in `CDN_SETUP.md`.** This section
+summarises the architecture choice and the change in approach from
+the earlier draft of this doc.
+
+### A1. URL reality (DB audit 2026-05-14)
 
 Audited the local DB (a copy of production) to verify URL shapes
 before designing the cutover. Confirmed:
@@ -39,109 +43,54 @@ before designing the cutover. Confirmed:
   - canonical `https://thephotographicjournal.com/wp-content/uploads/...`
   - bare relative `/wp-content/uploads/...` (no host)
   - legacy `http://tpj.wpengine.com/wp-content/uploads/...` (~64 articles)
-- **Zero direct S3 or CloudFront URLs.** Whatever S3 plugin runs in
-  production (likely **WP Offload Media**, but we don't need to know
-  for Phase A) handles S3 as a storage backend — every in-content URL
-  stays on the WP origin.
+- **Zero direct S3 or CloudFront URLs in DB content.** Image URLs are
+  presented to visitors as `thephotographicjournal.com` URLs, which
+  means WPEngine receives every image request and proxies internally
+  to S3. This is the source of the ~135 GB/month WPEngine bandwidth.
 
-This means Cloudflare can sit in front of the WP origin and pull images
-from there. We don't need to know the S3 bucket name, region, or
-endpoint for Phase A. Phase B needs that info; Phase A does not.
+### A2. Architecture decision (revised 2026-05-16)
 
-`rewriteMediaUrlsInHtml` in `lib/media.ts` already canonicalises all
-three shapes to the prod origin, so `rewriteArticleBodyImages` picks
-them up uniformly.
+**CNAME target is the S3 bucket directly, not the WP origin.** The
+earlier draft of this doc recommended pointing `media` at
+`thephotographicjournal.com` so Cloudflare would pull from the WP
+host. That approach works but preserves the problem we're trying
+to solve: Cloudflare cache-miss requests still flow through WPEngine,
+which is exactly the cost path we want to eliminate.
 
-### A2. Cloudflare zone
-
-If `thephotographicjournal.com` isn't on Cloudflare nameservers yet:
-add it (Free plan is fine to start), copy the two NS records they give
-you, update them at your registrar. DNS propagation 5min–24hr.
-
-If it's already on Cloudflare, skip.
-
-### A3. DNS — add `media` subdomain
-
-In Cloudflare → DNS → Records → Add:
-
-- Type: `CNAME`
-- Name: `media`
-- Target: `thephotographicjournal.com` (the WP origin). Cloudflare
-  pulls images from the WP host; whatever the WP host does with S3
-  internally is invisible to us.
-- Proxy status: **Proxied (orange cloud)**. Critical — without this
-  Cloudflare can't transform images.
-
-*Note: this routes image cache-miss reads through the WP host. For a
-heavily-trafficked WP host that's a real load consideration, but
-Cloudflare caches at the edge per image+transform so once a variant
-is hot, the WP host doesn't see it again. If the WP host is on a
-managed service with rate limits, watch the origin egress for the
-first 24h after cutover.*
-
-### A4. Enable Image Resizing
-
-Cloudflare dashboard → your zone → **Speed → Optimization → Image
-Resizing** → Enable. This is the paid feature. Pricing as of late 2025:
-$5/month flat + $0.50 per 1k transformations. Editorial-site traffic
-typically lands at $5–15/month total.
-
-### A5. Test before flipping the frontend
-
-Pick any known image URL. Hit the resized version directly:
-
-```bash
-curl -I "https://media.thephotographicjournal.com/cdn-cgi/image/width=800,quality=85,format=auto/wp-content/uploads/2020/01/SOME-KNOWN-IMAGE.jpg"
-```
-
-Expect: `200 OK`, `content-type: image/webp` (or `image/avif` on
-modern UAs), `cf-resized: ...` header present.
-
-If you get a 404, the CNAME target is wrong — the path after
-`/cdn-cgi/image/<params>/` must exist on the origin Cloudflare is
-proxying. Try the target URL directly first to confirm the underlying
-image is reachable.
-
-### A6. Flip the env var
-
-Vercel → tpj-2026 project → Settings → Environment Variables. Add:
-
-- Key: `NEXT_PUBLIC_CDN_BASE`
-- Value: `https://media.thephotographicjournal.com`
-- Apply to: Production, Preview, Development (all three).
-
-Trigger a deploy (push any change or hit "Redeploy" on the latest).
-
-### A7. Validate
-
-On a deployed article page:
-
-- View source. Find a `<TpjImage>`-rendered image (e.g. the hero).
-  Confirm `srcset` is present and entries point at
-  `media.thephotographicjournal.com/cdn-cgi/image/width=…`.
-- Find an article-body image (inside the prose). Same check — the
-  HTML rewriter should have injected `srcset` + `sizes` + `loading="lazy"`.
-- DevTools → Network → reload, look at any image request. `content-type`
-  should be `image/webp` on Chrome/Edge, `image/avif` on Safari.
-- Lighthouse / PageSpeed: rerun against an article page. LCP should
-  drop noticeably; "Properly size images" + "Serve images in
-  next-gen formats" warnings should clear.
-
-### A8. (Optional) Local dev parity
-
-Add to your `frontend/.env.local`:
+The corrected architecture:
 
 ```
-NEXT_PUBLIC_CDN_BASE=https://media.thephotographicjournal.com
+visitor → media.thephotographicjournal.com → Cloudflare → S3 → Cloudflare → visitor
 ```
 
-Restart `npm run dev`. Local now mirrors production CDN behaviour.
+S3 serves the same `wp-content/uploads/...` path structure that WP
+Offload Media Lite uploads into. The frontend code in `lib/cdn.ts`
+strips the host from incoming URLs and rebuilds them against
+`{base}/cdn-cgi/image/.../wp-content/uploads/...`, so the path
+already aligns. No frontend code changes needed; only the CNAME
+target and an Origin Rule to override the S3 Host header.
 
-### A9. Phase A rollback
+### A3. Staged before production
 
-If anything is wrong: in Vercel, **remove** `NEXT_PUBLIC_CDN_BASE` and
-redeploy. Frontend reverts to plain origin URLs immediately. No data
-changed; this is just a config flip.
+The full walkthrough in `CDN_SETUP.md` introduces a `media-staging`
+subdomain that mirrors the production setup but receives no
+visitor traffic. Local dev points at staging via `NEXT_PUBLIC_CDN_BASE`,
+the full image pipeline is validated, then production cutover is
+the addition of a parallel `media` CNAME plus the Vercel env var.
+
+### A4. Expected outcome
+
+| Metric | Before | After |
+|---|---|---|
+| WPEngine bandwidth | ~135 GB/month (at 90% of Professional cap) | ~5–15 GB/month |
+| WPEngine visit count | ~8.5k/month | ~500–2k/month (admin + ISR) |
+| Cloudflare cost | $0 | ~$22–28/month (Pro plan + transform fees) |
+| WPEngine plan after downgrade | Professional $65 | Startup ~$25 |
+| Net monthly change | — | ~$18 savings, plus the bandwidth ceiling removed |
+
+For the actual procedure (account setup, S3 info gathering, staging,
+production cutover, validation, rollback at each step), follow
+`CDN_SETUP.md`.
 
 ---
 
