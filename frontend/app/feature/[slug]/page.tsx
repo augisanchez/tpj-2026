@@ -5,6 +5,7 @@ import { EssayIntro } from "@/components/EssayIntro";
 import { Hero } from "@/components/Hero";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
+import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchFeatureBySlug } from "@/lib/queries/feature-by-slug";
 import { fetchRecentFeatures } from "@/lib/queries/recent-features";
 
@@ -51,7 +52,8 @@ export default async function FeaturePage({ params }: Props) {
   const related = recent.filter((f) => f.slug !== feature.slug).slice(0, 3);
 
   const photographerDisplayName =
-    feature.photographer?.name ?? feature.photographerName;
+    formatPhotographerNames(feature.photographers.map((p) => p.name)) ??
+    feature.photographerName;
 
   const byline = buildFeatureByline(
     feature.writer,

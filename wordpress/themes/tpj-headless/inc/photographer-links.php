@@ -144,7 +144,8 @@ function tpj_split_photographer_names( $value ) {
 /**
  * Inverse of tpj_split_photographer_names. Joins with " & " — the
  * editorial convention used in the existing archive's photographer
- * blobs ("Annika White & Carl Knight").
+ * blobs ("Annika White & Carl Knight"). Used by CLI normalization to
+ * keep stored credit strings in the historical ampersand form.
  */
 function tpj_join_photographer_names( array $names ) {
 	$clean = [];
@@ -155,4 +156,29 @@ function tpj_join_photographer_names( array $names ) {
 		if ( $n !== '' ) $clean[] = $n;
 	}
 	return implode( ' & ', $clean );
+}
+
+/**
+ * Display-formatted join for the frontend byline. Uses Oxford comma +
+ * "and" so the GraphQL `photographerName` field matches the prose
+ * convention the headless frontend renders elsewhere:
+ *   1 name      → "A"
+ *   2 names     → "A and B"
+ *   3+ names    → "A, B, and C"
+ * Distinct from tpj_join_photographer_names() so the stored credit
+ * format (ampersand) and the display format (Oxford prose) can diverge
+ * without one having to follow the other.
+ */
+function tpj_format_photographer_names_display( array $names ) {
+	$clean = [];
+	foreach ( $names as $n ) {
+		$n = html_entity_decode( trim( (string) $n ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		if ( $n !== '' ) $clean[] = $n;
+	}
+	$count = count( $clean );
+	if ( $count === 0 ) return '';
+	if ( $count === 1 ) return $clean[0];
+	if ( $count === 2 ) return $clean[0] . ' and ' . $clean[1];
+	$last  = array_pop( $clean );
+	return implode( ', ', $clean ) . ', and ' . $last;
 }

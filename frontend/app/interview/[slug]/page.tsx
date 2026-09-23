@@ -5,6 +5,7 @@ import { Hero } from "@/components/Hero";
 import { InterviewBody } from "@/components/InterviewBody";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
+import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchInterviewBySlug } from "@/lib/queries/interview-by-slug";
 import { fetchRecentInterviews } from "@/lib/queries/recent-interviews";
 
@@ -30,7 +31,8 @@ export default async function InterviewPage({ params }: Props) {
   const related = recent.filter((i) => i.slug !== interview.slug).slice(0, 3);
 
   const photographerDisplayName =
-    interview.photographer?.name ?? interview.photographerName;
+    formatPhotographerNames(interview.photographers.map((p) => p.name)) ??
+    interview.photographerName;
 
   const bylineParts: string[] = [];
   if (interview.interviewer) {

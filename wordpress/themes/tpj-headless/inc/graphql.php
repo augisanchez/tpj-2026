@@ -323,14 +323,15 @@ add_action( 'graphql_register_types', function () {
 		return is_string( $value ) && $value !== '' ? $value : null;
 	};
 
-	// Photographer display name. For multi-author articles this is the
-	// joined credit string ("Annika White & Carl Knight"); single-author
-	// articles get the lone name. Listings that don't render multiple
-	// photographer cards can keep using this field.
+	// Photographer display name. Returns a prose-formatted credit using
+	// Oxford comma + "and" so listings ("Photographs by A and B" /
+	// "A, B, and C") match the article-detail byline. Stored credit
+	// strings keep the ampersand form via tpj_join_photographer_names
+	// in CLI commands; this resolver is display-only.
 	$photographer_name_resolver = function ( $post ) {
 		$id = is_object( $post ) ? ( $post->ID ?? 0 ) : 0;
 		$names = tpj_resolve_photographer_names( $id );
-		return empty( $names ) ? null : tpj_join_photographer_names( $names );
+		return empty( $names ) ? null : tpj_format_photographer_names_display( $names );
 	};
 
 	// Photographer credit names as an ordered list. Empty array when no
@@ -432,7 +433,7 @@ add_action( 'graphql_register_types', function () {
 		] );
 		register_graphql_field( $type, 'photographerName', [
 			'type'        => 'String',
-			'description' => 'Display name credit. Joined ("X & Y") for multi-author articles; single name otherwise. Use photographerNames for an ordered list.',
+			'description' => 'Display name credit, prose-formatted: "A", "A and B", or "A, B, and C" (Oxford comma). Use photographerNames for an ordered list.',
 			'resolve'     => $photographer_name_resolver,
 		] );
 		register_graphql_field( $type, 'photographerNames', [

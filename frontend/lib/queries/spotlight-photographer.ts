@@ -6,15 +6,12 @@ import type { Photographer } from "@/lib/photographer-types";
 
 /**
  * Pull a photographer with real content for the homepage spotlight.
- * Candidates need: a bio, at least two linked articles (so the "View
- * all N articles" CTA leads somewhere), and an own-portrait image —
- * either a featuredImage on the photographer record or a tpjPortraitUrl
- * meta value. Photographers without a real portrait are excluded from
- * the spotlight entirely (the editorial intent is "this is the person",
- * not a placeholder or one of their photographs standing in for them).
- * Among qualifying candidates we pick from the top five most-prolific
- * so the spotlight rotates instead of always landing on the same
- * person.
+ * Candidates need a bio and at least two linked articles (so the "View
+ * all N articles" CTA leads somewhere). Portrait is optional —
+ * photographers without one render as an initials chip via
+ * PhotographerAvatar, same as on the photographers index. Among
+ * qualifying candidates we pick from the top five most-prolific so
+ * the spotlight rotates instead of always landing on the same person.
  */
 const SpotlightQuery = gql`
   query SpotlightPhotographer {
@@ -77,9 +74,7 @@ export async function fetchSpotlightPhotographer(): Promise<Photographer | null>
       const articleCount = raw.linkedArticleCount ?? 0;
       return { raw, portrait, bio, articleCount };
     })
-    .filter(
-      (c) => c.portrait !== null && c.bio.length > 0 && c.articleCount >= 2
-    );
+    .filter((c) => c.bio.length > 0 && c.articleCount >= 2);
 
   if (candidates.length === 0) return null;
 

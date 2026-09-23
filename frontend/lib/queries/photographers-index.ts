@@ -14,7 +14,6 @@ const PhotographersIndexQuery = gql`
         linkedArticleCount
         interviewCount
         tpjPortraitUrl
-        fallbackEssayThumbnail
         featuredImage {
           node {
             sourceUrl
@@ -43,12 +42,6 @@ const PhotographersFromArticlesQuery = gql`
       nodes {
         id
         photographerName
-        featuredImage {
-          node {
-            sourceUrl
-            altText
-          }
-        }
         linkedPhotographer {
           id
           title
@@ -68,12 +61,6 @@ const PhotographersFromArticlesQuery = gql`
       nodes {
         id
         photographerName
-        featuredImage {
-          node {
-            sourceUrl
-            altText
-          }
-        }
         linkedPhotographer {
           id
           title
@@ -93,12 +80,6 @@ const PhotographersFromArticlesQuery = gql`
       nodes {
         id
         photographerName
-        featuredImage {
-          node {
-            sourceUrl
-            altText
-          }
-        }
         linkedPhotographer {
           id
           title
@@ -147,7 +128,6 @@ type Raw = {
   linkedArticleCount: number | null;
   interviewCount: number | null;
   tpjPortraitUrl: string | null;
-  fallbackEssayThumbnail: string | null;
   featuredImage: {
     node: { sourceUrl: string | null; altText: string | null } | null;
   } | null;
@@ -169,9 +149,6 @@ type LinkedPhotographer = {
 type FallbackNode = {
   id: string;
   photographerName: string | null;
-  featuredImage: {
-    node: { sourceUrl: string | null; altText: string | null } | null;
-  } | null;
   linkedPhotographer: LinkedPhotographer | null;
 };
 
@@ -187,7 +164,6 @@ type AggregateEntry = {
   slug: string;
   name: string;
   count: number;
-  articleImage: { src: string; alt: string } | null;
   id: string;
 };
 
@@ -202,10 +178,13 @@ function resolveImage(
 }
 
 /**
- * Portrait resolution for a CPT-backed photographer record. Mirrors the
- * spotlight-photographer chain: prefer Featured Image, then the legacy
- * tpjPortraitUrl, then the most recent linked article's thumbnail. Each
- * tier passes through rewriteMediaUrl so dev URLs land at the prod CDN.
+ * Portrait resolution for a CPT-backed photographer record. Only true
+ * photographer-of-the-person sources count: Featured Image, then the
+ * legacy tpjPortraitUrl. We deliberately do NOT fall back to an article
+ * thumbnail here — that would show a photo of the photographer's
+ * *work* under their name on the directory, which reads as a portrait
+ * and misleads. Missing portraits surface as initials via
+ * PhotographerAvatar.
  */
 function resolveCptPortrait(raw: Raw): { src: string; alt: string } | null {
   const fromFeatured = resolveImage(raw.featuredImage?.node, raw.title);
@@ -214,16 +193,11 @@ function resolveCptPortrait(raw: Raw): { src: string; alt: string } | null {
     ? rewriteMediaUrl(raw.tpjPortraitUrl)
     : null;
   if (fromBlob) return { src: fromBlob, alt: raw.title };
-  const fromEssay = raw.fallbackEssayThumbnail
-    ? rewriteMediaUrl(raw.fallbackEssayThumbnail)
-    : null;
-  if (fromEssay) return { src: fromEssay, alt: raw.title };
   return null;
 }
 
 function resolvePortrait(
-  lp: LinkedPhotographer,
-  articleImage: { src: string; alt: string } | null
+  lp: LinkedPhotographer
 ): { src: string; alt: string } | null {
   const fromFeatured = resolveImage(lp.featuredImage?.node, lp.title);
   if (fromFeatured) return fromFeatured;
@@ -231,7 +205,7 @@ function resolvePortrait(
     ? { src: rewriteMediaUrl(lp.tpjPortraitUrl) ?? "", alt: lp.title }
     : null;
   if (fromBlob && fromBlob.src) return fromBlob;
-  return articleImage;
+  return null;
 }
 
 async function deriveIndexFromArticles(): Promise<PhotographerIndexItem[]> {
@@ -245,11 +219,6 @@ async function deriveIndexFromArticles(): Promise<PhotographerIndexItem[]> {
   const collect = (nodes: FallbackNode[]) => {
     for (const n of nodes) {
       const lp = n.linkedPhotographer;
-      const fallbackName = lp?.title || n.photographerName || "";
-      const articleImage = resolveImage(
-        n.featuredImage?.node,
-        fallbackName
-      );
 
       let key: string | null = null;
       let nextEntry: AggregateEntry | null = null;
@@ -262,7 +231,6 @@ async function deriveIndexFromArticles(): Promise<PhotographerIndexItem[]> {
           slug: lp.slug,
           name: lp.title,
           count: 0,
-          articleImage,
           id: lp.id,
         };
       } else if (n.photographerName) {
@@ -275,7 +243,6 @@ async function deriveIndexFromArticles(): Promise<PhotographerIndexItem[]> {
           slug: phantomSlug,
           name: n.photographerName,
           count: 0,
-          articleImage,
           id: `phantom:${phantomSlug}`,
         };
       } else {
@@ -285,9 +252,6 @@ async function deriveIndexFromArticles(): Promise<PhotographerIndexItem[]> {
       const existing = map.get(key);
       if (existing) {
         existing.count += 1;
-        if (!existing.articleImage && articleImage) {
-          existing.articleImage = articleImage;
-        }
         // Upgrade a phantom entry to linked if a later article has the
         // CPT record. Keeps richer data when both forms appear in the
         // pool.
@@ -321,8 +285,8 @@ async function deriveIndexFromArticles(): Promise<PhotographerIndexItem[]> {
       articleCount: entry.count,
       portrait:
         entry.kind === "linked" && entry.lp
-          ? resolvePortrait(entry.lp, entry.articleImage)
-          : entry.articleImage,
+          ? resolvePortrait(entry.lp)
+          : null,
     })
   );
 

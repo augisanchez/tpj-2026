@@ -5,6 +5,7 @@ import { EssayIntro } from "@/components/EssayIntro";
 import { Hero } from "@/components/Hero";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
+import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchEssayBySlug } from "@/lib/queries/essay-by-slug";
 import { fetchRecentEssays } from "@/lib/queries/recent-essays";
 
@@ -30,7 +31,8 @@ export default async function EssayPage({ params }: Props) {
   const related = recent.filter((e) => e.slug !== essay.slug).slice(0, 3);
 
   const photographerDisplayName =
-    essay.photographer?.name ?? essay.photographerName;
+    formatPhotographerNames(essay.photographers.map((p) => p.name)) ??
+    essay.photographerName;
 
   return (
     <>
