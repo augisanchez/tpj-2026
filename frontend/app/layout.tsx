@@ -33,6 +33,11 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   title: "The Photographic Journal",
   description: "Editorial photography. Essays, interviews, and features.",
+  // Preview deployments (v2 subdomain) stay out of search results so
+  // they don't compete with the live v1 site.
+  ...(process.env.NEXT_PUBLIC_NOINDEX === "1" && {
+    robots: { index: false, follow: false },
+  }),
 };
 
 export default function RootLayout({
