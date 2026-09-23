@@ -1,29 +1,25 @@
-/* Single source of vertical rhythm on the homepage. Bumped 2026-05-13
-   to be more aggressive across the whole responsive spectrum — the
-   prior values pinned mobile/laptop spacing too close to the section
-   content. Floor 8rem (128px) at small phones, linear ramps to 18rem
-   (288px) at 1920px desktop. Wrapper provides nav and footer
-   clearance via padding; the gap handles every inter-section break,
-   so individual sections shouldn't add their own vertical padding. */
+/* Single source of vertical rhythm on the homepage. Floor 8rem (128px)
+   at small phones, linear ramps up into ultrawide territory so big
+   monitors don't pin sections together. Wrapper provides nav and
+   footer clearance via padding; the gap handles every inter-section
+   break, so individual sections shouldn't add their own vertical
+   padding. */
 .homepage {
-  --homepage-rhythm: clamp(8rem, 6rem + 10vw, 18rem);
-  /* Inner indent for content sections (Keep Exploring, ThemeBrowser,
-     PurposeStatement, Dive Deeper). Hero and InterviewQuoteRotator
-     intentionally do NOT inherit this — they keep the existing page-
-     edge gutter so the homepage reads as two indentation levels. */
-  --homepage-padding-x: clamp(1rem, -6rem + 15vw, 12rem);
+  --homepage-rhythm: clamp(8rem, 6rem + 10vw, 28rem); /* caps ~3520 */
   display: flex;
   flex-direction: column;
   gap: var(--homepage-rhythm);
   padding-bottom: var(--homepage-rhythm);
 }
 
-/* Indented section: uses the homepage inner-indent var when rendered
-   on the homepage; falls back to a flat 32px gutter when used elsewhere
-   (so the component stays portable). */
+/* Listing sections (Keep Exploring, Themes, Dive Deeper) share the
+   page-edge gutter with every other listing surface; the homepage no
+   longer pulls them in. Hero and InterviewQuoteRotator remain
+   edge-to-edge intentionally. */
 .wideSection {
   margin: 0 auto;
-  padding: 0 var(--homepage-padding-x, 32px);
+  padding: 0 var(--gutter);
+  width: 100%;
 }
 
 /* Section header pattern shared with ThemeBrowser. Link sits inline
@@ -40,7 +36,7 @@
 .eyebrow {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(28px, 3.4vw, 44px);
+  font-size: clamp(28px, 1rem + 1.8vw, 80px); /* caps ~3556 */
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -98,7 +94,7 @@
 .featuredTitle {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(28px, 3.4vw, 44px);
+  font-size: clamp(28px, 1rem + 1.8vw, 80px); /* caps ~3556 */
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -132,8 +128,3 @@
   }
 }
 
-@media (max-width: 768px) {
-  .wideSection {
-    padding: 0 16px;
-  }
-}

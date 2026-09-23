@@ -1,17 +1,12 @@
 .section {
-  /* When rendered inside .homepage, inherits the responsive inner
-     indent (--homepage-padding-x). Falls back to a flat 32px elsewhere. */
-  padding: 0 var(--homepage-padding-x, 32px);
+  padding: 0 var(--gutter);
 }
 
 .statement {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  /* Ramps from 32px at small phones to 42px around 1300px viewport,
-     then caps. Linear chosen so the type actually scales across the
-     laptop range instead of pinning to the max from tablet upward
-     (the prior 4.5vw + 64px combo hit the cap at ~933px). */
-  font-size: clamp(32px, 29px + 1vw, 42px);
+  /* Ramps from 32px at small phones into ultrawide territory. */
+  font-size: clamp(32px, 1.5rem + 1.4vw, 72px); /* caps ~3429 */
   line-height: 1.17;
   letter-spacing: -0.02em;
   color: var(--text);

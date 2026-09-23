@@ -1,7 +1,6 @@
 .page {
-  max-width: var(--content-max);
   margin: 0 auto;
-  padding: clamp(64px, 8vw, 120px) 32px;
+  padding: clamp(64px, 3rem + 4vw, 240px) var(--gutter); /* caps ~4800 */
 }
 
 .intro {
@@ -12,7 +11,7 @@
 .introHeading {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 500;
-  font-size: clamp(20px, 2vw, 28px);
+  font-size: clamp(20px, 1rem + 1vw, 44px); /* caps ~3520 */
   line-height: 1.4;
   color: var(--text);
   margin: 0;
@@ -26,6 +25,18 @@
   grid-template-columns: repeat(3, 1fr);
   column-gap: 24px;
   row-gap: 64px;
+}
+
+@media (min-width: 2560px) {
+  .grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 2559.98px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .card {
@@ -60,7 +71,7 @@
 .cardTitle {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(22px, 2.4vw, 28px);
+  font-size: clamp(22px, 1rem + 1.2vw, 56px); /* caps ~3200 */
   line-height: 1.15;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -105,9 +116,6 @@
 }
 
 @media (max-width: 640px) {
-  .page {
-    padding: 64px 16px;
-  }
   .grid {
     grid-template-columns: 1fr;
     row-gap: 48px;

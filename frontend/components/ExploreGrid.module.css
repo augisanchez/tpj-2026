@@ -32,6 +32,18 @@
   row-gap: 80px;
 }
 
+@media (min-width: 2560px) {
+  .grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 2559.98px) {
+  .grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
 .sentinel {
   display: flex;
   flex-direction: column;

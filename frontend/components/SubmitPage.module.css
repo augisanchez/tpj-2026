@@ -3,7 +3,7 @@
 .page {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: clamp(64px, 8vw, 120px) 32px;
+  padding: clamp(64px, 3rem + 4vw, 240px) var(--gutter); /* caps ~4800 */
 }
 
 .pitch {
@@ -17,7 +17,7 @@
 .pitchHeading {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(36px, 4.5vw, 56px);
+  font-size: clamp(36px, 1.5rem + 2.2vw, 120px); /* caps ~4000 */
   line-height: 1.05;
   letter-spacing: -0.015em;
   color: var(--text);
@@ -56,7 +56,7 @@
 .guidelinesTitle {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(32px, 4vw, 48px);
+  font-size: clamp(32px, 1.25rem + 2vw, 104px); /* caps ~4200 */
   line-height: 1.05;
   letter-spacing: -0.015em;
   color: var(--text);
@@ -88,7 +88,7 @@
 .guidelineHeadline {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(22px, 2.4vw, 28px);
+  font-size: clamp(22px, 1rem + 1.2vw, 56px); /* caps ~3200 */
   line-height: 1.15;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -107,14 +107,11 @@
 /* Page-local override for the SupportingPageBanner title when the page
    word is long ("Submissions" overflows the default 240px max). */
 .bannerTitle {
-  font-size: clamp(48px, 11vw, 180px);
+  font-size: clamp(48px, 1.5rem + 5.5vw, 320px); /* caps ~5018 */
   letter-spacing: -0.02em;
 }
 
 @media (max-width: 768px) {
-  .page {
-    padding: 64px 16px;
-  }
   .guideline {
     padding: 20px 0;
   }

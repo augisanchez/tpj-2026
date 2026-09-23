@@ -80,21 +80,21 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   color: var(--hero-text);
-  font-size: clamp(56px, 4vw + 32px, 96px);
+  font-size: clamp(56px, 2rem + 2.6vw, 200px); /* caps ~5538 */
   line-height: 0.95;
   letter-spacing: -0.02em;
   margin: 0;
-  max-width: 900px;
+  max-width: 18ch;
 }
 
 .subtitle {
   font-family: var(--font-serif), Georgia, serif;
   font-style: italic;
   font-weight: 400;
-  font-size: 24px;
+  font-size: clamp(20px, 0.9rem + 0.7vw, 40px); /* caps ~3818 */
   line-height: 1.45;
   color: var(--hero-muted);
-  max-width: 900px;
+  max-width: 38ch;
   margin: 0;
 }
 

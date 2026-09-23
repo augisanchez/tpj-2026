@@ -1,7 +1,5 @@
 .banner {
-  max-width: var(--content-max);
-  margin: 0 auto;
-  padding: 96px 32px 64px;
+  padding: 96px var(--gutter) 64px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -21,7 +19,7 @@
 .name {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(56px, 9vw, 144px);
+  font-size: clamp(56px, 2.5rem + 4.5vw, 280px); /* caps ~4978 */
   line-height: 0.95;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -50,13 +48,24 @@
 }
 
 .grid {
-  max-width: var(--content-max);
   margin: 0 auto;
-  padding: 0 32px 120px;
+  padding: 0 var(--gutter) 120px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   column-gap: 24px;
   row-gap: 64px;
+}
+
+@media (min-width: 2560px) {
+  .grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 2559.98px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 @media (max-width: 1024px) {

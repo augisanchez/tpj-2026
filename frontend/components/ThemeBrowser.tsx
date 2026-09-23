@@ -176,7 +176,7 @@ export function ThemeBrowser({ groups }: Props) {
           {cards.map((essay) => (
             <motion.div key={essay.id} variants={cardVariants}>
               <ArticleCard
-                variant="5up"
+                variant="3up"
                 article={{
                   title: essay.title,
                   date: essay.date,

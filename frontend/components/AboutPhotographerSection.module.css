@@ -1,11 +1,9 @@
-/* The article body has its own clamp(96, 12vw, 160) bottom padding —
-   that becomes the visual space above the card. Match it with the same
-   value as bottom padding on this section so the gap below the card is
-   identical. */
+/* Bottom padding matches ArticleBody so the gap below the card mirrors
+   the gap above it. */
 .section {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: 0 32px clamp(96px, 12vw, 160px);
+  padding: 0 var(--gutter) clamp(96px, 4rem + 5vw, 320px); /* caps ~4480 */
 }
 
 .eyebrow {

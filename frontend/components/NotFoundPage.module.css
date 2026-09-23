@@ -57,7 +57,7 @@
 .title {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(72px, 11vw, 176px);
+  font-size: clamp(72px, 3rem + 5.5vw, 360px); /* caps ~5236 */
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--hero-text);

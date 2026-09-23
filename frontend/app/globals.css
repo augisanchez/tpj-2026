@@ -17,37 +17,37 @@
   --footer-bg: #e5e5e5;
   --footer-text: #1a1814;
 
-  /* Type scale */
-  --text-hero:       clamp(2.625rem, 1rem + 7.2vw, 12.5rem);
-  --text-display:    clamp(2.25rem, 1.25rem + 4.5vw, 6.75rem);
-  --text-heading-1:  clamp(2rem, 1.25rem + 3vw, 4rem);
-  --text-heading-2:  clamp(1.5rem, 1.125rem + 1.5vw, 2.5rem);
-  --text-heading-3:  clamp(1.25rem, 1rem + 0.75vw, 1.75rem);
-  --text-intro:      clamp(1.1875rem, 1rem + 0.7vw, 1.75rem);
-  --text-body:       clamp(1.0625rem, 0.9rem + 0.55vw, 1.4375rem);
-  --text-caption:    clamp(0.875rem, 0.8rem + 0.3vw, 1.125rem);
+  /* Type scale — clamps keep growing into ultrawide / 4K territory.
+     Cap viewports listed inline. --text-body and the small UI labels
+     intentionally stay at lower ceilings since they pair with the
+     reading-width prose column (760px) or fixed UI affordances. */
+  --text-hero:       clamp(2.625rem, 1rem + 7.2vw, 17.5rem);   /* caps ~3667 */
+  --text-display:    clamp(2.25rem, 1.25rem + 4.5vw, 11rem);   /* caps ~3467 */
+  --text-heading-1:  clamp(2rem, 1.25rem + 3vw, 7rem);         /* caps ~3067 */
+  --text-heading-2:  clamp(1.5rem, 1.125rem + 1.5vw, 4rem);    /* caps ~3267 */
+  --text-heading-3:  clamp(1.25rem, 1rem + 0.75vw, 2.5rem);    /* caps ~3200 */
+  --text-intro:      clamp(1.1875rem, 1rem + 0.7vw, 2.25rem);  /* caps ~2857 */
+  --text-body:       clamp(1.0625rem, 0.9rem + 0.55vw, 1.4375rem); /* unchanged — locked to 760 prose column */
+  --text-caption:    clamp(0.875rem, 0.8rem + 0.3vw, 1.5rem);  /* caps ~3733 */
   --text-ui:         clamp(0.75rem, 0.7rem + 0.1vw, 0.875rem);
   --text-label:      clamp(0.625rem, 0.6rem + 0.075vw, 0.75rem);
 
-  /* Spacing */
-  --space-section:  clamp(6rem, 2rem + 6vw, 15rem);
-  --space-block:    clamp(3rem, 1.25rem + 2.5vw, 6rem);
-  --space-element:  clamp(1rem, 0.75rem + 0.5vw, 2rem);
+  /* Spacing — vertical rhythm scales with viewport. */
+  --space-section:  clamp(6rem, 2rem + 6vw, 22rem);            /* caps ~3733 */
+  --space-block:    clamp(3rem, 1.25rem + 2.5vw, 9rem);        /* caps ~3520 */
+  --space-element:  clamp(1rem, 0.75rem + 0.5vw, 3rem);        /* caps ~4800 */
   --space-tight:    0.5rem;
 
-  /* Page padding */
-  --gutter: clamp(1.25rem, 0.5rem + 5vw, 15rem);
+  /* Page padding — already scales generously; bumped ceiling matches
+     the rest of the system. */
+  --gutter: clamp(1.25rem, 0.5rem + 5vw, 20rem);               /* caps ~5840 */
 
-  /* Max content width for inset homepage sections (matches the hero
-     card's 1376px content width). Sections that should breathe at the
-     wide end stop here; Hero spans edge-to-edge. */
+  /* Editorial mid-width: the deliberate "pulled-in" framing used by
+     supporting pages (About, Contact, Submit), article-adjacent
+     surfaces (EssayIntro, ThemePage banner, AboutPhotographerSection),
+     and the photographer Spotlight. Listings fill the viewport
+     instead and don't use this token. */
   --content-max: 1376px;
-
-  /* Wider stop for sections that should use more horizontal real estate
-     on big screens (theme cards, latest grid). The photographer
-     spotlight intentionally stays at --content-max to keep that block
-     focused and readable. */
-  --content-max-wide: 1800px;
 }
 
 *,

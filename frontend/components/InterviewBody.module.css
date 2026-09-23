@@ -3,8 +3,7 @@
   flex-direction: column;
   align-items: center;
   gap: 32px;
-  padding: clamp(96px, 12vw, 160px) 32px;
-  max-width: 1800px;
+  padding: clamp(96px, 4rem + 5vw, 320px) var(--gutter); /* caps ~4480 */
   margin: 0 auto;
 }
 

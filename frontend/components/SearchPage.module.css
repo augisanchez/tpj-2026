@@ -1,7 +1,6 @@
 .page {
-  max-width: var(--content-max);
   margin: 0 auto;
-  padding: 96px 32px 120px;
+  padding: 96px var(--gutter) 120px;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -35,7 +34,7 @@
   border: 0;
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(40px, 6vw, 80px);
+  font-size: clamp(40px, 1.5rem + 3vw, 160px); /* caps ~4267 */
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -84,6 +83,18 @@
   grid-template-columns: repeat(4, 1fr);
   column-gap: 24px;
   row-gap: 64px;
+}
+
+@media (min-width: 2560px) {
+  .grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 2559.98px) {
+  .grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 @media (max-width: 1024px) {

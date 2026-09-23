@@ -1,11 +1,10 @@
 .section {
-  /* When rendered inside .homepage, inherits the responsive inner
-     indent (--homepage-padding-x). Falls back to a flat 32px elsewhere. */
-  padding: 0 var(--homepage-padding-x, 32px);
+  padding: 0 var(--gutter);
   display: flex;
   flex-direction: column;
   gap: 32px;
   align-items: flex-start;
+  width: 100%;
 }
 
 .header {
@@ -52,7 +51,7 @@
 .title {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(28px, 3.4vw, 44px);
+  font-size: clamp(28px, 1rem + 1.8vw, 80px); /* caps ~3556 */
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -112,7 +111,8 @@
 .cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  column-gap: var(--space-element);
+  row-gap: 56px;
   width: 100%;
   margin-top: 8px;
 }
@@ -166,11 +166,11 @@
 
 @media (max-width: 768px) {
   .section {
-    padding: 0 16px;
     gap: 24px;
   }
   .cards {
     grid-template-columns: 1fr;
+    column-gap: var(--space-element);
     row-gap: 48px;
   }
 }

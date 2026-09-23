@@ -1,7 +1,7 @@
 .page {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: clamp(64px, 8vw, 120px) 32px;
+  padding: clamp(64px, 3rem + 4vw, 240px) var(--gutter); /* caps ~4800 */
 }
 
 /* Pitch / intro section */
@@ -17,7 +17,7 @@
 .pitchHeading {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(36px, 5vw, 64px);
+  font-size: clamp(36px, 1.5rem + 2.5vw, 144px); /* caps ~4320 */
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -56,8 +56,3 @@
   text-decoration-thickness: 3px;
 }
 
-@media (max-width: 768px) {
-  .page {
-    padding: 64px 16px;
-  }
-}

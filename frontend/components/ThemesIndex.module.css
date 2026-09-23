@@ -1,7 +1,5 @@
 .intro {
-  max-width: var(--content-max);
-  margin: 0 auto;
-  padding: 96px 32px 48px;
+  padding: 96px var(--gutter) 48px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -21,7 +19,7 @@
 .title {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(48px, 7vw, 96px);
+  font-size: clamp(48px, 2.5rem + 3vw, 176px); /* caps ~4267 */
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -42,13 +40,18 @@
    composite thumbnail per theme. 3 columns at desktop, 2 at tablet,
    1 at mobile. */
 .grid {
-  max-width: var(--content-max);
   margin: 0 auto;
-  padding: 24px 32px 120px;
+  padding: 24px var(--gutter) 120px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   column-gap: 32px;
   row-gap: 112px;
+}
+
+@media (min-width: 1920px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .card {

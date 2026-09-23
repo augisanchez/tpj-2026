@@ -106,7 +106,9 @@ export function PhotographersFilters({ photographers }: Props) {
               id={`letter-${letter}`}
               className={styles.section}
             >
-              <h2 className={styles.letterHeading}>{letter}</h2>
+              <h2 className={styles.letterHeading}>
+                <span className={styles.letterMark}>{letter}</span>
+              </h2>
               <div className={indexStyles.grid}>
                 {list.map((p) => (
                   <PhotographerListCard

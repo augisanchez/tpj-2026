@@ -1,7 +1,7 @@
 .banner {
   background: var(--chip-bg);
   color: var(--chip-text);
-  padding: clamp(64px, 8vw, 112px) 0;
+  padding: clamp(64px, 3rem + 4vw, 200px) 0; /* caps ~3200 */
 }
 
 .bannerInner {
@@ -12,7 +12,7 @@
 .title {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(72px, 14vw, 240px);
+  font-size: clamp(72px, 3rem + 7vw, 400px); /* caps ~4686 */
   line-height: 0.9;
   letter-spacing: -0.04em;
   margin: 0 0 clamp(32px, 4vw, 56px);
@@ -28,7 +28,7 @@
 .support :global(p) {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 500;
-  font-size: clamp(20px, 2vw, 28px);
+  font-size: clamp(20px, 1rem + 1vw, 44px); /* caps ~3520 */
   line-height: 1.4;
   color: var(--chip-text);
   margin: 0;
@@ -38,7 +38,7 @@
    quieter scale to act as a closing tagline (e.g. location lines on
    the About page). Single-paragraph banners stay at the lead size. */
 .support :global(p:last-child:not(:only-child)) {
-  font-size: clamp(15px, 1.4vw, 19px);
+  font-size: clamp(15px, 0.85rem + 0.6vw, 28px); /* caps ~3066 */
   line-height: 1.45;
 }
 
