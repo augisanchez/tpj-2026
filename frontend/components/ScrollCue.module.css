@@ -74,3 +74,12 @@
     transition: none;
   }
 }
+
+/* Phones: the purpose statement already sits above the fold under the
+   hero, so a fixed cue only covers it. The next content is its own
+   "more below" signal at this width. Added 2026-10-05. */
+@media (max-width: 640px) {
+  .cue {
+    display: none;
+  }
+}
