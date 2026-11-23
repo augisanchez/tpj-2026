@@ -58,15 +58,6 @@
   margin: 0;
 }
 
-.description {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 400;
-  font-size: var(--text-body);
-  line-height: 1.5;
-  color: var(--muted);
-  margin: 0;
-  max-width: 56ch;
-}
 
 .chipRow {
   display: flex;
@@ -91,6 +82,13 @@
   white-space: nowrap;
 }
 
+.chipCount {
+  margin-left: 6px;
+  font-weight: 500;
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .chip:hover {
     border-color: var(--text);
@@ -110,7 +108,7 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   column-gap: var(--space-element);
   row-gap: 56px;
   width: 100%;
@@ -162,6 +160,53 @@
 
 .mobileOnly {
   display: none;
+}
+
+/* Count tile: a 2×2 mosaic of more covers from the theme with the
+   number of articles left behind the link. Same shape as a card image. */
+.moreTile {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--placeholder);
+  color: #fff;
+}
+
+.moreTile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 14, 14, 0.55);
+  z-index: 1;
+  transition: background-color 200ms ease-out;
+}
+
+.moreCount {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(40px, 1.5rem + 2.4vw, 96px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .moreTile:hover::before {
+    background: rgba(14, 14, 14, 0.35);
+  }
+}
+
+@media (max-width: 1024px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {

@@ -524,6 +524,30 @@ add_action( 'graphql_register_types', function () {
 		},
 	] );
 
+	// Archive totals for the homepage mosaic: published counts per
+	// article type plus published photographer profiles.
+	register_graphql_object_type( 'TpjCounts', [
+		'fields' => [
+			'essays'        => [ 'type' => 'Int' ],
+			'interviews'    => [ 'type' => 'Int' ],
+			'features'      => [ 'type' => 'Int' ],
+			'photographers' => [ 'type' => 'Int' ],
+		],
+	] );
+	register_graphql_field( 'RootQuery', 'tpjCounts', [
+		'type'        => 'TpjCounts',
+		'description' => 'Published totals per article type and photographer profiles.',
+		'resolve'     => function () {
+			$n = fn( $type ) => (int) ( wp_count_posts( $type )->publish ?? 0 );
+			return [
+				'essays'        => $n( 'essay' ),
+				'interviews'    => $n( 'interview' ),
+				'features'      => $n( 'feature' ),
+				'photographers' => $n( 'photographer' ),
+			];
+		},
+	] );
+
 	// Staff-picked articles across essay/interview/feature, in
 	// random order per ISR cache. Powers the homepage hero
 	// carousel's "Staff Pick" slide and Dive Deeper's weighted

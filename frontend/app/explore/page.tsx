@@ -8,8 +8,18 @@ export const metadata = {
     "Browse the full archive of photo essays, interviews, and features.",
 };
 
-export default async function ExplorePage() {
-  const items = await fetchExplore(1000);
+const TYPES = ["essay", "interview", "feature"] as const;
+type UrlType = (typeof TYPES)[number];
+
+export default async function ExplorePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>;
+}) {
+  const [items, params] = await Promise.all([fetchExplore(1000), searchParams]);
+  const initialType = TYPES.includes(params.type as UrlType)
+    ? (params.type as UrlType)
+    : undefined;
 
   return (
     <main className={styles.page}>
@@ -21,7 +31,7 @@ export default async function ExplorePage() {
         </p>
       </header>
 
-      <ExploreGrid items={items} />
+      <ExploreGrid items={items} initialType={initialType} />
     </main>
   );
 }

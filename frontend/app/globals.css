@@ -99,6 +99,17 @@ h6 {
   letter-spacing: -0.01em;
 }
 
+/* Even line lengths on every display title; no one-word last lines. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
 a {
   color: inherit;
   text-decoration: none;

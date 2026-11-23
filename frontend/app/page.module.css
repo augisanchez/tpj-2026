@@ -5,7 +5,7 @@
    break, so individual sections shouldn't add their own vertical
    padding. */
 .homepage {
-  --homepage-rhythm: clamp(8rem, 6rem + 10vw, 28rem); /* caps ~3520 */
+  --homepage-rhythm: clamp(5rem, 3rem + 6vw, 12rem);
   display: flex;
   flex-direction: column;
   gap: var(--homepage-rhythm);

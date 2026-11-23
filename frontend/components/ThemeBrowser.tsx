@@ -4,12 +4,17 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { ArticleCard } from "./ArticleCard";
+import { ThemeThumbnail } from "./ThemeThumbnail";
 import { THEMES } from "@/lib/themes";
 import type { RecentEssay } from "@/lib/queries/recent-essays";
 import styles from "./ThemeBrowser.module.css";
 
 type Props = {
   groups: Record<string, RecentEssay[]>;
+  /** Covers beyond the 3 shown, for the count tile's 2×2 mosaic. */
+  extras?: Record<string, RecentEssay[]>;
+  /** Published articles per theme slug. */
+  counts?: Record<string, number>;
 };
 
 // Variants for the chip-swap animation. AnimatePresence (mode="wait")
@@ -54,9 +59,15 @@ const cardVariants: Variants = {
   },
 };
 
-export function ThemeBrowser({ groups }: Props) {
+export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
   const [activeSlug, setActiveSlug] = useState(THEMES[0].slug);
   const cards = groups[activeSlug] ?? [];
+  const activeCount = counts[activeSlug] ?? 0;
+  const remaining = activeCount - cards.length;
+  const tileImages = (extras[activeSlug] ?? [])
+    .map((e) => (e.featuredImage ? { src: e.featuredImage.src, alt: "" } : null))
+    .filter((i): i is { src: string; alt: string } => i !== null)
+    .slice(0, 4);
   const tabRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
 
   // ARIA APG tablist keyboard pattern: ArrowLeft/Right move focus
@@ -90,17 +101,14 @@ export function ThemeBrowser({ groups }: Props) {
     <section className={styles.section}>
       <div className={styles.header}>
         <div className={styles.headerTop}>
-          <h2 className={styles.title}>Themes</h2>
+          <h2 className={styles.title}>Explore by Theme</h2>
           <Link href="/themes" className={styles.exploreLink}>
-            Explore themes
+            View all {THEMES.length}
             <span className={styles.exploreArrow} aria-hidden="true">
               →
             </span>
           </Link>
         </div>
-        <p className={styles.description}>
-          Each theme gathers articles around a shared idea for you to explore.
-        </p>
       </div>
 
       <div
@@ -127,6 +135,9 @@ export function ThemeBrowser({ groups }: Props) {
               onKeyDown={(e) => handleTabKeyDown(e, index)}
             >
               {theme.name}
+              {counts[theme.slug] ? (
+                <span className={styles.chipCount}>{counts[theme.slug]}</span>
+              ) : null}
             </button>
           );
         })}
@@ -142,6 +153,7 @@ export function ThemeBrowser({ groups }: Props) {
           {THEMES.map((theme) => (
             <option key={theme.slug} value={theme.slug}>
               {theme.name}
+              {counts[theme.slug] ? ` ${counts[theme.slug]}` : ""}
             </option>
           ))}
         </select>
@@ -187,6 +199,18 @@ export function ThemeBrowser({ groups }: Props) {
               />
             </motion.div>
           ))}
+          {remaining > 0 && (
+            <motion.div key="more" variants={cardVariants}>
+              <Link
+                href={`/theme/${activeSlug}`}
+                className={styles.moreTile}
+                aria-label={`${activeCount} articles`}
+              >
+                <ThemeThumbnail images={tileImages} fillParent />
+                <span className={styles.moreCount}>+{remaining}</span>
+              </Link>
+            </motion.div>
+          )}
         </motion.div>
       </AnimatePresence>
     </section>

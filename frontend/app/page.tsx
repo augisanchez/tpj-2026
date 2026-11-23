@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { ArchiveMosaic, type MosaicTile } from "@/components/ArchiveMosaic";
 import { ArticleCard } from "@/components/ArticleCard";
 import { HomepageHeroCarousel, type HeroSlide } from "@/components/HomepageHeroCarousel";
 import { InterviewQuoteRotator } from "@/components/InterviewQuoteRotator";
@@ -9,6 +10,8 @@ import { StaggerReveal } from "@/components/StaggerReveal";
 import { ThemeBrowser } from "@/components/ThemeBrowser";
 import { FALLBACK_PHOTOGRAPHER } from "@/lib/photographer-fallback";
 import { fetchArchivalArticles } from "@/lib/queries/archival-articles";
+import { fetchArchiveCounts } from "@/lib/queries/archive-counts";
+import { fetchThemeCounts } from "@/lib/queries/theme-counts";
 import { fetchArchiveFeature } from "@/lib/queries/archive-feature";
 import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
 import { fetchStaffPicks } from "@/lib/queries/staff-pick";
@@ -108,6 +111,8 @@ export default async function Home() {
     archiveFeature,
     interviewQuotes,
     taggedThemeGroups,
+    themeCounts,
+    archiveCounts,
   ] = await Promise.all([
     // Pool used as a fallback for themes with no/few tagged essays.
     // Each theme picks 3 of these per ISR cache window; 50 gives
@@ -133,14 +138,24 @@ export default async function Home() {
     // still has cards.
     fetchEssaysByThemes(
       THEMES.map((t) => t.slug),
-      6
+      7
     ),
+    fetchThemeCounts().catch(() => ({} as Record<string, number>)),
+    fetchArchiveCounts(),
   ]);
   const spotlight = spotlightFromDb ?? FALLBACK_PHOTOGRAPHER;
   const heroArticle = articles[0];
   const exploreArticles = articles.slice(1, 4);
   const themePool = essays;
   const themeGroups = buildThemeGroups(taggedThemeGroups, themePool);
+  // Covers 4-7 per theme feed the count tile's 2×2 mosaic.
+  const themeExtras: Record<string, RecentEssay[]> = {};
+  for (const theme of THEMES) {
+    const shown = new Set((themeGroups[theme.slug] ?? []).map((e) => e.id));
+    themeExtras[theme.slug] = (taggedThemeGroups[theme.slug] ?? []).filter(
+      (e) => !shown.has(e.id)
+    );
+  }
 
   // Build the hero carousel slides. Three positions:
   //   1. Latest piece (whatever was just published — essay/interview/feature)
@@ -349,6 +364,30 @@ export default async function Home() {
     return true;
   });
 
+  // Archive mosaic: covers from across every era, none repeated from
+  // the cards above. Recent essays + the >2-year archival pool.
+  const mosaicPool = new Map<string, MosaicTile>();
+  for (const e of essays) {
+    if (e.featuredImage) {
+      mosaicPool.set(`/essay/${e.slug}`, {
+        href: `/essay/${e.slug}`,
+        src: e.featuredImage.src,
+        title: e.title,
+      });
+    }
+  }
+  for (const a of archivalArticles) {
+    if (a.featuredImage) {
+      mosaicPool.set(articleHref(a), {
+        href: articleHref(a),
+        src: a.featuredImage.src,
+        title: a.title,
+      });
+    }
+  }
+  for (const href of seenHrefs) mosaicPool.delete(href);
+  const mosaicTiles = pickRandom([...mosaicPool.values()], 24);
+
   return (
     <div className={styles.homepage}>
       {heroSlides.length > 0 && <HomepageHeroCarousel slides={heroSlides} />}
@@ -359,9 +398,9 @@ export default async function Home() {
 
       <section className={styles.wideSection}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.eyebrow}>Keep Exploring</h2>
+          <h2 className={styles.eyebrow}>Recent Posts</h2>
           <Link href="/explore" className={styles.exploreLink}>
-            Explore all
+            View all{archiveCounts ? ` ${archiveCounts.articles}` : ""}
             <span className={styles.exploreArrow} aria-hidden="true">
               →
             </span>
@@ -385,16 +424,21 @@ export default async function Home() {
         </StaggerReveal>
       </section>
 
-      <ThemeBrowser groups={themeGroups} />
+      <ThemeBrowser
+        groups={themeGroups}
+        extras={themeExtras}
+        counts={themeCounts}
+      />
+
+      {archiveCounts && mosaicTiles.length >= 8 && (
+        <ArchiveMosaic tiles={mosaicTiles} counts={archiveCounts} />
+      )}
 
       <InterviewQuoteRotator quotes={interviewQuotes} />
 
       <section className={styles.wideSection}>
         <div className={styles.featuredHeader}>
           <h2 className={styles.featuredTitle}>Dive Deeper</h2>
-          <p className={styles.featuredDescription}>
-            More ways further in.
-          </p>
         </div>
 
         <StaggerReveal

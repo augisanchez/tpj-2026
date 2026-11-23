@@ -61,10 +61,12 @@ function readSavedState(): SavedState | null {
 
 type Props = {
   items: ExploreItem[];
+  /** Starting type filter from the URL (?type=essay). Wins over saved state. */
+  initialType?: ExploreType;
 };
 
-export function ExploreGrid({ items }: Props) {
-  const [type, setType] = useState<ExploreType>("all");
+export function ExploreGrid({ items, initialType }: Props) {
+  const [type, setType] = useState<ExploreType>(initialType ?? "all");
   const [theme, setTheme] = useState<ExploreTheme>("all");
   const [sort, setSort] = useState<ExploreSort>("newest");
   const [shuffleSeed, setShuffleSeed] = useState(0);
@@ -90,7 +92,7 @@ export function ExploreGrid({ items }: Props) {
     const saved = readSavedState();
     if (!saved) return;
 
-    if (saved.type) setType(saved.type);
+    if (saved.type && !initialType) setType(saved.type);
     if (saved.theme) setTheme(saved.theme);
     if (saved.sort) setSort(saved.sort);
     if (typeof saved.visibleCount === "number" && saved.visibleCount > INITIAL_BATCH) {
@@ -104,7 +106,7 @@ export function ExploreGrid({ items }: Props) {
         });
       });
     }
-  }, []);
+  }, [initialType]);
 
   // ── State persistence: save on every state change ──
   // Throttled scroll save runs on a separate listener so we always
