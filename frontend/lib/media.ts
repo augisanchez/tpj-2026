@@ -9,7 +9,6 @@ const PROD_ORIGIN = "https://thephotographicjournal.com";
 const LOCAL_UPLOADS = "http://tpj.local/wp-content/uploads/";
 const PROD_UPLOADS = `${PROD_ORIGIN}/wp-content/uploads/`;
 const WPENGINE_UPLOADS = "http://tpj.wpengine.com/wp-content/uploads/";
-const CMS_UPLOADS = "https://cms.thephotographicjournal.com/wp-content/uploads/";
 
 /**
  * Local development reads the v1 production database, but the actual media
@@ -21,8 +20,11 @@ const CMS_UPLOADS = "https://cms.thephotographicjournal.com/wp-content/uploads/"
  * meta and article bodies:
  *   - bare `/wp-content/...` relative paths (no host)
  *   - `http://tpj.wpengine.com/...` from a prior staging host
- *   - `https://cms.thephotographicjournal.com/...` from the V2 headless WP
  *   - protocol-relative `//thephotographicjournal.com/...`
+ *
+ * cms.thephotographicjournal.com URLs pass through untouched: the cms
+ * server serves its own uploads and redirects archive files it doesn't
+ * hold to the media origin (see cms-server/nginx-cms.conf).
  *
  * Remove once Cloudflare CDN cutover is complete and media URLs in the DB
  * point at media.thephotographicjournal.com directly.
@@ -34,9 +36,6 @@ export function rewriteMediaUrl(url: string | null | undefined): string | null {
   }
   if (url.startsWith(WPENGINE_UPLOADS)) {
     return PROD_UPLOADS + url.slice(WPENGINE_UPLOADS.length);
-  }
-  if (url.startsWith(CMS_UPLOADS)) {
-    return PROD_UPLOADS + url.slice(CMS_UPLOADS.length);
   }
   if (url.startsWith("/wp-content/")) {
     return PROD_ORIGIN + url;
@@ -52,8 +51,6 @@ export function rewriteMediaUrlsInHtml(html: string): string {
     .split(LOCAL_UPLOADS)
     .join(PROD_UPLOADS)
     .split(WPENGINE_UPLOADS)
-    .join(PROD_UPLOADS)
-    .split(CMS_UPLOADS)
     .join(PROD_UPLOADS);
 }
 
