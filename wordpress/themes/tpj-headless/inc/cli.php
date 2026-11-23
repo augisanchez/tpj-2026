@@ -3633,7 +3633,82 @@ class TPJ_CLI {
 		WP_CLI::log( sprintf( '%s: %d', $dry_run ? 'Would copy' : 'Copied  ', $stats['copied'] ) );
 		WP_CLI::log( sprintf( 'Skipped (new key set):    %d', $stats['skipped_present'] ) );
 		WP_CLI::log( sprintf( 'Skipped (no legacy value): %d', $stats['skipped_empty'] ) );
+
+		// Interviews: v1 stored the interviewer inside a free-text credit
+		// line in the ACF `interviewer` field, e.g.
+		//   "Interview by Lou Noble, Portraits of X by Y"
+		//   "Interview and Portraits of X by Lou Noble"
+		//   "Interview by: Lou Noble"
+		// Extract just the interviewer name into tpj_byline_author.
+		$interview_ids = ( new WP_Query( [
+			'post_type'      => 'interview',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+		] ) )->posts;
+
+		$istats    = [ 'copied' => 0, 'skipped_present' => 0, 'skipped_empty' => 0, 'unparsed' => 0 ];
+		$unparsed  = [];
+		foreach ( $interview_ids as $id ) {
+			$raw = trim( wp_strip_all_tags( (string) get_post_meta( $id, 'interviewer', true ) ) );
+			if ( $raw === '' ) {
+				$istats['skipped_empty']++;
+				continue;
+			}
+			if ( trim( (string) get_post_meta( $id, 'tpj_byline_author', true ) ) !== '' ) {
+				$istats['skipped_present']++;
+				continue;
+			}
+			$name = self::parse_v1_interviewer( $raw );
+			if ( $name === '' ) {
+				$istats['unparsed']++;
+				$unparsed[] = sprintf( '#%d "%s"', $id, $raw );
+				continue;
+			}
+			if ( $dry_run ) {
+				WP_CLI::log( sprintf( '  #%-6d %-55s → %s', $id, mb_substr( $raw, 0, 55 ), $name ) );
+			} else {
+				update_post_meta( $id, 'tpj_byline_author', $name );
+			}
+			$istats['copied']++;
+		}
+
+		WP_CLI::log( sprintf( 'Interviews scanned:       %d', count( $interview_ids ) ) );
+		WP_CLI::log( sprintf( '%s: %d', $dry_run ? 'Would set interviewer' : 'Set interviewer', $istats['copied'] ) );
+		WP_CLI::log( sprintf( 'Skipped (new key set):    %d', $istats['skipped_present'] ) );
+		WP_CLI::log( sprintf( 'Skipped (no v1 value):    %d', $istats['skipped_empty'] ) );
+		WP_CLI::log( sprintf( 'Could not parse:          %d', $istats['unparsed'] ) );
+		foreach ( $unparsed as $line ) {
+			WP_CLI::log( '  ' . $line );
+		}
 		WP_CLI::success( $dry_run ? 'Dry run complete.' : 'Done.' );
+	}
+
+	/**
+	 * Pull the interviewer's name out of a v1 interview credit line.
+	 * Returns '' when the line doesn't match a known shape.
+	 */
+	private static function parse_v1_interviewer( string $raw ): string {
+		$raw = preg_replace( '/\s+/', ' ', $raw );
+		$name = '';
+		// "Interview and Portraits of X by NAME" / "Interview & Portraits by NAME"
+		if ( preg_match( '/^Interview(?:ed)?\s*(?:and|&)\s*(?:Header\s+)?(?:Self-)?Portraits?\b.*?\bby\s+(.+)$/i', $raw, $m ) ) {
+			$name = $m[1];
+		// "Interview by NAME, Portraits of …" / "Interviewed by: NAME | …"
+		} elseif ( preg_match( '/^Interview(?:ed)?\s+by:?\s*([^,|]+)/i', $raw, $m ) ) {
+			$name = $m[1];
+		}
+		$name = trim( $name, " \t,.|" );
+		// "Asa Featherstone, IV" → "Asa Featherstone IV"
+		$name = preg_replace( '/,\s*(IV|III|II|Jr\.?|Sr\.?)$/', ' $1', $name );
+		if ( $name === '' ) {
+			return '';
+		}
+		// "INTERVIEW BY LOU NOBLE" → "Lou Noble"
+		if ( $name === mb_strtoupper( $name ) ) {
+			$name = mb_convert_case( mb_strtolower( $name ), MB_CASE_TITLE );
+		}
+		return $name;
 	}
 
 	/**
