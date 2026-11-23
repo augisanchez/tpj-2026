@@ -4,12 +4,16 @@
  * letter of each word — including parts after hyphens and apostrophes
  * so "jean-luc godard" → "Jean-Luc Godard" and "o'brien" → "O'Brien".
  *
- * Does NOT special-case Scottish/Irish prefixes (Mc/Mac) or European
- * particles (van, de, von), since heuristics there are fragile. If a
- * specific photographer's casing matters, fix it at the WP source.
+ * Only normalizes names entered in a single case (all caps or all
+ * lowercase). Mixed-case input is trusted as the editor typed it, so
+ * "Catherine McGann", "Ben MacAskill", "Asa Featherstone IV" and
+ * "Willem van den Heever" keep their casing.
  */
 export function titleCaseName(name: string | null | undefined): string {
   if (!name) return "";
+  const isSingleCase =
+    name === name.toUpperCase() || name === name.toLowerCase();
+  if (!isSingleCase) return name;
   return name
     .toLowerCase()
     .replace(/(^|[\s\-'])([a-z])/g, (_, sep, ch) => sep + ch.toUpperCase());
