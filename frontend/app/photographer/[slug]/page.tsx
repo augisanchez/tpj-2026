@@ -10,7 +10,7 @@ type Props = {
 export default async function PhotographerPage({ params }: Props) {
   const { slug } = await params;
 
-  const [photographer, articles] = await Promise.all([
+  const [photographer, work] = await Promise.all([
     fetchPhotographerBySlug(slug),
     fetchPhotographerArticles(slug),
   ]);
@@ -18,6 +18,10 @@ export default async function PhotographerPage({ params }: Props) {
   if (!photographer) notFound();
 
   return (
-    <PhotographerProfileBody photographer={photographer} articles={articles} />
+    <PhotographerProfileBody
+      photographer={photographer}
+      articles={work.articles}
+      interviewsConducted={work.interviewsConducted}
+    />
   );
 }

@@ -36,6 +36,7 @@ const PhotographerArticlesQuery = gql`
         slug
         date
         photographerName
+        articleAuthor
         featuredImage {
           node {
             sourceUrl
@@ -92,6 +93,7 @@ type RawNode = {
     node: { sourceUrl: string | null; altText: string | null } | null;
   } | null;
   linkedPhotographers: { slug: string | null }[] | null;
+  articleAuthor?: string | null;
 };
 
 type Response = {
@@ -126,9 +128,25 @@ function toArticle(
  * a slugified `photographerName` so contributors with no migrated CPT
  * record still have working detail pages.
  */
+export type PhotographerWork = {
+  /** Articles that credit this person as the photographer. */
+  articles: PhotographerArticle[];
+  /** Interviews this person conducted (matched on the interviewer byline). */
+  interviewsConducted: PhotographerArticle[];
+};
+
+/** Split a joined credit ("Chris Buck and Dan Gerdes") into names. */
+function splitNames(joined: string): string[] {
+  const parts = joined
+    .split(/\s*(?:&|,|;|\s+and\s+)\s*/i)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts : [joined];
+}
+
 export async function fetchPhotographerArticles(
   photographerSlug: string
-): Promise<PhotographerArticle[]> {
+): Promise<PhotographerWork> {
   const data = await wpClient.request<Response>(PhotographerArticlesQuery, {
     first: 1000,
   });
@@ -141,11 +159,7 @@ export async function fetchPhotographerArticles(
       // Multi-author phantom path: split the joined display name on the
       // same conjunctions the WP resolver uses, slugify each, and
       // match. Lets pre-CPT collaborations still resolve per name.
-      const parts = n.photographerName
-        .split(/\s*(?:&|,|;|\s+and\s+)\s*/i)
-        .map((p) => p.trim())
-        .filter(Boolean);
-      const candidates = parts.length > 0 ? parts : [n.photographerName];
+      const candidates = splitNames(n.photographerName);
       if (candidates.some((p) => slugifyName(p) === photographerSlug)) {
         return true;
       }
@@ -163,8 +177,20 @@ export async function fetchPhotographerArticles(
       .map((n) => toArticle(n, "feature")),
   ];
 
-  articles.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-  return articles;
+  const byDateDesc = (a: PhotographerArticle, b: PhotographerArticle) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime();
+  articles.sort(byDateDesc);
+
+  const interviewsConducted = data.interviews.nodes
+    .filter(
+      (n) =>
+        !!n.articleAuthor &&
+        splitNames(n.articleAuthor).some(
+          (name) => slugifyName(name) === photographerSlug
+        )
+    )
+    .map((n) => toArticle(n, "interview"))
+    .sort(byDateDesc);
+
+  return { articles, interviewsConducted };
 }

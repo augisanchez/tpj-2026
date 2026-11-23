@@ -150,6 +150,57 @@
   margin: 0;
 }
 
+/* Photographs / Interviews switch, shown only when the person also
+   conducted interviews. Same type as .articlesHead so it reads as the
+   section label it replaces. */
+.viewSwitch {
+  display: flex;
+  gap: 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+.viewTab {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 0 0 14px;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.viewTab:hover {
+  color: var(--text);
+}
+
+.viewTab[aria-selected="true"] {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+
+.viewTab:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 4px;
+}
+
+.viewCount {
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.workPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
