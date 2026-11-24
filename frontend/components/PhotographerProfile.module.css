@@ -21,7 +21,7 @@
   width: 100%;
   aspect-ratio: 4 / 5;
   background: var(--placeholder);
-  border-radius: 16px;
+  border-radius: var(--radius-img);
   overflow: hidden;
 }
 

@@ -44,7 +44,7 @@
   aspect-ratio: 1 / 1;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-img);
   overflow: hidden;
 }
 

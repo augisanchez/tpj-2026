@@ -18,7 +18,7 @@
   position: sticky;
   top: 88px;
   aspect-ratio: 1 / 1;
-  border-radius: 20px;
+  border-radius: var(--radius-img);
   overflow: hidden;
   background: var(--placeholder);
 }
@@ -148,7 +148,7 @@
 .photo {
   margin: 0;
   aspect-ratio: 5 / 4;
-  border-radius: 16px;
+  border-radius: var(--radius-img);
   overflow: hidden;
   background: var(--placeholder);
 }
@@ -174,7 +174,7 @@
     padding-inline: 16px;
   }
   .cover {
-    border-radius: 16px;
+    border-radius: var(--radius-img);
   }
   .grid {
     grid-template-columns: 1fr;

@@ -9,7 +9,7 @@
   width: 100%;
   aspect-ratio: 1376 / 720;
   max-height: calc(100svh - 96px);
-  border-radius: 20px;
+  border-radius: var(--radius-img);
   overflow: hidden;
   background: var(--hero-bg);
   isolation: isolate;
@@ -92,7 +92,7 @@
   }
   .frame {
     aspect-ratio: 4 / 5;
-    border-radius: 16px;
+    border-radius: var(--radius-img);
   }
   .controls {
     bottom: 12px;

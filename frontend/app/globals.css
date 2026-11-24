@@ -1,3 +1,8 @@
+:root[data-season="spring"] { --accent: #ff7ad1; --accent-ink: #111111; }
+:root[data-season="summer"] { --accent: #ff5a1f; --accent-ink: #111111; }
+:root[data-season="autumn"] { --accent: #2b4dff; --accent-ink: #ffffff; }
+:root[data-season="winter"] { --accent: #d6ff3a; --accent-ink: #111111; }
+
 :root {
   /* Color */
   --bg: #f2f2f2;
@@ -6,6 +11,14 @@
   --muted: #6a6a6a; /* 4.8:1 on --bg (audit L4: #6e6e6e was 4.48:1) */
   --border: #ddd;
   --placeholder: #d1d1d1;
+  /* Every photograph, any size: a hairline round, like a mounted print. */
+  --radius-img: 3px;
+  /* Seasonal accent: one flat color per season (MoMA-style seasonal
+     campaigns). Used only for color-block bands, status labels and small
+     markers, never on or over a photograph. Season is set on <html>
+     via data-season (see lib/season.ts). Ink is the text color on it. */
+  --accent: #d6ff3a;      /* winter default: acid lime */
+  --accent-ink: #111111;
   --chip-bg: #e4ffb1;
   --chip-text: #1a1814;
   --chip-active: #1a1814;
@@ -316,7 +329,7 @@ body.is-arriving footer {
 [data-img-body] .img-frame {
   display: block;
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius-img);
   overflow: hidden;
 }
 /* No recorded size: hold a provisional 3:2 box while loading. */

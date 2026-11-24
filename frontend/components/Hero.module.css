@@ -8,7 +8,7 @@
   aspect-ratio: 1376 / 720;
   /* Never taller than the screen, so the title is on the first screen. */
   max-height: calc(100svh - 96px);
-  border-radius: 20px;
+  border-radius: var(--radius-img);
   overflow: hidden;
   background: var(--hero-bg);
   color: var(--hero-text);
@@ -99,7 +99,7 @@
     padding: 4px 16px 0;
   }
   .card {
-    border-radius: 16px;
+    border-radius: var(--radius-img);
     aspect-ratio: 4 / 5;
   }
   .credit {

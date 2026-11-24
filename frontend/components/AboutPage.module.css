@@ -54,7 +54,7 @@
   max-width: 880px;
   margin: 0 auto 96px;
   display: block;
-  border-radius: 16px;
+  border-radius: var(--radius-img);
   overflow: hidden;
 }
 

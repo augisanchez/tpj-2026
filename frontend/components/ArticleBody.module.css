@@ -85,7 +85,7 @@
 .body img {
   width: 100%;
   height: auto;
-  border-radius: 8px;
+  border-radius: var(--radius-img);
   display: block;
 }
 
@@ -126,7 +126,7 @@
 .body :global(.fig img) {
   width: 100%;
   height: auto;
-  border-radius: 8px;
+  border-radius: var(--radius-img);
   display: block;
 }
 

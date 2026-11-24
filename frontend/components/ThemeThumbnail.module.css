@@ -3,7 +3,7 @@
   aspect-ratio: 1 / 1;
   width: 100%;
   background: var(--placeholder);
-  border-radius: 8px;
+  border-radius: var(--radius-img);
   overflow: hidden;
   gap: 2px;
 }
