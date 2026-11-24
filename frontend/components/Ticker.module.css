@@ -1,47 +1,40 @@
-/* Thin "Now / Next" band under the site header. Height is fixed so the
-   page below never shifts, whatever the font or data does. */
+/* A slow strip of the latest stories: cover, title, photographer.
+   Quiet: text on the page background, no band color, no rules.
+   Every dimension below is fixed so the strip's height is reserved
+   before fonts or images arrive. */
 .ticker {
-  --ticker-height: 40px;
+  --image-h: 200px;
+  --gap: 32px;
+  --title-size: 17px;
+  --title-lh: 1.2;
+  --meta-size: 12px;
+  --meta-lh: 1.4;
+  /* image + gap + two title lines + gap + one photographer line */
+  --strip-h: calc(
+    var(--image-h) + 12px + 2 * var(--title-size) * var(--title-lh) + 4px +
+      var(--meta-size) * var(--meta-lh)
+  );
   position: relative;
-  height: var(--ticker-height);
+  height: var(--strip-h);
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
+  background: var(--bg);
+  color: var(--text);
   contain: layout paint;
 }
 
-.loud {
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
-.quiet {
-  background: var(--bg);
-  color: var(--text);
-  border-top: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
-}
-
-.fontDisplay {
-  font-family: var(--font-display), "Arial Narrow", sans-serif;
-  font-weight: 500;
-  font-size: 15px;
-  letter-spacing: 0.06em;
-}
-
-.fontUi {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.09em;
+@media (max-width: 767px) {
+  .ticker {
+    --image-h: 140px;
+    --gap: 20px;
+    --title-size: 15px;
+  }
 }
 
 .track {
   display: flex;
   width: max-content;
   will-change: transform;
-  animation: ticker-scroll var(--ticker-duration, 80s) linear infinite;
+  animation: ticker-scroll var(--ticker-duration, 120s) linear infinite;
 }
 
 .ticker:hover .track,
@@ -60,47 +53,71 @@
 }
 
 .item {
-  display: flex;
-  align-items: center;
+  flex-shrink: 0;
+  width: calc(var(--image-h) * var(--aspect));
+  margin-right: var(--gap);
 }
 
 .link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6em;
-  height: var(--ticker-height);
+  display: flex;
+  flex-direction: column;
   color: inherit;
   text-decoration: none;
-  text-transform: uppercase;
-  line-height: 1;
 }
 
-.link:hover span:not(.label):not(.sep) {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
+/* Sized from the recorded aspect, so the placeholder matches the
+   photograph and nothing reflows when it loads. */
+.frame {
+  display: block;
+  width: 100%;
+  height: var(--image-h);
+  border-radius: var(--radius-img);
+  overflow: hidden;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-img);
+}
+
+/* Hover/focus: a 4px inset line in the accent. No zoom, no tint. */
+.link:hover .image,
+.link:focus-visible .image {
+  outline: 4px solid var(--accent);
+  outline-offset: -4px;
 }
 
 .link:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: -6px;
+  outline: none;
 }
 
-.label {
-  font-weight: 700;
+.title {
+  margin-top: 12px;
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 500;
+  font-size: var(--title-size);
+  line-height: var(--title-lh);
+  /* Up to two lines; the strip's fixed height already reserves both,
+     so the photographer sits right under the title either way. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
-.sep {
-  opacity: 0.6;
-}
-
-.dot {
-  width: 4px;
-  height: 4px;
-  margin: 0 24px;
-  border-radius: 50%;
-  background: currentColor;
-  flex-shrink: 0;
+.photographer {
+  margin-top: 4px;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--meta-size);
+  line-height: var(--meta-lh);
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @keyframes ticker-scroll {

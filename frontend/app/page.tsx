@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ArchiveMosaic, type MosaicTile } from "@/components/ArchiveMosaic";
-import { ArticleCard } from "@/components/ArticleCard";
 import { HomepageHeroCarousel, type HeroSlide } from "@/components/HomepageHeroCarousel";
 import { InterviewQuoteRotator } from "@/components/InterviewQuoteRotator";
 import { PurposeStatement } from "@/components/PurposeStatement";
 import { RandomBand } from "@/components/RandomBand";
 import { ScrollCue } from "@/components/ScrollCue";
 import { ThemeBrowser } from "@/components/ThemeBrowser";
+import { Ticker, type TickerItem } from "@/components/Ticker";
 import { fetchArchivalArticles } from "@/lib/queries/archival-articles";
 import { fetchArchiveCounts } from "@/lib/queries/archive-counts";
 import { fetchThemeCounts } from "@/lib/queries/theme-counts";
@@ -140,7 +140,6 @@ export default async function Home() {
     fetchArchiveCounts(),
   ]);
   const heroArticle = articles[0];
-  const exploreArticles = articles.slice(1, 4);
   const themePool = essays;
   const themeGroups = buildThemeGroups(taggedThemeGroups, themePool);
   // Covers 4-7 per theme feed the count tile's 2×2 mosaic.
@@ -172,8 +171,6 @@ export default async function Home() {
       photographerName: heroArticle.photographerName,
       creditPrefix: heroArticle.contentType === "feature" ? "By" : undefined,
       backgroundImage: heroArticle.featuredImage ?? undefined,
-      // "Photo Essay" → "Photo essay" for the wall label.
-      onView: articleLabel(heroArticle).replace(/ \w/g, (m) => m.toLowerCase()),
     });
   }
 
@@ -223,10 +220,23 @@ export default async function Home() {
     }
   }
 
-  // Anything already on the page (hero slides, Recent Posts) stays out
-  // of the Revisit grid.
+  // Ticker: the latest stories with a cover, minus any already on the
+  // hero carousel.
+  const heroHrefs = new Set(heroSlides.map((h) => h.href));
+  const tickerItems: TickerItem[] = articles
+    .filter((a) => a.featuredImage && !heroHrefs.has(articleHref(a)))
+    .slice(0, 10)
+    .map((a) => ({
+      href: articleHref(a),
+      title: a.title,
+      photographer: a.photographerName,
+      image: a.featuredImage!,
+    }));
+
+  // Anything already on the page (hero slides, ticker) stays out of the
+  // Revisit grid.
   const seenHrefs = new Set<string>(
-    [...heroSlides.map((h) => h.href), ...exploreArticles.map(articleHref)]
+    [...heroHrefs, ...tickerItems.map((t) => t.href)]
   );
 
   // Revisit: pieces older than two years (the archival pool),
@@ -271,33 +281,19 @@ export default async function Home() {
 
       <PurposeStatement />
 
-      <section className={styles.wideSection}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.eyebrow} data-reveal="lines">Recent Posts</h2>
-          <Link href="/explore" className={styles.exploreLink} data-reveal>
-            View all{archiveCounts ? ` ${archiveCounts.articles}` : ""}
-            <span className={styles.exploreArrow} aria-hidden="true">
-              →
-            </span>
-          </Link>
+      {tickerItems.length > 0 && (
+        <div>
+          <div className={`${styles.wideSection} ${styles.sectionHeader}`}>
+            <Link href="/explore" className={styles.exploreLink}>
+              See everything
+              <span className={styles.exploreArrow} aria-hidden="true">
+                →
+              </span>
+            </Link>
+          </div>
+          <Ticker items={tickerItems} />
         </div>
-
-        <div className={styles.latestGrid} data-reveal-children>
-          {exploreArticles.map((article) => (
-            <ArticleCard
-              key={article.id}
-              variant="3up"
-              article={{
-                title: article.title,
-                date: article.date,
-                href: articleHref(article),
-                contentTypeLabel: articleLabel(article),
-                featuredImage: article.featuredImage ?? undefined,
-              }}
-            />
-          ))}
-        </div>
-      </section>
+      )}
 
       <RandomBand />
 

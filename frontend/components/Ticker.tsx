@@ -2,46 +2,54 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { capWidths, cdnImageUrl, cdnSrcSet, isCdnEnabled } from "@/lib/cdn";
 import styles from "./Ticker.module.css";
 
 export type TickerItem = {
   href: string;
   title: string;
   photographer: string | null;
+  image: { src: string; alt: string; width?: number; height?: number; thumb?: string };
 };
 
 type Props = {
   items: TickerItem[];
-  /** "loud": accent band. "quiet": text on page background, hairlines. */
-  variant?: "loud" | "quiet";
-  /** Typeface for the loud band. Quiet is always Inter. */
-  font?: "display" | "ui";
-  /** Value for `data-accent` (0..4) on the loud band. */
-  accent?: string;
+  /** Accessible name for the strip. */
+  label?: string;
   /** Scroll speed in px per second. */
   speed?: number;
 };
 
+/** Rendered image height (px) at desktop / phone; keep in sync with the CSS. */
+const IMAGE_HEIGHT = { desktop: 200, phone: 140 };
+/** Fallback aspect (w/h) when the CMS has no recorded size. */
+const FALLBACK_ASPECT = 4 / 5;
+/** Images that load eagerly; the rest are lazy. */
+const EAGER_COUNT = 3;
+
+function aspectOf(image: TickerItem["image"]): number {
+  const { width, height } = image;
+  if (!width || !height) return FALLBACK_ASPECT;
+  // Clamp extreme panoramas and slivers so no plate dominates the strip.
+  return Math.min(Math.max(width / height, 0.6), 1.8);
+}
+
 /**
- * "Now / Next" band: one line of caps listing the latest stories,
- * scrolling slowly leftward. The list is rendered twice and the track
- * moves by exactly one copy's width, so the loop has no seam. Motion is
- * CSS transform only. It pauses on hover and focus, and stays still
- * under prefers-reduced-motion. The second copy is aria-hidden and
- * inert, so screen readers and the keyboard meet each story once.
+ * A slowly moving strip of the latest stories: cover image, title,
+ * photographer. The list renders twice and the track moves by exactly
+ * one copy's width, so the loop has no seam. Motion is CSS transform
+ * only. It pauses on hover and focus, and stays still under
+ * prefers-reduced-motion (the strip then scrolls by hand). The second
+ * copy is aria-hidden and inert, so screen readers and the keyboard
+ * meet each story once. Every frame has its size before the image
+ * loads, so nothing shifts.
  */
-export function Ticker({
-  items,
-  variant = "loud",
-  font = "display",
-  accent,
-  speed = 50,
-}: Props) {
+export function Ticker({ items, label = "Latest stories", speed = 40 }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLUListElement>(null);
 
-  // Duration = one copy's width / speed. The server render uses a
-  // character-count estimate; this replaces it with the measured width.
+  // Duration = one copy's width / speed, measured (it changes with the
+  // phone/desktop image height).
   useEffect(() => {
     const track = trackRef.current;
     const copy = copyRef.current;
@@ -58,8 +66,8 @@ export function Ticker({
     return () => ro.disconnect();
   }, [speed, items]);
 
-  // Keyboard: the band pauses on focus, but the focused story may have
-  // scrolled out of view. Move the loop so it sits at the left edge.
+  // Keyboard: the strip pauses on focus, but the focused story may have
+  // moved out of view. Shift the loop so it sits near the left edge.
   const onFocus = (event: React.FocusEvent<HTMLElement>) => {
     const track = trackRef.current;
     const copy = copyRef.current;
@@ -76,8 +84,9 @@ export function Ticker({
 
   if (items.length === 0) return null;
 
+  // Server estimate until the effect measures the real width.
   const estimatedWidth = items.reduce(
-    (sum, item) => sum + (item.title.length + (item.photographer?.length ?? 0) + 10) * 8 + 48,
+    (sum, item) => sum + aspectOf(item.image) * IMAGE_HEIGHT.desktop + 32,
     0
   );
 
@@ -88,38 +97,44 @@ export function Ticker({
       aria-hidden={hidden || undefined}
       inert={hidden || undefined}
     >
-      {items.map((item) => (
-        <li key={item.href} className={styles.item}>
-          <Link href={item.href} className={styles.link} tabIndex={hidden ? -1 : undefined}>
-            <span className={styles.label}>New</span>
-            <span className={styles.sep} aria-hidden="true">·</span>
-            <span>{item.title}</span>
-            {item.photographer && (
-              <>
-                <span className={styles.sep} aria-hidden="true">—</span>
-                <span>{item.photographer}</span>
-              </>
-            )}
-          </Link>
-          <span className={styles.dot} aria-hidden="true" />
-        </li>
-      ))}
+      {items.map((item, i) => {
+        const aspect = aspectOf(item.image);
+        const { image } = item;
+        const src = isCdnEnabled() ? image.src : image.thumb ?? image.src;
+        const sizes = `(max-width: 767px) ${Math.round(IMAGE_HEIGHT.phone * aspect)}px, ${Math.round(IMAGE_HEIGHT.desktop * aspect)}px`;
+        return (
+          <li
+            key={item.href}
+            className={styles.item}
+            style={{ "--aspect": aspect } as React.CSSProperties}
+          >
+            <Link href={item.href} className={styles.link} tabIndex={hidden ? -1 : undefined}>
+              <span className={styles.frame}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className={styles.image}
+                  data-fade=""
+                  src={cdnImageUrl(src, { width: Math.min(720, image.width ?? 720) }) ?? src}
+                  srcSet={cdnSrcSet(image.src, capWidths([240, 360, 480, 720], image.width)) ?? undefined}
+                  sizes={sizes}
+                  alt={hidden ? "" : image.alt}
+                  loading={!hidden && i < EAGER_COUNT ? "eager" : "lazy"}
+                  decoding="async"
+                />
+              </span>
+              <span className={styles.title}>{item.title}</span>
+              {item.photographer && (
+                <span className={styles.photographer}>{item.photographer}</span>
+              )}
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 
-  const classes = [
-    styles.ticker,
-    variant === "quiet" ? styles.quiet : styles.loud,
-    variant === "quiet" || font === "ui" ? styles.fontUi : styles.fontDisplay,
-  ].join(" ");
-
   return (
-    <section
-      className={classes}
-      aria-label="Latest stories"
-      data-accent={variant === "loud" ? accent : undefined}
-      onFocus={onFocus}
-    >
+    <section className={styles.ticker} aria-label={label} onFocus={onFocus}>
       <div
         ref={trackRef}
         className={styles.track}
