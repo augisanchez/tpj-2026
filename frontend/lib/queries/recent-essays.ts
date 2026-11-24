@@ -24,7 +24,7 @@ const RecentEssaysQuery = gql`
         }
         featuredImage {
           node {
-            sourceUrl
+            sourceUrl(size: LARGE)
             altText
             mediaDetails {
               width
@@ -42,6 +42,8 @@ export type FeaturedImage = {
   alt: string;
   width?: number;
   height?: number;
+  /** Smaller rendition (~768px) for small tiles. */
+  thumb?: string;
 };
 
 export type RecentEssay = {

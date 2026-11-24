@@ -1,61 +1,55 @@
 import Link from "next/link";
 import { TpjImage } from "./TpjImage";
-import type { ArchiveCounts } from "@/lib/queries/archive-counts";
 import styles from "./ArchiveMosaic.module.css";
 
-export type MosaicTile = { href: string; src: string; title: string };
+export type MosaicTile = {
+  href: string;
+  src: string;
+  title: string;
+  photographer: string | null;
+};
 
 type Props = {
   tiles: MosaicTile[];
-  counts: ArchiveCounts;
+  total: number | null;
 };
 
 /**
- * A wall of covers drawn from across the archive, then the totals.
- * No heading or copy: the covers and the numbers carry the message.
- * Labels reuse the Explore filter names.
+ * From the Archive: pieces older than two years in a mixed-size grid.
+ * The photographer's name sits on every tile; the title shows on hover
+ * (and always on the lead tile).
  */
-export function ArchiveMosaic({ tiles, counts }: Props) {
-  const types = [
-    { n: counts.essays, label: "Photo Essays", href: "/explore?type=essay" },
-    { n: counts.interviews, label: "Interviews", href: "/explore?type=interview" },
-    { n: counts.features, label: "Features", href: "/explore?type=feature" },
-    { n: counts.photographers, label: "Photographers", href: "/photographers" },
-  ].filter((t) => t.n > 0);
-
+export function ArchiveMosaic({ tiles, total }: Props) {
   return (
-    <section className={styles.section} aria-label={`${counts.articles} articles`}>
+    <section className={styles.section}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>From the Archive</h2>
+        <Link href="/explore" className={styles.viewAll}>
+          View all{total ? ` ${total}` : ""}
+          <span className={styles.arrow} aria-hidden="true">→</span>
+        </Link>
+      </div>
+
       <ul className={styles.grid}>
-        {tiles.map((t) => (
-          <li key={t.href} className={styles.cell}>
-            <Link href={t.href} className={styles.tile} title={t.title}>
+        {tiles.map((t, i) => (
+          <li key={t.href} className={`${styles.cell} ${styles[`s${i}`] ?? ""}`}>
+            <Link href={t.href} className={styles.tile}>
               <TpjImage
                 src={t.src}
                 alt={t.title}
-                sizes="(min-width: 768px) 12.5vw, 25vw"
-                maxWidth={400}
+                sizes={i === 0 ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 768px) 17vw, 50vw"}
                 className={styles.image}
               />
+              <span className={styles.caption}>
+                {t.photographer && <span className={styles.artist}>{t.photographer}</span>}
+                {t.title.trim().toLowerCase() !== (t.photographer ?? "").trim().toLowerCase() && (
+                  <span className={styles.piece}>{t.title}</span>
+                )}
+              </span>
             </Link>
           </li>
         ))}
       </ul>
-
-      <div className={styles.totals}>
-        <Link href="/explore" className={styles.total}>
-          {counts.articles}
-        </Link>
-        <ul className={styles.types}>
-          {types.map((t) => (
-            <li key={t.label}>
-              <Link href={t.href} className={styles.type}>
-                <span className={styles.typeCount}>{t.n}</span>
-                {t.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
     </section>
   );
 }

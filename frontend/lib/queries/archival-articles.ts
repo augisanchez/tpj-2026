@@ -32,6 +32,7 @@ const ArchivalArticlesQuery = gql`
         featuredImage {
           node {
             sourceUrl
+            thumb: sourceUrl(size: THUMBNAIL)
             altText
             mediaDetails { width height }
           }
@@ -58,6 +59,7 @@ const ArchivalArticlesQuery = gql`
         featuredImage {
           node {
             sourceUrl
+            thumb: sourceUrl(size: THUMBNAIL)
             altText
             mediaDetails { width height }
           }
@@ -79,6 +81,7 @@ type Raw = {
   featuredImage: {
     node: {
       sourceUrl: string | null;
+      thumb?: string | null;
       altText: string | null;
       mediaDetails?: { width: number | null; height: number | null } | null;
     } | null;
@@ -117,6 +120,7 @@ function toArticle(
       ? {
           src,
           alt: fi?.altText || node.title,
+          thumb: rewriteMediaUrl(fi?.thumb) ?? undefined,
           width: fi?.mediaDetails?.width ?? undefined,
           height: fi?.mediaDetails?.height ?? undefined,
         }

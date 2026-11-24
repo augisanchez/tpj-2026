@@ -68,11 +68,10 @@
 }
 
 .subtitle {
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
+  font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 400;
   font-size: clamp(20px, 0.9rem + 0.7vw, 40px); /* caps ~3818 */
-  line-height: 1.45;
+  line-height: 1.5;
   color: var(--hero-muted);
   max-width: 38ch;
   margin: 0;

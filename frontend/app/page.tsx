@@ -364,29 +364,22 @@ export default async function Home() {
     return true;
   });
 
-  // Archive mosaic: covers from across every era, none repeated from
-  // the cards above. Recent essays + the >2-year archival pool.
-  const mosaicPool = new Map<string, MosaicTile>();
-  for (const e of essays) {
-    if (e.featuredImage) {
-      mosaicPool.set(`/essay/${e.slug}`, {
-        href: `/essay/${e.slug}`,
-        src: e.featuredImage.src,
-        title: e.title,
-      });
-    }
+  // From the Archive: pieces older than two years (the archival pool),
+  // none repeated from the cards above.
+  const mosaicPool = archivalArticles
+    .filter((a) => a.featuredImage && !seenHrefs.has(articleHref(a)))
+    .map((a): MosaicTile => ({
+      href: articleHref(a),
+      src: a.featuredImage!.thumb ?? a.featuredImage!.src,
+      title: a.title,
+      photographer: a.photographerName,
+    }));
+  const mosaicTiles = pickRandom(mosaicPool, 14);
+  // Lead tile is large: give it the full image, the rest the 600px square.
+  if (mosaicTiles[0]) {
+    const lead = archivalArticles.find((x) => articleHref(x) === mosaicTiles[0].href);
+    if (lead?.featuredImage) mosaicTiles[0] = { ...mosaicTiles[0], src: lead.featuredImage.src };
   }
-  for (const a of archivalArticles) {
-    if (a.featuredImage) {
-      mosaicPool.set(articleHref(a), {
-        href: articleHref(a),
-        src: a.featuredImage.src,
-        title: a.title,
-      });
-    }
-  }
-  for (const href of seenHrefs) mosaicPool.delete(href);
-  const mosaicTiles = pickRandom([...mosaicPool.values()], 24);
 
   return (
     <div className={styles.homepage}>
@@ -430,8 +423,8 @@ export default async function Home() {
         counts={themeCounts}
       />
 
-      {archiveCounts && mosaicTiles.length >= 8 && (
-        <ArchiveMosaic tiles={mosaicTiles} counts={archiveCounts} />
+      {mosaicTiles.length >= 8 && (
+        <ArchiveMosaic tiles={mosaicTiles} total={archiveCounts?.articles ?? null} />
       )}
 
       <InterviewQuoteRotator quotes={interviewQuotes} />

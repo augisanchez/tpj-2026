@@ -16,7 +16,7 @@ const SearchQuery = gql`
         date
         featuredImage {
           node {
-            sourceUrl
+            sourceUrl(size: LARGE)
             altText
           }
         }
@@ -33,7 +33,7 @@ const SearchQuery = gql`
         date
         featuredImage {
           node {
-            sourceUrl
+            sourceUrl(size: LARGE)
             altText
           }
         }
@@ -50,7 +50,7 @@ const SearchQuery = gql`
         date
         featuredImage {
           node {
-            sourceUrl
+            sourceUrl(size: LARGE)
             altText
           }
         }

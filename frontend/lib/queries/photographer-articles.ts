@@ -17,7 +17,7 @@ const PhotographerArticlesQuery = gql`
         photographerName
         featuredImage {
           node {
-            sourceUrl
+            sourceUrl(size: LARGE)
             altText
           }
         }
@@ -39,7 +39,7 @@ const PhotographerArticlesQuery = gql`
         articleAuthor
         featuredImage {
           node {
-            sourceUrl
+            sourceUrl(size: LARGE)
             altText
           }
         }
@@ -60,7 +60,7 @@ const PhotographerArticlesQuery = gql`
         photographerName
         featuredImage {
           node {
-            sourceUrl
+            sourceUrl(size: LARGE)
             altText
           }
         }
