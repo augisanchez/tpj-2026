@@ -9,6 +9,7 @@ import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchFeatureBySlug } from "@/lib/queries/feature-by-slug";
 import { previewTarget } from "@/lib/preview";
 import { fetchRecentFeatures } from "@/lib/queries/recent-features";
+import { normalizeSlug } from "@/lib/text-utils";
 
 // Render each page on its first visit, then serve it from Vercel's
 // cache (refreshed hourly, or immediately when WordPress saves). Without
@@ -46,7 +47,7 @@ function buildFeatureByline(
 }
 
 export default async function FeaturePage({ params }: Props) {
-  const { slug } = await params;
+  const slug = normalizeSlug((await params).slug);
   const [feature, recent] = await Promise.all([
     fetchFeatureBySlug(slug, await previewTarget("feature", slug)),
     fetchRecentFeatures(8),

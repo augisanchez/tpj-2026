@@ -9,6 +9,7 @@ import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchEssayBySlug } from "@/lib/queries/essay-by-slug";
 import { previewTarget } from "@/lib/preview";
 import { fetchRecentEssays } from "@/lib/queries/recent-essays";
+import { normalizeSlug } from "@/lib/text-utils";
 
 // Render each page on its first visit, then serve it from Vercel's
 // cache (refreshed hourly, or immediately when WordPress saves). Without
@@ -25,7 +26,7 @@ type Props = {
 };
 
 export default async function EssayPage({ params }: Props) {
-  const { slug } = await params;
+  const slug = normalizeSlug((await params).slug);
   const [essay, recent] = await Promise.all([
     fetchEssayBySlug(slug, await previewTarget("essay", slug)),
     fetchRecentEssays(8),

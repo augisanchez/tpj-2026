@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { PhotographerProfileBody } from "@/components/PhotographerProfileBody";
 import { fetchPhotographerArticles } from "@/lib/queries/photographer-articles";
 import { fetchPhotographerBySlug } from "@/lib/queries/photographer-by-slug";
+import { normalizeSlug } from "@/lib/text-utils";
 
 // Render each page on its first visit, then serve it from Vercel's
 // cache (refreshed hourly, or immediately when WordPress saves). Without
@@ -18,7 +19,7 @@ type Props = {
 };
 
 export default async function PhotographerPage({ params }: Props) {
-  const { slug } = await params;
+  const slug = normalizeSlug((await params).slug);
 
   const [photographer, work] = await Promise.all([
     fetchPhotographerBySlug(slug),

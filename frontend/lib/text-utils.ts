@@ -122,3 +122,19 @@ export function htmlToPlainText(html: string | null | undefined): string {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
+
+/**
+ * WordPress stores non-ASCII slugs percent-encoded in lower case
+ * ("rural-%e9%84%89%e6%9d%91"), and some installs only match that form.
+ * Route params can arrive decoded or upper-case encoded, so normalise
+ * to WordPress's form. ASCII slugs pass through unchanged.
+ */
+export function normalizeSlug(slug: string): string {
+  let decoded = slug;
+  try {
+    decoded = decodeURIComponent(slug);
+  } catch {
+    // keep as is
+  }
+  return encodeURIComponent(decoded).toLowerCase();
+}

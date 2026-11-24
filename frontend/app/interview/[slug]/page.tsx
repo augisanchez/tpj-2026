@@ -9,6 +9,7 @@ import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchInterviewBySlug } from "@/lib/queries/interview-by-slug";
 import { previewTarget } from "@/lib/preview";
 import { fetchRecentInterviews } from "@/lib/queries/recent-interviews";
+import { normalizeSlug } from "@/lib/text-utils";
 
 // Render each page on its first visit, then serve it from Vercel's
 // cache (refreshed hourly, or immediately when WordPress saves). Without
@@ -25,7 +26,7 @@ type Props = {
 };
 
 export default async function InterviewPage({ params }: Props) {
-  const { slug } = await params;
+  const slug = normalizeSlug((await params).slug);
   const [interview, recent] = await Promise.all([
     fetchInterviewBySlug(slug, await previewTarget("interview", slug)),
     fetchRecentInterviews(8),
