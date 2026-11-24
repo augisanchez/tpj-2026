@@ -46,15 +46,10 @@ const containerVariants: Variants = {
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.2, 0.6, 0.2, 1] },
-  },
+  hidden: { opacity: 1 },
+  visible: { opacity: 1 },
   exit: {
     opacity: 0,
-    y: 12,
     transition: { duration: 0.2, ease: [0.4, 0, 1, 1] },
   },
 };
@@ -180,6 +175,7 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
           role="tabpanel"
           aria-labelledby={`theme-tab-${activeSlug}`}
           className={styles.cards}
+          data-reveal-children
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"

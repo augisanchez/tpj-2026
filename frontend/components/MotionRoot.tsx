@@ -25,8 +25,8 @@ import { LogoStage } from "./LogoStage";
  * exit, no logo hold, reveals become quick fades, no pointer drift.
  */
 
-const STEP_MS = 70;
-const STAGGER_CAP = 8;
+const WAVE_MS = 650;
+const WAVE_CAP_MS = 1100;
 const IMG_WAIT_MS = 1200;
 const EXIT_STEP_MS = 30;
 const EXIT_CAP = 6;
@@ -96,16 +96,20 @@ export function MotionRoot() {
 
   /* ---------------- reveals ---------------- */
 
+  // Wave: each item's delay grows with its distance from the batch's
+  // top-left corner (across + down the viewport), so a grid ripples
+  // diagonally however many items it has.
   const play = (batch: HTMLElement[]) => {
     const rects = new Map(batch.map((el) => [el, el.getBoundingClientRect()]));
-    batch.sort((a, b) => {
-      const ra = rects.get(a)!;
-      const rb = rects.get(b)!;
-      return ra.top + ra.left * 0.5 - (rb.top + rb.left * 0.5);
-    });
-    batch.forEach((el, i) => {
+    const minTop = Math.min(...batch.map((el) => rects.get(el)!.top));
+    const minLeft = Math.min(...batch.map((el) => rects.get(el)!.left));
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    batch.forEach((el) => {
+      const r = rects.get(el)!;
+      const wave = ((r.left - minLeft) / vw + (r.top - minTop) / vh) * WAVE_MS;
       if (el.dataset.reveal === "lines") splitLines(el);
-      el.style.setProperty("--rv-d", `${Math.min(i, STAGGER_CAP) * STEP_MS}ms`);
+      el.style.setProperty("--rv-d", `${Math.round(Math.min(wave, WAVE_CAP_MS))}ms`);
       // next frame so the hidden state paints first
       requestAnimationFrame(() => el.classList.add("rv-in"));
     });
