@@ -1,7 +1,7 @@
 .section {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: 0 var(--gutter) clamp(96px, 4rem + 5vw, 320px);
+  padding: clamp(64px, 3rem + 3vw, 200px) var(--gutter) clamp(96px, 4rem + 5vw, 320px);
 }
 
 /* Same section label as "About the photographer": muted caps. */
