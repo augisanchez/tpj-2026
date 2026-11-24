@@ -23,6 +23,7 @@ const InterviewBySlugQuery = gql`
       excerpt
       articleIntro
       articleAuthor
+      portraitCredit
       photographerName
       ${LinkedPhotographerFields}
       ${LinkedPhotographersFields}
@@ -57,6 +58,8 @@ export type Interview = {
   excerpt: string | null;
   intro: string | null;
   interviewer: string | null;
+  /** e.g. "Portraits of Olivia Bee by Joe Haeberle". */
+  portraitCredit: string | null;
   photographerName: string | null;
   photographer: Photographer | null;
   photographers: Photographer[];
@@ -79,6 +82,7 @@ type RawInterview = {
   excerpt: string | null;
   articleIntro: string | null;
   articleAuthor: string | null;
+  portraitCredit?: string | null;
   photographerName: string | null;
   linkedPhotographer: RawLinkedPhotographer | null;
   linkedPhotographers: RawLinkedPhotographer[] | null;
@@ -135,6 +139,7 @@ export async function fetchInterviewBySlug(
     excerpt: raw.excerpt,
     intro: intro || null,
     interviewer: interviewer || null,
+    portraitCredit: raw.portraitCredit?.trim() || null,
     photographerName: photographerNameTrimmed,
     photographer: photographers[0] ?? null,
     photographers,

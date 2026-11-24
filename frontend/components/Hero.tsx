@@ -7,6 +7,8 @@ type Props = {
   title: string;
   subtitle?: string;
   byline?: string;
+  /** Secondary credit under the byline, e.g. the interview portrait credit. */
+  credit?: string | null;
   backgroundImage?: { src: string; alt: string };
 };
 
@@ -15,6 +17,7 @@ export function Hero({
   title,
   subtitle,
   byline,
+  credit,
   backgroundImage,
 }: Props) {
   return (
@@ -37,6 +40,7 @@ export function Hero({
           <h1 className={styles.title} data-reveal="lines">{title}</h1>
           {subtitle && <p className={styles.subtitle} data-reveal>{subtitle}</p>}
           {byline && <p className={styles.byline} data-reveal>{byline}</p>}
+          {credit && <p className={`${styles.byline} ${styles.credit}`} data-reveal>{credit}</p>}
         </div>
       </div>
     </div>

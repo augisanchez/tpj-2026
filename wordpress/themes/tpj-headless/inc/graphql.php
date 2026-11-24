@@ -417,6 +417,15 @@ add_action( 'graphql_register_types', function () {
 			'description' => 'Byline credit for the prose author. Interviewer on Interview, Writer on Feature. Empty on Essay (photo-led). Reads `tpj_byline_author` with `tpj_feature_writer` legacy fallback.',
 			'resolve'     => $author_resolver,
 		] );
+		register_graphql_field( $type, 'portraitCredit', [
+			'type'        => 'String',
+			'description' => 'Portrait credit line (tpj_portrait_credit), e.g. "Portraits of Olivia Bee by Joe Haeberle". Used on interviews.',
+			'resolve'     => function ( $post ) {
+				$id = is_object( $post ) ? ( $post->ID ?? $post->databaseId ?? 0 ) : 0;
+				$v  = $id ? trim( (string) get_post_meta( $id, 'tpj_portrait_credit', true ) ) : '';
+				return $v === '' ? null : $v;
+			},
+		] );
 		register_graphql_field( $type, 'heroImage', [
 			'type'        => 'MediaItem',
 			'description' => 'Image shown at the top of the article. Falls back through `_tpj_hero_image_id` → v1 `header_image` → `_thumbnail_id` (WP featured). Use this on detail pages instead of `featuredImage` so v1 archive renders the correct hero crop.',

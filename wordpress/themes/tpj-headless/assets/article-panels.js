@@ -85,6 +85,7 @@
 
 		var introState = useMeta( INTRO_KEY, '' );
 		var authorState = useMeta( BYLINE_KEY, '' );
+		var creditState = useMeta( 'tpj_portrait_credit', '' );
 		var intro = introState[ 0 ];
 		var setIntro = introState[ 1 ];
 		var author = authorState[ 0 ];
@@ -117,6 +118,19 @@
 							value: author || '',
 							onChange: setAuthor,
 							placeholder: 'Jane Doe',
+							__nextHasNoMarginBottom: true,
+						} )
+				  )
+				: null,
+			postType === 'interview'
+				? createElement(
+						'div',
+						{ style: { marginTop: '16px' } },
+						createElement( TextControl, {
+							label: 'Portrait credit',
+							help: 'Shown under the byline. Example: Portraits of Olivia Bee by Joe Haeberle.',
+							value: creditState[ 0 ] || '',
+							onChange: creditState[ 1 ],
 							__nextHasNoMarginBottom: true,
 						} )
 				  )

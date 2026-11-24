@@ -66,6 +66,16 @@ function tpj_register_article_panel_meta() {
 			'auth_callback'     => $auth_callback,
 		] );
 
+		// Free-text portrait credit shown on interviews, e.g.
+		// "Portraits of Olivia Bee by Joe Haeberle".
+		register_post_meta( $type, 'tpj_portrait_credit', [
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'sanitize_text_field',
+			'auth_callback'     => $auth_callback,
+		] );
+
 		register_post_meta( $type, TPJ_HERO_IMAGE_META_KEY, [
 			'type'              => 'integer',
 			'single'            => true,

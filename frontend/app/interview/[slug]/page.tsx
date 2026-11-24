@@ -82,6 +82,7 @@ export default async function InterviewPage({ params }: Props) {
         contentTypeLabel="Interview"
         title={interview.title}
         byline={byline}
+        credit={interview.portraitCredit}
         backgroundImage={interview.heroImage ?? interview.featuredImage ?? undefined}
       />
 
