@@ -267,3 +267,9 @@
     row-gap: 32px;
   }
 }
+
+/* Stray <br> between blocks (legacy content) would add a line of
+   space on top of the rhythm above. */
+.body > br {
+  display: none;
+}
