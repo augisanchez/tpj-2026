@@ -10,6 +10,8 @@ import { fetchInterviewBySlug } from "@/lib/queries/interview-by-slug";
 import { previewTarget } from "@/lib/preview";
 import { fetchRecentInterviews } from "@/lib/queries/recent-interviews";
 import { normalizeSlug } from "@/lib/text-utils";
+import type { Metadata } from "next";
+import { describe, pageMetadata } from "@/lib/seo";
 
 // Render each page on its first visit, then serve it from Vercel's
 // cache (refreshed hourly, or immediately when WordPress saves). Without
@@ -24,6 +26,23 @@ export async function generateStaticParams() {
 type Props = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const slug = normalizeSlug((await params).slug);
+  if (slug.startsWith("preview-")) return { robots: { index: false } };
+  const a = await fetchInterviewBySlug(slug);
+  if (!a) return {};
+  const names = a.photographers.map((p) => p.name).filter(Boolean);
+  return pageMetadata({
+    title: `${a.title} — The Photographic Journal`,
+    description: describe(a.excerpt, a.intro, a.body),
+    path: `/interview/${a.slug}`,
+    image: a.heroImage ?? a.featuredImage,
+    type: "article",
+    publishedTime: a.date,
+    authors: names.length ? names : a.photographerName ? [a.photographerName] : undefined,
+  });
+}
 
 export default async function InterviewPage({ params }: Props) {
   const slug = normalizeSlug((await params).slug);
