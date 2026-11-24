@@ -6,6 +6,8 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1376 / 720;
+  /* Never taller than the screen, so the title is on the first screen. */
+  max-height: calc(100svh - 96px);
   border-radius: 20px;
   overflow: hidden;
   background: var(--hero-bg);
@@ -119,3 +121,34 @@
   }
 }
 
+
+/* Big monitors: keep the hero inside a 1,920px column. */
+.outer {
+  padding-inline: max(32px, calc((100% - 1920px) / 2));
+}
+@media (max-width: 640px) {
+  .outer {
+    padding-inline: 16px;
+  }
+}
+
+/* Phones held sideways: short hero layout. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .card {
+    aspect-ratio: auto;
+    height: calc(100svh - 72px);
+    max-height: none;
+  }
+  .stack {
+    left: 32px;
+    right: 32px;
+    bottom: 32px;
+    gap: 8px;
+  }
+  .title {
+    font-size: clamp(28px, 9svh, 44px);
+  }
+  .subtitle {
+    display: none;
+  }
+}

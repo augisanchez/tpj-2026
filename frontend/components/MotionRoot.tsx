@@ -167,7 +167,9 @@ export function MotionRoot() {
       if (r.width === 0 && r.height === 0) continue;
       // Includes anything already scrolled past, so fast flings never
       // leave a block hidden above the viewport.
-      if (r.top < vh * 0.92) {
+      // Reveal once well inside the viewport, or fully inside it (so a
+      // byline near the bottom of a tall screen never stays hidden).
+      if (r.top < vh * 0.92 || (r.bottom <= vh && r.top < vh)) {
         watching.current.delete(el);
         queue.current.push(el);
       }
@@ -187,11 +189,26 @@ export function MotionRoot() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.add("motion-ready");
-    if (reducedMotion()) {
-      root.classList.remove("motion-on");
-      return;
-    }
+    const vh = window.innerHeight;
+    const onFirstScreen = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      return r.bottom > 0 && r.top < vh && (r.width > 0 || r.height > 0);
+    };
+    // The server HTML is fully visible: nothing waits for JavaScript, so
+    // the first screen paints at once (LCP). From here on, what's already
+    // on screen stays shown without animating; only content below the fold
+    // is hidden, to rise in as it's scrolled to. Page-to-page navigation
+    // still runs the full logo + staggered entrance.
+    document.querySelectorAll<HTMLImageElement>("img[data-fade], [data-img-body] img").forEach((img) => {
+      if (onFirstScreen(img)) img.dataset.ld = "1";
+    });
+    root.classList.add("img-fade", "motion-ready");
+    if (reducedMotion()) return;
+    document.querySelectorAll<HTMLElement>(REVEAL_SELECTOR).forEach((el) => {
+      if (!onFirstScreen(el)) return;
+      seen.current.add(el);
+      el.classList.add("rv-in", "rv-instant");
+    });
     root.classList.add("motion-on");
     active.current = true;
     register();

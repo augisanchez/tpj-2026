@@ -21,39 +21,69 @@
   will-change: transform;
 }
 
-.dots {
+.controls {
   position: absolute;
-  bottom: 24px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
   display: flex;
-  gap: 8px;
-  padding: 6px 12px;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
+.dots {
+  display: flex;
+}
+
+/* 24×24 hit area (WCAG 2.2 target size) around an 8px dot. */
 .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  position: relative;
+  width: 24px;
+  height: 24px;
   border: 0;
   padding: 0;
-  background: rgba(255, 255, 255, 0.45);
+  background: none;
   cursor: pointer;
+}
+
+.dot::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
   transition: background-color 150ms ease-out, transform 150ms ease-out;
 }
 
-.dot:hover {
+.dot:hover::before {
   background: rgba(255, 255, 255, 0.75);
 }
 
-.dotActive {
+.dotActive::before {
   background: #fff;
   transform: scale(1.15);
+}
+
+.playPause {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+}
+
+.playPause:hover {
+  color: #fff;
 }
 
 @media (max-width: 640px) {
@@ -64,7 +94,26 @@
     aspect-ratio: 4 / 5;
     border-radius: 16px;
   }
-  .dots {
-    bottom: 16px;
+  .controls {
+    bottom: 12px;
+  }
+}
+
+/* Big monitors: keep the hero inside a 1,920px column. */
+.carousel {
+  padding-inline: max(32px, calc((100% - 1920px) / 2));
+}
+@media (max-width: 640px) {
+  .carousel {
+    padding-inline: 16px;
+  }
+}
+
+/* Phones held sideways: use the height that's there. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .frame {
+    aspect-ratio: auto;
+    height: calc(100svh - 72px);
+    max-height: none;
   }
 }

@@ -12,7 +12,13 @@ export function ScrollCue() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setHidden(window.scrollY > 80);
+    // Hide once the reader has scrolled, or when the page below the hero
+    // is already on screen (tall tablets), so the pill never covers a card.
+    const onScroll = () => {
+      const hero = document.querySelector("main [data-reveal='wipe']");
+      const heroBottom = hero ? hero.getBoundingClientRect().bottom : 0;
+      setHidden(window.scrollY > 80 || heroBottom < window.innerHeight - 160);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);

@@ -97,7 +97,16 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
   // which side to slide in/out from. +1 next, -1 prev. Reset on
   // every transition end via the AnimatePresence onExitComplete.
   const [direction, setDirection] = useState(1);
+  // Hover/focus pause is temporary; the button is the reader's choice
+  // and sticks (WCAG 2.2.2 Pause, Stop, Hide).
   const [paused, setPaused] = useState(false);
+  const [stopped, setStopped] = useState(false);
+  const [tabHidden, setTabHidden] = useState(false);
+  useEffect(() => {
+    const onVis = () => setTabHidden(document.hidden);
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
 
   const advance = (delta: number) => {
     setDirection(delta > 0 ? 1 : -1);
@@ -112,13 +121,13 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
   useEffect(() => {
     if (slides.length <= 1) return;
     if (reducedMotion) return;
-    if (paused) return;
+    if (paused || stopped || tabHidden) return;
     const id = window.setInterval(() => {
       setDirection(1);
       setIndex((i) => (i + 1) % slides.length);
     }, intervalMs);
     return () => window.clearInterval(id);
-  }, [slides.length, intervalMs, paused, reducedMotion]);
+  }, [slides.length, intervalMs, paused, stopped, tabHidden, reducedMotion]);
 
   // Preload every slide's image so the one underneath is ready before
   // it's revealed.
@@ -192,6 +201,22 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
         </motion.div>
       </AnimatePresence>
 
+      <div className={styles.controls}>
+      {!reducedMotion && (
+        <button
+          type="button"
+          className={styles.playPause}
+          aria-label={stopped ? "Play slideshow" : "Pause slideshow"}
+          aria-pressed={stopped}
+          onClick={() => setStopped((s) => !s)}
+        >
+          {stopped ? (
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" fill="currentColor" /></svg>
+          ) : (
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1.5h2.5v9H2.5zM7 1.5h2.5v9H7z" fill="currentColor" /></svg>
+          )}
+        </button>
+      )}
       <div
         className={styles.dots}
         role="tablist"
@@ -212,6 +237,7 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
             />
           );
         })}
+      </div>
       </div>
       </div>
     </div>

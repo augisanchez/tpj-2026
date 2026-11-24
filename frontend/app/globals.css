@@ -136,9 +136,9 @@ img {
 /* Motion system: reveals, page exit, pointer hover                    */
 /* (components/MotionRoot.tsx drives the classes)                      */
 /* ------------------------------------------------------------------ */
-/* Hidden states apply only once html.motion-on is set (inline script  */
-/* in layout, removed by a safety timer if the app never hydrates), so */
-/* content is never stuck invisible without JS.                        */
+/* Hidden states apply only once html.motion-on is set, which          */
+/* MotionRoot does after marking the first screen as shown. The server */
+/* HTML is never hidden, so nothing waits on JavaScript to appear.     */
 
 .motion-on [data-reveal]:not(.rv-in):not([data-reveal="lines"]),
 .motion-on [data-reveal-children] > *:not(.rv-in),
@@ -157,7 +157,14 @@ img {
 /* Only wipes keep a clip once revealed. Anything else must not be
    clipped: text glyphs extend past their box at tight line-heights. */
 [data-reveal="wipe"].rv-in,
-[data-reveal-scope] figure.rv-in {
+[data-reveal-scope] figure/* First screen on a fresh load: shown as rendered, no entrance. */
+.rv-instant,
+.rv-instant .rv-line-inner {
+  transition: none !important;
+  animation: none !important;
+}
+
+.rv-in {
   clip-path: inset(0 0 0 0);
 }
 

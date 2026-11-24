@@ -69,7 +69,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){var d=document.documentElement;document.addEventListener('error',function(e){var t=e.target;if(!t||t.tagName!=='IMG'||t.dataset.cdnFb)return;var s=t.currentSrc||t.src||'';if(s.indexOf('/cdn-cgi/image/')<0)return;t.dataset.cdnFb='1';t.removeAttribute('srcset');t.src=s.replace(/\\/cdn-cgi\\/image\\/[^\\/]+/,'')},true);d.classList.add('img-fade');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('img-fade')},3000);if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('motion-on');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('motion-on')},3000)}})();",
+              "(function(){var d=document.documentElement;document.addEventListener('error',function(e){var t=e.target;if(!t||t.tagName!=='IMG'||t.dataset.cdnFb)return;var s=t.currentSrc||t.src||'';if(s.indexOf('/cdn-cgi/image/')<0)return;t.dataset.cdnFb='1';t.removeAttribute('srcset');t.src=s.replace(/\\/cdn-cgi\\/image\\/[^\\/]+/,'')},true);})();",
           }}
         />
       </head>

@@ -7,7 +7,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  /* Content stays inside a 1,920px column on big monitors. */
+  padding: 0 max(32px, calc((100% - 1920px) / 2));
   background: var(--bg);
   transition: transform 250ms ease-out;
 }
@@ -133,7 +134,8 @@
     display: block;
   }
   .links {
-    gap: 16px;
+    /* Room for the 44px hit areas so they don't overlap. */
+    gap: 24px;
   }
 }
 
@@ -146,4 +148,20 @@
   .hamburger span {
     transition: none !important;
   }
+}
+
+/* 44×44 hit areas for the icon controls without changing how they look:
+   an invisible ring around the icon catches the tap. */
+.search,
+.hamburger {
+  position: relative;
+}
+.search::after,
+.hamburger::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+}
+.hamburger::after {
+  inset: -10px;
 }
