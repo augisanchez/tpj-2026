@@ -32,6 +32,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 const TPJ_EDITOR_ARTICLE_TYPES = [ 'essay', 'interview', 'feature' ];
 const TPJ_EDITOR_PATH          = [ 'essay' => 'essay', 'interview' => 'interview', 'feature' => 'feature' ];
 
+// The Cover (featured) image panel only appears when the theme declares
+// support; the post types already request it.
+add_action( 'after_setup_theme', function () {
+	add_theme_support( 'post-thumbnails' );
+} );
+
 /* ------------------------------------------------------------------ */
 /* 1. Image labels                                                     */
 /* ------------------------------------------------------------------ */
