@@ -154,6 +154,13 @@ img {
   clip-path: inset(0 0 100% 0);
 }
 
+/* Only wipes keep a clip once revealed. Anything else must not be
+   clipped: text glyphs extend past their box at tight line-heights. */
+[data-reveal="wipe"].rv-in,
+[data-reveal-scope] figure.rv-in {
+  clip-path: inset(0 0 0 0);
+}
+
 .motion-on [data-reveal="lines"]:not(.rv-in) {
   opacity: 0;
 }
@@ -161,7 +168,6 @@ img {
 .rv-in {
   opacity: 1;
   transform: none;
-  clip-path: inset(0 0 0 0);
   transition:
     opacity var(--dur-enter) var(--ease-out) var(--rv-d, 0ms),
     transform var(--dur-enter) var(--ease-out) var(--rv-d, 0ms),
@@ -195,7 +201,6 @@ img {
 .rv-out {
   opacity: 0 !important;
   transform: translateY(-10px) !important;
-  clip-path: inset(0 0 0 0) !important;
   transition:
     opacity var(--dur-exit) var(--ease-in) var(--rv-xd, 0ms),
     transform var(--dur-exit) var(--ease-in) var(--rv-xd, 0ms) !important;
