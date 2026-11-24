@@ -3,12 +3,14 @@ import styles from "./Footer.module.css";
 
 const FOOTER_LINKS = [
   { label: "Explore", href: "/explore" },
+  { label: "Index", href: "/index" },
   { label: "Photographers", href: "/photographers" },
   { label: "Themes", href: "/themes" },
   { label: "About", href: "/about" },
   { label: "Submit", href: "/submit" },
   { label: "Contact", href: "/contact" },
   { label: "Shop", href: "/shop" },
+  { label: "Shuffle", href: "/random" },
 ];
 
 export function Footer() {
@@ -16,26 +18,39 @@ export function Footer() {
 
   return (
     <footer className={styles.footer}>
-      <div className={styles.brand}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/svg/tpj_black.svg" alt="The Photographic Journal" className={styles.mark} />
-        <p className={styles.copyright}>
-          &copy; {year} The Photographic Journal
-        </p>
-        <p className={styles.est}>Est. 2012</p>
+      <div className={styles.row}>
+        <div className={styles.brand}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/svg/tpj_black.svg" alt="The Photographic Journal" className={styles.mark} />
+          <p className={styles.copyright}>
+            &copy; {year} The Photographic Journal
+          </p>
+          <p className={styles.est}>Est. 2012</p>
+        </div>
+
+        <nav className={styles.links} aria-label="Footer">
+          {FOOTER_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={styles.link}
+              // /random picks on every visit; a prefetch would fix the pick.
+              prefetch={link.href === "/random" ? false : undefined}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
       </div>
 
-      <nav className={styles.links} aria-label="Footer">
-        {FOOTER_LINKS.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={styles.link}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
+      {/* The journal's name, oversized and cropped by the footer's bottom
+          edge. Decorative: the mark above already names the site. It
+          rises into place once, as the footer enters view (MotionRoot). */}
+      <div className={styles.crop} aria-hidden="true">
+        <p className={styles.wordmark} data-reveal>
+          <span>The</span> <span>Photographic</span> <span>Journal</span>
+        </p>
+      </div>
     </footer>
   );
 }

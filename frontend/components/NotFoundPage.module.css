@@ -1,47 +1,21 @@
-.cover {
-  position: relative;
-  display: flex;
+/* 404: a closed gallery. Big display line, one dry sentence, two ways
+   out, and one photograph from the archive hung beside it. */
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 65px);
-  padding: 32px 32px 32px;
-  margin: 0;
-  text-decoration: none;
-  color: var(--hero-text);
-  background: var(--hero-bg);
-  overflow: hidden;
+  gap: var(--space-block);
+  min-height: calc(100svh - 65px);
+  padding: var(--space-block) var(--gutter);
+  box-sizing: border-box;
 }
 
-.bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-}
-
-.gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(14, 14, 14, 0.45) 0%,
-    rgba(14, 14, 14, 0.7) 100%
-  );
-  z-index: 1;
-  pointer-events: none;
-}
-
-.content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
+.text {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 24px;
-  max-width: 720px;
 }
 
 .eyebrow {
@@ -50,68 +24,131 @@
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--hero-muted);
+  color: var(--muted);
   margin: 0;
 }
 
 .title {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(72px, 3rem + 5.5vw, 360px); /* caps ~5236 */
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--hero-text);
+  font-size: clamp(3rem, 1.5rem + 6.2vw, 14rem);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--text);
   margin: 0;
 }
 
 .sub {
   font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
-  font-weight: 400;
   font-size: var(--text-intro);
-  line-height: 1.5;
-  color: var(--hero-text);
+  line-height: 1.45;
+  color: var(--text);
+  max-width: 30em;
   margin: 0;
 }
 
-.cta {
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+  margin-top: 8px;
+}
+
+.primary,
+.secondary {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--hero-text);
-  margin: 24px 0 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding-bottom: 4px;
-  border-bottom: 2px solid var(--hero-text);
-  transition: border-bottom-color 200ms ease-out;
+  text-decoration: none;
 }
 
-.credit {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  z-index: 2;
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  color: var(--hero-muted);
-  margin: 0;
+/* Flat fill in today's accent; the ink token keeps the label legible. */
+.primary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 24px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+}
+
+.secondary {
+  color: var(--text);
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--text);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .cover:hover .cta {
-    border-bottom-color: var(--chip-bg);
+  .primary:hover {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .secondary:hover {
+    opacity: 0.6;
   }
 }
 
-@media (max-width: 640px) {
-  .cover {
-    padding: 24px 16px;
+.plate {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.frame {
+  display: block;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-img);
+  overflow: hidden;
+  background: var(--placeholder);
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.caption {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.caption a {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.caption a:hover {
+  text-decoration: underline;
+}
+
+.no {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 600;
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    min-height: 0;
+    padding: 48px var(--gutter) 64px;
   }
   .title {
-    font-size: clamp(72px, 22vw, 160px);
+    font-size: clamp(2.75rem, 14vw, 6.5rem);
+  }
+  .frame {
+    aspect-ratio: 4 / 3;
   }
 }

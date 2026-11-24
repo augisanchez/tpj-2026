@@ -1,0 +1,200 @@
+/* The numbered index (/index): one story per row, a tight type grid.
+   Row markup is deliberately bare (li > a > 5 spans) to keep ~750 rows
+   light; the cells are styled by position. */
+
+.page {
+  padding: var(--space-section) var(--gutter);
+}
+
+.header {
+  margin-bottom: var(--space-block);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title {
+  font-size: var(--text-hero);
+  line-height: 0.88;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.lede {
+  font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
+  font-size: var(--text-intro);
+  line-height: 1.5;
+  color: var(--text);
+  max-width: 38em;
+  margin: 0;
+}
+
+/* Shared column template: header row and every story row. */
+.cols,
+.list > li > a {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 3fr) minmax(0, 2fr) 6.5rem 3.5rem;
+  column-gap: 24px;
+  align-items: baseline;
+}
+
+.cols {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: var(--text-label);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 12px 10px;
+  border-bottom: 2px solid var(--text);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list > li {
+  border-bottom: 1px solid var(--border);
+  /* Off-screen rows skip layout and paint until scrolled near. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 48px;
+}
+
+/* No negative-margin bleed for the fill: content-visibility clips
+   paint to the <li>, so the padding carries the fill's breathing room. */
+.list > li > a {
+  padding: 12px;
+  color: var(--text);
+  text-decoration: none;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-ui);
+  line-height: 1.35;
+}
+
+/* No. 1234 */
+.list > li > a > span:nth-child(1) {
+  font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Title */
+.list > li > a > span:nth-child(2) {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Type, year */
+.list > li > a > span:nth-child(4),
+.list > li > a > span:nth-child(5) {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.list > li > a > span:nth-child(5) {
+  text-align: right;
+}
+
+/* Flat fill on hover and focus: the row takes its story's accent. */
+.list > li > a:hover,
+.list > li > a:focus-visible {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.list > li > a:hover > span,
+.list > li > a:focus-visible > span {
+  color: inherit;
+}
+
+.list > li > a:focus-visible {
+  outline: 2px solid var(--text);
+  /* Inset: content-visibility clips anything drawn outside the row. */
+  outline-offset: -2px;
+}
+
+/* Hover thumbnail: fixed to the viewport, so it never moves the list. */
+.thumb {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  width: 240px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-img);
+  overflow: hidden;
+  background: var(--placeholder);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 140ms ease-out,
+    transform 220ms var(--ease-out);
+}
+
+.thumb[data-on="1"] {
+  opacity: 1;
+  transform: none;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 160ms ease-out;
+}
+
+.thumb img[data-ready="1"] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb,
+  .thumb img {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Tablet: drop the type column into the year cell's company. */
+@media (max-width: 1000px) {
+  .cols,
+  .list > li > a {
+    grid-template-columns: 6rem minmax(0, 3fr) minmax(0, 2fr) 3.5rem;
+  }
+  .cols > span:nth-child(4),
+  .list > li > a > span:nth-child(4) {
+    display: none;
+  }
+}
+
+/* Phone: number and title on one line, credit and year beneath. */
+@media (max-width: 640px) {
+  .cols {
+    display: none;
+  }
+  .list {
+    border-top: 2px solid var(--text);
+  }
+  .list > li {
+    contain-intrinsic-size: auto 72px;
+  }
+  .list > li > a {
+    grid-template-columns: 4.75rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "no title title"
+      ". credit year";
+    row-gap: 4px;
+    column-gap: 12px;
+  }
+  .list > li > a > span:nth-child(1) { grid-area: no; font-size: 1.0625rem; }
+  .list > li > a > span:nth-child(2) { grid-area: title; }
+  .list > li > a > span:nth-child(3) { grid-area: credit; color: var(--muted); }
+  .list > li > a > span:nth-child(5) { grid-area: year; }
+}

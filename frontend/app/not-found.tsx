@@ -1,59 +1,58 @@
 import Link from "next/link";
-import { fetchRecentEssays } from "@/lib/queries/recent-essays";
+import { accentFor, todayKey } from "@/lib/accent";
+import { randomStory } from "@/lib/queries/story-index";
+import { NOT_FOUND_META } from "@/lib/seo";
 import { TpjImage } from "@/components/TpjImage";
 import styles from "@/components/NotFoundPage.module.css";
 
-// Force dynamic rendering so a different essay's hero is picked on each
-// visit instead of caching one image into the static 404 page.
+// Dynamic so each visit hangs a different photograph. The story list
+// itself is cached for an hour, so this costs the CMS nothing.
 export const dynamic = "force-dynamic";
 
 // Next adds the noindex robots tag itself; no canonical is inherited.
-export const metadata = { title: "Page not found — The Photographic Journal" };
-
-const QUIPS = [
-  "Oops. You lost your way.",
-  "There's nothing here. But there's plenty here →",
-  "Wrong room. The light is still good.",
-  "404. Probably a typo. Possibly fate.",
-  "Roll of film, no negatives.",
-  "Picture not in the archive.",
-  "Off-frame. Try the homepage.",
-];
+export const metadata = NOT_FOUND_META;
 
 export default async function NotFound() {
-  const essays = await fetchRecentEssays(60);
-  const pool = essays.filter((e) => e.featuredImage);
-  const choice =
-    pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : null;
-  const quip = QUIPS[Math.floor(Math.random() * QUIPS.length)];
+  const pick = await randomStory({ withImage: true });
 
   return (
-    <Link href="/" className={styles.cover}>
-      {choice?.featuredImage && (
-        <TpjImage
-          className={styles.bg}
-          src={choice.featuredImage.src}
-          alt={choice.featuredImage.alt}
-          sizes="100vw"
-          priority
-        />
-      )}
-      <div className={styles.gradient} aria-hidden="true" />
-
-      <div className={styles.content}>
+    <section className={styles.page} data-accent={accentFor(todayKey())}>
+      <div className={styles.text}>
         <p className={styles.eyebrow}>Error 404</p>
-        <h1 className={styles.title}>Oops.</h1>
-        <p className={styles.sub}>{quip}</p>
-        <span className={styles.cta}>
-          ← Back to the homepage
-        </span>
+        <h1 className={styles.title} data-reveal="lines">
+          This gallery is closed for installation
+        </h1>
+        <p className={styles.sub} data-reveal>
+          Whatever hung here has come down. The rest of the collection is open.
+        </p>
+        <div className={styles.actions} data-reveal>
+          <Link href="/" className={styles.primary}>
+            See what&rsquo;s on view
+          </Link>
+          <Link href="/random" prefetch={false} className={styles.secondary}>
+            Show me something
+          </Link>
+        </div>
       </div>
 
-      {choice && (
-        <p className={styles.credit}>
-          Photograph: {choice.title}
-        </p>
+      {pick && (
+        <figure className={styles.plate} data-reveal>
+          <Link href={`/${pick.type}/${pick.slug}`} className={styles.frame} tabIndex={-1} aria-hidden="true">
+            <TpjImage
+              className={styles.img}
+              src={pick.image}
+              alt=""
+              sizes="(min-width: 900px) 34vw, 100vw"
+              widths={[480, 768, 1024, 1440]}
+            />
+          </Link>
+          <figcaption className={styles.caption}>
+            <span className={styles.no}>{`No. ${pick.no}`}</span>{" "}
+            <Link href={`/${pick.type}/${pick.slug}`}>{pick.title}</Link>
+            {pick.photographer ? `, ${pick.photographer}` : ""}
+          </figcaption>
+        </figure>
       )}
-    </Link>
+    </section>
   );
 }

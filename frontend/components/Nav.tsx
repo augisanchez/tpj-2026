@@ -14,8 +14,13 @@ const NAV_LINKS = [
   { label: "Submit", href: "/submit" },
 ];
 
-// The menu also carries Contact (the desktop header has no room for it).
-const DRAWER_LINKS = [...NAV_LINKS, { label: "Contact", href: "/contact" }];
+// The menu also carries Contact and Shuffle (the desktop header has no
+// room for them). Shuffle goes to a random story via /random.
+const DRAWER_LINKS = [
+  ...NAV_LINKS,
+  { label: "Contact", href: "/contact" },
+  { label: "Shuffle", href: "/random" },
+];
 
 const DEAD_ZONE = 16;
 const REVEAL_DELTA = 8;

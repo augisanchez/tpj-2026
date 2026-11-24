@@ -17,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...(lastModified ? { lastModified } : {}),
   });
   return [
-    ...["/", "/explore", "/themes", "/photographers", "/about", "/shop", "/submit", "/contact"].map((p) => page(p)),
+    ...["/", "/explore", "/themes", "/photographers", "/about", "/shop", "/submit", "/contact", "/index"].map((p) => page(p)),
     ...THEMES.map((t) => page(`/theme/${t.slug}`)),
     ...articles.map((a) => page(`/${a.contentType}/${a.slug}`, a.date)),
     ...photographers.map((p) => page(`/photographer/${p.slug}`)),

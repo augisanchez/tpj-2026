@@ -4,7 +4,13 @@
   /* Horizontal padding mirrors Nav.module.css (40px desktop, 16px
      mobile at the same breakpoint) so the brand mark and the link
      row line up vertically with the nav above. */
-  padding: 100px 40px;
+  padding: 100px 40px 0;
+  overflow: hidden;
+  /* The wordmark sizes to the footer's inner width (cqw). */
+  container-type: inline-size;
+}
+
+.row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -46,8 +52,10 @@
 
 .links {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
-  gap: 32px;
+  gap: 16px 32px;
 }
 
 .link {
@@ -66,12 +74,57 @@
   opacity: 0.6;
 }
 
+/* Oversized wordmark, cropped by the footer's bottom edge. Sized to
+   the footer's inner width so it runs edge to edge at any viewport;
+   the crop shows the top of the capitals. */
+.crop {
+  --wm: 8.3cqw;
+  height: calc(var(--wm) * 0.78);
+  margin-top: 72px;
+  overflow: hidden;
+  user-select: none;
+  pointer-events: none;
+}
+
+.wordmark {
+  /* Shorter rise than the site default: a sweep, not a climb. */
+  --rise: 24px;
+  /* The crop hides the bottom of this box, so MotionRoot's "well inside
+     the viewport" test would never pass at the foot of the page. An
+     invisible 64px of padding above the type lifts the box's top edge
+     without moving the letters. */
+  margin: -64px 0 0;
+  padding-top: 64px;
+  font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
+  font-weight: 700;
+  font-size: var(--wm);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--footer-text);
+}
+
 @media (max-width: 640px) {
   .footer {
+    padding: 64px 16px 0;
+  }
+  .row {
     flex-direction: column;
     align-items: flex-start;
-    padding: 64px 16px;
     gap: 32px;
+  }
+  /* Three lines on phones; "Journal" takes the crop. */
+  .crop {
+    --wm: 15.4cqw;
+    height: calc(var(--wm) * 2.55);
+    margin-top: 48px;
+  }
+  .wordmark {
+    line-height: 0.96;
+  }
+  .wordmark > span {
+    display: block;
   }
   .links {
     display: none;
