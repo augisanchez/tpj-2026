@@ -8,7 +8,7 @@ import styles from "./HomepageHero.module.css";
 type Props = {
   href: string;
   /** Curatorial label shown in the chip — "Latest Photo Essay",
-   *  "From the Archive", "Staff Pick", etc. Replaces the raw content
+   *  "Revisit", "Featured Photographer", etc. Replaces the raw content
    *  type so each carousel slide tells the visitor why this is here. */
   contentTypeLabel: string;
   title: string;

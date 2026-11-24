@@ -26,7 +26,7 @@ const StaffPicksQuery = gql`
         date
         excerpt
         photographerName
-        linkedPhotographer { title }
+        linkedPhotographer { title slug }
         linkedPhotographers { title }
         heroImage {
           sourceUrl
@@ -49,7 +49,7 @@ const StaffPicksQuery = gql`
         excerpt
         photographerName
         articleAuthor
-        linkedPhotographer { title }
+        linkedPhotographer { title slug }
         linkedPhotographers { title }
         heroImage {
           sourceUrl
@@ -72,7 +72,7 @@ const StaffPicksQuery = gql`
         excerpt
         photographerName
         articleAuthor
-        linkedPhotographer { title }
+        linkedPhotographer { title slug }
         linkedPhotographers { title }
         heroImage {
           sourceUrl
@@ -106,7 +106,7 @@ type RawStaffPick = {
   excerpt: string | null;
   photographerName: string | null;
   articleAuthor?: string | null;
-  linkedPhotographer: { title: string | null } | null;
+  linkedPhotographer: { title: string | null; slug: string | null } | null;
   linkedPhotographers: { title: string | null }[] | null;
   heroImage: RawImage;
   featuredImage: {
@@ -133,6 +133,8 @@ function cleanExcerpt(html: string | null): string | null {
 }
 
 export type StaffPickArticle = RecentArticle & {
+  /** Profile slug of the linked photographer, when the article has one. */
+  photographerSlug: string | null;
   heroImage: { src: string; alt: string; width?: number; height?: number } | null;
 };
 
@@ -155,6 +157,7 @@ function toStaffPickArticle(pick: RawStaffPick): StaffPickArticle {
     date: pick.date,
     excerpt: cleanExcerpt(pick.excerpt),
     photographerName,
+    photographerSlug: pick.linkedPhotographer?.slug ?? null,
     contentType: TYPE_TO_CONTENT_TYPE[pick.__typename],
     featuredImage: featuredSrc
       ? {

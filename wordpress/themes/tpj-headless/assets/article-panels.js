@@ -129,8 +129,8 @@
 				'div',
 				{ style: { marginTop: '16px' } },
 				createElement( ToggleControl, {
-					label: 'Staff pick',
-					help: 'Highlight this article on the homepage hero carousel and weight it in Dive Deeper selection.',
+					label: 'Featured photographer',
+					help: 'Feature this photographer on the homepage hero. The slide uses this article\'s cover and links to their profile.',
 					checked: staffPick,
 					onChange: function ( next ) {
 						setStaffPick( next ? true : false );

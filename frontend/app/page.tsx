@@ -110,10 +110,9 @@ export default async function Home() {
     fetchRecentArticles(15),
     // Older essays + interviews: the Revisit grid and hero slide 2.
     fetchArchivalArticles(80, 2),
-    // Articles flagged tpj_staff_pick=1, random order. First entry
-    // powers slide 3 of the homepage hero carousel; remaining entries
-    // fall back to another content type. Empty list when
-    // no articles are flagged.
+    // Articles flagged as Featured photographer (tpj_staff_pick=1),
+    // random order. The first powers hero slide 3. Empty list when
+    // nothing is flagged.
     fetchStaffPicks(6),
     fetchHomepageQuotes(),
     // Real per-theme groupings from the tpj-theme taxonomy. Empty
@@ -143,9 +142,9 @@ export default async function Home() {
   // Build the hero carousel slides. Three positions:
   //   1. Latest piece (whatever was just published — essay/interview/feature)
   //   2. From the archive (random pick >2 years old)
-  //   3. Staff pick (editor-flagged)
+  //   3. Featured photographer (editor-flagged article)
   // Each slide degrades independently: missing latest → drop slide 1,
-  // missing archival → drop slide 2, missing staff pick → drop slide 3.
+  // missing archival → drop slide 2, nothing flagged → fallback slide 3.
   // A single slide renders as a static hero (no carousel chrome).
   const heroSlides: HeroSlide[] = [];
 
@@ -179,22 +178,26 @@ export default async function Home() {
     });
   }
 
-  // Slide 3: staff pick if any exist; otherwise fall back to the
-  // latest article of a different content type than slide 1, so the
-  // carousel still rotates through three pieces and shows content
-  // variety. If even that's not available (single content type in
-  // the feed), drop the third slide entirely.
-  const carouselStaffPick = staffPicks[0] ?? null;
-  if (carouselStaffPick) {
+  // Slide 3: featured photographer. Editors flag an article (the
+  // tpj_staff_pick meta, labelled "Featured photographer" in wp-admin);
+  // the slide features that article's photographer and links to their
+  // profile, using the article's cover. Without a linked profile it
+  // links to the article instead. With nothing flagged, fall back to
+  // the latest article of a different content type than slide 1.
+  const featured = staffPicks[0] ?? null;
+  if (featured) {
+    const name = featured.photographerName;
+    const toProfile = Boolean(featured.photographerSlug && name);
     heroSlides.push({
-      key: `staff-pick-${carouselStaffPick.contentType}-${carouselStaffPick.id}`,
-      href: `/${carouselStaffPick.contentType}/${carouselStaffPick.slug}`,
-      contentTypeLabel: "Staff Pick",
-      title: carouselStaffPick.title,
-      date: carouselStaffPick.date,
-      excerpt: summarize(carouselStaffPick.excerpt, 220),
-      photographerName: carouselStaffPick.photographerName,
-      backgroundImage: carouselStaffPick.featuredImage ?? undefined,
+      key: `featured-photographer-${featured.contentType}-${featured.id}`,
+      href: toProfile
+        ? `/photographer/${featured.photographerSlug}`
+        : articleHref(featured),
+      contentTypeLabel: "Featured Photographer",
+      title: toProfile ? name! : featured.title,
+      excerpt: toProfile ? undefined : summarize(featured.excerpt, 220),
+      photographerName: toProfile ? null : name,
+      backgroundImage: featured.featuredImage ?? undefined,
     });
   } else if (heroArticle) {
     const fallback = articles.find((a) => a.contentType !== heroArticle.contentType);

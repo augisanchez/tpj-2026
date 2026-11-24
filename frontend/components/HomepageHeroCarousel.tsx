@@ -76,7 +76,7 @@ const instant: Variants = {
  * Rotates through up to three homepage hero slides:
  *   1. Latest piece (whatever content type was just published)
  *   2. From the archive (a piece >2 years old)
- *   3. Staff pick (editor-flagged)
+ *   3. Featured photographer (editor-flagged)
  *
  * The carousel owns the rounded frame; each slide is a HomepageHero in
  * fill mode that moves inside it. The chip label tells the visitor why

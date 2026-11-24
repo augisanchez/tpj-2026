@@ -42,11 +42,11 @@ function tpj_add_staff_pick_column( $columns ) {
 	foreach ( $columns as $key => $label ) {
 		$out[ $key ] = $label;
 		if ( $key === 'title' ) {
-			$out[ TPJ_STAFF_PICK_COLUMN ] = 'Staff Pick';
+			$out[ TPJ_STAFF_PICK_COLUMN ] = 'Featured photographer';
 		}
 	}
 	if ( ! isset( $out[ TPJ_STAFF_PICK_COLUMN ] ) ) {
-		$out[ TPJ_STAFF_PICK_COLUMN ] = 'Staff Pick';
+		$out[ TPJ_STAFF_PICK_COLUMN ] = 'Featured photographer';
 	}
 	return $out;
 }
@@ -63,7 +63,7 @@ function tpj_render_staff_pick_column( $column, $post_id ) {
 		$is_pick ? 1 : 0
 	);
 	if ( $is_pick ) {
-		echo '<span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:#e4ffb1;color:#1a1814;font-weight:700;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">★ Staff Pick</span>';
+		echo '<span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:#e4ffb1;color:#1a1814;font-weight:700;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">★ Featured photographer</span>';
 	} else {
 		echo '<span style="color:#8c8f94;font-size:12px;">—</span>';
 	}
@@ -108,7 +108,7 @@ function tpj_render_quick_edit_staff_pick( $column_name, $post_type ) {
 		<div class="inline-edit-col">
 			<label class="inline-edit-staff-pick alignleft">
 				<input type="checkbox" name="tpj_staff_pick" value="1" />
-				<span class="checkbox-title">Staff pick</span>
+				<span class="checkbox-title">Featured photographer</span>
 			</label>
 		</div>
 	</fieldset>
@@ -205,8 +205,8 @@ foreach ( TPJ_ARTICLE_ADMIN_POST_TYPES as $type ) {
 }
 
 function tpj_register_bulk_staff_pick_actions( $actions ) {
-	$actions['tpj_mark_staff_pick']   = 'Mark as staff pick';
-	$actions['tpj_unmark_staff_pick'] = 'Remove staff pick';
+	$actions['tpj_mark_staff_pick']   = 'Mark as featured photographer';
+	$actions['tpj_unmark_staff_pick'] = 'Remove featured photographer';
 	return $actions;
 }
 
@@ -241,7 +241,7 @@ function tpj_bulk_staff_pick_admin_notice() {
 	if ( ! empty( $_REQUEST['tpj_bulk_marked'] ) ) {
 		$count = (int) $_REQUEST['tpj_bulk_marked'];
 		printf(
-			'<div class="notice notice-success is-dismissible"><p>%d %s marked as staff pick.</p></div>',
+			'<div class="notice notice-success is-dismissible"><p>%d %s marked as featured photographer.</p></div>',
 			$count,
 			$count === 1 ? 'article' : 'articles'
 		);
@@ -249,7 +249,7 @@ function tpj_bulk_staff_pick_admin_notice() {
 	if ( ! empty( $_REQUEST['tpj_bulk_unmarked'] ) ) {
 		$count = (int) $_REQUEST['tpj_bulk_unmarked'];
 		printf(
-			'<div class="notice notice-success is-dismissible"><p>Staff pick removed from %d %s.</p></div>',
+			'<div class="notice notice-success is-dismissible"><p>Featured photographer removed from %d %s.</p></div>',
 			$count,
 			$count === 1 ? 'article' : 'articles'
 		);
