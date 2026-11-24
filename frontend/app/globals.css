@@ -1,7 +1,9 @@
-:root[data-season="spring"] { --accent: #ff7ad1; --accent-ink: #111111; }
-:root[data-season="summer"] { --accent: #ff5a1f; --accent-ink: #111111; }
-:root[data-season="autumn"] { --accent: #2b4dff; --accent-ink: #ffffff; }
-:root[data-season="winter"] { --accent: #d6ff3a; --accent-ink: #111111; }
+/* Accent rotation set. Order matters: lib/accent.ts indexes into it. */
+[data-accent="0"] { --accent: #d6ff3a; --accent-ink: #111111; } /* acid lime */
+[data-accent="1"] { --accent: #2b4dff; --accent-ink: #ffffff; } /* cobalt */
+[data-accent="2"] { --accent: #ff7ad1; --accent-ink: #111111; } /* pink */
+[data-accent="3"] { --accent: #ff5a1f; --accent-ink: #111111; } /* orange */
+[data-accent="4"] { --accent: #b9a6ff; --accent-ink: #111111; } /* lilac */
 
 :root {
   /* Color */
@@ -13,11 +15,11 @@
   --placeholder: #d1d1d1;
   /* Every photograph, any size: a hairline round, like a mounted print. */
   --radius-img: 3px;
-  /* Seasonal accent: one flat color per season (MoMA-style seasonal
-     campaigns). Used only for color-block bands, status labels and small
-     markers, never on or over a photograph. Season is set on <html>
-     via data-season (see lib/season.ts). Ink is the text color on it. */
-  --accent: #d6ff3a;      /* winter default: acid lime */
+  /* Rotating accent: a fixed set of flat colors. Each band, label or
+     page picks one with data-accent="0..4" (see lib/accent.ts). Used
+     only as a fill behind type, never on or over a photograph; ink is
+     the text color on it. Default is the first color. */
+  --accent: #d6ff3a;
   --accent-ink: #111111;
   --chip-bg: #e4ffb1;
   --chip-text: #1a1814;

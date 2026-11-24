@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { currentSeason } from "@/lib/season";
 import localFont from "next/font/local";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
@@ -54,7 +53,6 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-season={currentSeason()}
       className={`${oswald.variable} ${inter.variable} ${sourceSerif.variable}`}
       suppressHydrationWarning
     >
