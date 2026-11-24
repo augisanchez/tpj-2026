@@ -31,10 +31,20 @@ const LOAD_INCREMENT = 12;
 // saved state from v1 is simply ignored on restore.
 const STORAGE_KEY = "tpj-explore-state-v2";
 
-function shuffle<T>(arr: T[]): T[] {
+/** Seeded shuffle (mulberry32), so a Random view is the same order when
+ *  the reader comes back or shares the link. */
+function shuffle<T>(arr: T[], seed: number): T[] {
+  let a = seed >>> 0 || 1;
+  const rand = () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
   const out = [...arr];
   for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rand() * (i + 1));
     [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
@@ -67,19 +77,15 @@ type Props = {
 
 export function ExploreGrid({ items, initialType }: Props) {
   const [type, setType] = useState<ExploreType>(initialType ?? "all");
-  // Starting filter from the URL (/explore?type=interview). Read here,
-  // not on the server, so the Explore page can stay cached.
-  useEffect(() => {
-    const t = new URLSearchParams(window.location.search).get("type");
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time restore from the URL
-    if (t === "essay" || t === "interview" || t === "feature") setType(t);
-  }, []);
   const [theme, setTheme] = useState<ExploreTheme>("all");
   const [sort, setSort] = useState<ExploreSort>("newest");
   const [shuffleSeed, setShuffleSeed] = useState(0);
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const restoredRef = useRef(false);
+  // True while restored state is being applied, so the "filters changed,
+  // back to the first page" reset doesn't undo the restored page count.
+  const restoringRef = useRef(false);
 
   // Animated count for the result counter. When filters change the
   // displayed number ramps from its previous value to the new one
@@ -96,20 +102,35 @@ export function ExploreGrid({ items, initialType }: Props) {
     if (restoredRef.current) return;
     restoredRef.current = true;
 
+    // The URL is the source of truth (/explore?type=interview&theme=night
+    // &sort=random&seed=42&n=72), read here rather than on the server so
+    // the page stays cached. Session storage only adds the scroll spot.
+    const q = new URLSearchParams(window.location.search);
     const saved = readSavedState();
-    if (!saved) return;
+    const t = q.get("type");
+    const th = q.get("theme");
+    const so = q.get("sort");
+    const seed = Number(q.get("seed"));
+    const n = Number(q.get("n"));
+    restoringRef.current = true;
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time restore */
+    if (t === "essay" || t === "interview" || t === "feature") setType(t);
+    if (th) setTheme(th as ExploreTheme);
+    if (so === "random" || so === "newest") setSort(so as ExploreSort);
+    if (seed > 0) setShuffleSeed(seed);
+    if (n > INITIAL_BATCH) setVisibleCount(n);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // Restored state has rendered by then; filter changes after this are
+    // the reader's and go back to the first page.
+    requestAnimationFrame(() => requestAnimationFrame(() => { restoringRef.current = false; }));
 
-    if (saved.type && !initialType) setType(saved.type);
-    if (saved.theme) setTheme(saved.theme);
-    if (saved.sort) setSort(saved.sort);
-    if (typeof saved.visibleCount === "number" && saved.visibleCount > INITIAL_BATCH) {
-      setVisibleCount(saved.visibleCount);
-    }
-
-    if (typeof saved.scrollY === "number" && saved.scrollY > 0) {
+    const sameView = saved && window.location.search === (saved as SavedState & { search?: string }).search;
+    if (sameView && typeof saved!.scrollY === "number" && saved!.scrollY > 0) {
+      // Wait for the restored cards to render (their boxes reserve space)
+      // before jumping back to where the reader was.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          window.scrollTo({ top: saved.scrollY, behavior: "instant" as ScrollBehavior });
+          window.scrollTo({ top: saved!.scrollY, behavior: "instant" as ScrollBehavior });
         });
       });
     }
@@ -119,15 +140,32 @@ export function ExploreGrid({ items, initialType }: Props) {
   // Throttled scroll save runs on a separate listener so we always
   // capture the user's current scrollY when they navigate away.
   useEffect(() => {
+    if (!restoredRef.current) return;
+    // Mirror the view into the URL without adding history entries, so it
+    // can be shared, bookmarked, refreshed, and Back returns to it.
+    const q = new URLSearchParams();
+    if (type !== "all") q.set("type", type);
+    if (theme !== "all") q.set("theme", theme);
+    if (sort !== "newest") {
+      q.set("sort", sort);
+      if (shuffleSeed > 0) q.set("seed", String(shuffleSeed));
+    }
+    if (visibleCount > INITIAL_BATCH) q.set("n", String(visibleCount));
+    const search = q.toString() ? `?${q}` : "";
+    if (search !== window.location.search) {
+      window.history.replaceState(window.history.state, "", `${window.location.pathname}${search}`);
+    }
+
     const save = () => {
       if (typeof window === "undefined") return;
       try {
-        const payload: SavedState = {
+        const payload = {
           type,
           theme,
           sort,
           visibleCount,
           scrollY: window.scrollY,
+          search,
         };
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       } catch {
@@ -151,7 +189,7 @@ export function ExploreGrid({ items, initialType }: Props) {
       window.removeEventListener("pagehide", save);
       if (timeoutId !== undefined) clearTimeout(timeoutId);
     };
-  }, [type, theme, sort, visibleCount]);
+  }, [type, theme, sort, visibleCount, shuffleSeed]);
 
   const filtered = useMemo(() => {
     let next = items;
@@ -162,8 +200,7 @@ export function ExploreGrid({ items, initialType }: Props) {
 
   const ordered = useMemo(() => {
     if (sort === "random") {
-      void shuffleSeed;
-      return shuffle(filtered);
+      return shuffle(filtered, shuffleSeed || 1);
     }
     return filtered;
   }, [filtered, sort, shuffleSeed]);
@@ -173,6 +210,7 @@ export function ExploreGrid({ items, initialType }: Props) {
   // restoration shouldn't reset, so we gate on restoredRef.
   useEffect(() => {
     if (!restoredRef.current) return;
+    if (restoringRef.current) return;
     setVisibleCount(INITIAL_BATCH);
   }, [type, theme, sort, shuffleSeed]);
 
@@ -211,7 +249,7 @@ export function ExploreGrid({ items, initialType }: Props) {
 
   const handleSortChange = (next: ExploreSort) => {
     setSort(next);
-    if (next === "random") setShuffleSeed((s) => s + 1);
+    if (next === "random") setShuffleSeed(Math.floor(Math.random() * 1e9) + 1);
   };
 
   const handleLoadMoreClick = () => {
