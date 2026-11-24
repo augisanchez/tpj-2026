@@ -157,15 +157,15 @@ img {
 /* Only wipes keep a clip once revealed. Anything else must not be
    clipped: text glyphs extend past their box at tight line-heights. */
 [data-reveal="wipe"].rv-in,
-[data-reveal-scope] figure/* First screen on a fresh load: shown as rendered, no entrance. */
+[data-reveal-scope] figure.rv-in {
+  clip-path: inset(0 0 0 0);
+}
+
+/* First screen on a fresh load: shown as rendered, no entrance. */
 .rv-instant,
 .rv-instant .rv-line-inner {
   transition: none !important;
   animation: none !important;
-}
-
-.rv-in {
-  clip-path: inset(0 0 0 0);
 }
 
 .motion-on [data-reveal="lines"]:not(.rv-in) {
