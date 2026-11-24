@@ -4,7 +4,18 @@ import Link from "next/link";
 import { useState } from "react";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
+import { cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
 import styles from "./ArticleCard.module.css";
+
+// Rendered card widths per layout, so the browser picks the right srcset size.
+const CARD_SIZES: Record<string, string> = {
+  "1up": "(min-width: 768px) 90vw, 100vw",
+  "2up": "(min-width: 768px) 45vw, 100vw",
+  "3up": "(min-width: 768px) 30vw, 100vw",
+  "4up": "(min-width: 1024px) 23vw, (min-width: 768px) 45vw, 100vw",
+  "5up": "(min-width: 1024px) 18vw, (min-width: 768px) 45vw, 100vw",
+  "6up": "(min-width: 1024px) 15vw, (min-width: 768px) 30vw, 50vw",
+};
 
 export type ArticleCardVariant =
   | "1up"
@@ -87,7 +98,9 @@ export function ArticleCard({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 className={`${styles.image} pz-media${imageLoaded ? " " + styles.imageLoaded : ""}`}
-                src={article.featuredImage.src}
+                src={cdnImageUrl(article.featuredImage.src, { width: 1024 }) ?? article.featuredImage.src}
+                srcSet={cdnSrcSet(article.featuredImage.src, [480, 768, 1024, 1440]) ?? undefined}
+                sizes={CARD_SIZES[variant]}
                 alt={article.featuredImage.alt}
                 loading="lazy"
                 decoding="async"

@@ -21,6 +21,9 @@ export type CdnImageOpts = {
 };
 
 const CDN_BASE = process.env.NEXT_PUBLIC_CDN_BASE;
+/** Key prefix of the WordPress uploads inside the media bucket (R2 keys are
+ *  tpj/wp-content/uploads/...). */
+const CDN_PATH_PREFIX = process.env.NEXT_PUBLIC_CDN_PATH_PREFIX ?? "";
 
 export function isCdnEnabled(): boolean {
   return Boolean(CDN_BASE);
@@ -49,7 +52,10 @@ export function cdnImageUrl(
     .filter((p): p is string => p !== null)
     .join(",");
 
-  return `${CDN_BASE}/cdn-cgi/image/${params}${path}`;
+  // Only WordPress uploads live in the media bucket; anything else (site
+  // SVGs, external shop images) is served as-is.
+  if (!path.startsWith("/wp-content/uploads/")) return url;
+  return `${CDN_BASE}/cdn-cgi/image/${params}${CDN_PATH_PREFIX}${path}`;
 }
 
 /** Default srcset widths for editorial photography — mobile portrait
@@ -71,7 +77,7 @@ export function cdnSrcSet(
   const entries = widths
     .map((w) => {
       const url = cdnImageUrl(rawUrl, { ...opts, width: w });
-      return url ? `${url} ${w}w` : null;
+      return url && url.includes("/cdn-cgi/image/") ? `${url} ${w}w` : null;
     })
     .filter((s): s is string => s !== null);
   if (entries.length === 0) return null;

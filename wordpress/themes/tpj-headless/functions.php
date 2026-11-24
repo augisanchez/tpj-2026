@@ -22,6 +22,7 @@ require_once __DIR__ . '/inc/article-panels.php';
 require_once __DIR__ . '/inc/article-admin.php';
 require_once __DIR__ . '/inc/upload-guardrails.php';
 require_once __DIR__ . '/inc/editor-experience.php';
+require_once __DIR__ . '/inc/r2-sync.php';
 require_once __DIR__ . '/inc/cli.php';
 
 /**

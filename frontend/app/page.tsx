@@ -20,6 +20,7 @@ import {
   fetchRecentArticles,
 } from "@/lib/queries/recent-articles";
 import { THEMES } from "@/lib/themes";
+import { isCdnEnabled } from "@/lib/cdn";
 import type { RecentEssay } from "@/lib/queries/recent-essays";
 import styles from "./page.module.css";
 
@@ -223,7 +224,9 @@ export default async function Home() {
     .filter((a) => a.featuredImage && !seenHrefs.has(articleHref(a)))
     .map((a): MosaicTile => ({
       href: articleHref(a),
-      src: a.featuredImage!.thumb ?? a.featuredImage!.src,
+      // With the image CDN on, Cloudflare sizes the original; otherwise use
+      // the 600px thumbnail to keep tiles light.
+      src: isCdnEnabled() ? a.featuredImage!.src : a.featuredImage!.thumb ?? a.featuredImage!.src,
       title: a.title,
       photographer: a.photographerName,
       contentType: a.contentType,

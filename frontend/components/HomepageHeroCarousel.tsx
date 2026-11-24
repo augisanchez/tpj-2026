@@ -9,6 +9,7 @@ import {
 } from "motion/react";
 import { useDrag } from "@use-gesture/react";
 import { HomepageHero } from "./HomepageHero";
+import { cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
 import styles from "./HomepageHeroCarousel.module.css";
 
 export type HeroSlide = {
@@ -123,7 +124,13 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
       if (s.backgroundImage?.src) {
         const img = new Image();
         img.decoding = "async";
-        img.src = s.backgroundImage.src;
+        // Preload what the slide will actually request (CDN-sized when on).
+        img.src = cdnImageUrl(s.backgroundImage.src, { width: 2560 }) ?? s.backgroundImage.src;
+        const set = cdnSrcSet(s.backgroundImage.src);
+        if (set) {
+          img.sizes = "100vw";
+          img.srcset = set;
+        }
       }
     }
   }, [slides]);
