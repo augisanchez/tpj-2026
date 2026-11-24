@@ -85,8 +85,14 @@
 .chipCount {
   margin-left: 6px;
   font-weight: 500;
-  opacity: 0.55;
+  /* --muted on --bg is 4.6:1 (AA); the active chip uses its own text colour. */
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
+}
+
+.chipActive .chipCount {
+  color: inherit;
+  opacity: 0.8;
 }
 
 @media (hover: hover) and (pointer: fine) {

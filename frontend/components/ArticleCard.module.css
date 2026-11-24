@@ -178,11 +178,13 @@
    pointer ([data-pz], globals.css); the title nudges and draws its
    underline; the whole card presses on click. */
 .titleText {
-  background-image: linear-gradient(currentColor, currentColor);
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 0% 1.5px;
-  transition: background-size 300ms var(--ease-out);
+  /* Real text underline (not a gradient) so contrast tools can read the
+     title colour; it fades in on hover. */
+  text-decoration-line: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 300ms var(--ease-out);
 }
 
 .card {
@@ -201,6 +203,6 @@
     transform: translateX(2px);
   }
   .card:hover .titleText {
-    background-size: 100% 1.5px;
+    text-decoration-color: currentColor;
   }
 }
