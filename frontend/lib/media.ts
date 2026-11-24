@@ -88,11 +88,24 @@ const LOADING_RE = /\bloading\s*=\s*["'][^"']+["']/i;
  * tags that already declare `srcset` so an editor-set variant
  * isn't overridden.
  */
+/**
+ * Wrap a body <img> in a frame with the image's own proportions, so the
+ * loading placeholder is exactly the photo's size and nothing below it
+ * moves when the photo arrives. Without width/height the frame has no
+ * ratio, and the CSS gives it a provisional one until the image loads.
+ */
+function frameImage(imgTag: string): string {
+  const w = /\swidth=["']?(\d+)/i.exec(imgTag)?.[1];
+  const h = /\sheight=["']?(\d+)/i.exec(imgTag)?.[1];
+  const style = w && h && +w > 0 && +h > 0 ? ` style="aspect-ratio:${w}/${h}"` : "";
+  return `<span class="img-frame"${style}>${imgTag}</span>`;
+}
+
 export function rewriteArticleBodyImages(html: string): string {
-  if (!isCdnEnabled()) return html;
+  if (!isCdnEnabled()) return html.replace(IMG_TAG_RE, (m) => frameImage(m));
   return html.replace(IMG_TAG_RE, (match, rawAttrs: string) => {
     const srcMatch = SRC_RE.exec(rawAttrs);
-    if (!srcMatch) return match;
+    if (!srcMatch) return frameImage(match);
     // WordPress's own srcset points at old-host sub-size files; replace
     // it with CDN widths so every body image is resized at the edge.
     rawAttrs = rawAttrs.replace(SRCSET_RE, "").replace(SIZES_RE, "");
@@ -101,13 +114,13 @@ export function rewriteArticleBodyImages(html: string): string {
     const maxWidth = DEFAULT_WIDTHS[DEFAULT_WIDTHS.length - 1];
     const cdnSrc = cdnImageUrl(originalSrc, { width: maxWidth });
     const srcSet = cdnSrcSet(originalSrc);
-    if (!cdnSrc || !srcSet) return match;
+    if (!cdnSrc || !srcSet) return frameImage(match);
 
     let attrs = rawAttrs.replace(SRC_RE, `src="${cdnSrc}"`);
     attrs += ` srcset="${srcSet}"`;
     if (!SIZES_RE.test(attrs)) attrs += ` sizes="${ARTICLE_BODY_SIZES}"`;
     if (!LOADING_RE.test(attrs)) attrs += ` loading="lazy"`;
-    return `<img${attrs}>`;
+    return frameImage(`<img${attrs}>`);
   });
 }
 

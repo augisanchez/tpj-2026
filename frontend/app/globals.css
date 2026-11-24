@@ -303,8 +303,30 @@ body.is-arriving footer {
   animation: img-in 1400ms cubic-bezier(0.33, 0, 0.2, 1) both;
 }
 
+/* Article body images sit in a frame sized to the photo (see
+   frameImage in lib/media.ts), so the placeholder matches the image
+   exactly and nothing reflows when it loads. */
+[data-img-body] .img-frame {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+/* No recorded size: hold a provisional 3:2 box while loading. */
+[data-img-body] .img-frame:not([style]):has(> img:not([data-ld])) {
+  aspect-ratio: 3 / 2;
+}
+[data-img-body] .img-frame > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+[data-img-body] .img-frame:not([style]) > img {
+  height: auto;
+}
+
 .img-fade :has(> img[data-fade]:not([data-ld])),
-.img-fade [data-img-body] :is(figure, p, a):has(> img:not([data-ld])) {
+.img-fade [data-img-body] .img-frame:has(> img:not([data-ld])) {
   background-color: var(--placeholder);
   background-image: linear-gradient(
     100deg,
@@ -329,7 +351,7 @@ body.is-arriving footer {
 
 @media (prefers-reduced-motion: reduce) {
   .img-fade :has(> img[data-fade]:not([data-ld])),
-  .img-fade [data-img-body] :is(figure, p, a):has(> img:not([data-ld])) {
+  .img-fade [data-img-body] .img-frame:has(> img:not([data-ld])) {
     animation: none;
     background-image: none;
   }
