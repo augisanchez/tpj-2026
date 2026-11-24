@@ -539,40 +539,34 @@ add_action( 'graphql_register_types', function () {
 		},
 	] );
 
-	// Photographers flagged "Feature on homepage" (tpj_featured_photographer
-	// meta, set in the Photographer Details box), in random order. Powers
-	// the homepage hero's Featured Photographer slide.
+	// Homepage hero's Featured Photographer, chosen by tpj_feature_tier
+	// (Photographer Details box). Eligible = published, has a portrait,
+	// a bio of 80+ characters and at least one published article.
+	//   - Any "Always feature" photographers: pick among them.
+	//   - Otherwise: shortlist 3 times in 4, everyone else 1 in 4
+	//     (falling back to whichever pool is non-empty).
+	// "Never feature" is excluded. The pick is re-rolled whenever the
+	// homepage is rebuilt (hourly ISR, or on save).
 	register_graphql_field( 'RootQuery', 'featuredPhotographers', [
 		'type'        => [ 'list_of' => 'Photographer' ],
-		'description' => 'Published photographers flagged to feature on the homepage, random order. Empty when none are flagged.',
+		'description' => 'The homepage Featured Photographer, picked by feature tier. Returns at most one.',
 		'args'        => [
-			'first' => [
-				'type'        => 'Int',
-				'description' => 'Maximum number to return. Defaults to 1.',
-			],
+			'first' => [ 'type' => 'Int', 'description' => 'Ignored; kept for compatibility. Always returns at most one.' ],
 		],
-		'resolve'     => function ( $root, $args ) {
-			$first = isset( $args['first'] ) ? max( 1, min( 20, (int) $args['first'] ) ) : 1;
-			$ids = get_posts( [
-				'post_type'      => 'photographer',
-				'post_status'    => 'publish',
-				'posts_per_page' => $first,
-				'orderby'        => 'rand',
-				'fields'         => 'ids',
-				'meta_query'     => [ [
-					'key'     => 'tpj_featured_photographer',
-					'value'   => '1',
-					'compare' => '=',
-				] ],
-			] );
-			$out = [];
-			foreach ( $ids as $id ) {
-				$post = get_post( $id );
-				if ( $post ) {
-					$out[] = new \WPGraphQL\Model\Post( $post );
-				}
+		'resolve'     => function () {
+			$pools = tpj_feature_pools();
+			if ( $pools['pinned'] ) {
+				$pool = $pools['pinned'];
+			} elseif ( $pools['shortlist'] && ( ! $pools['normal'] || wp_rand( 1, 4 ) <= 3 ) ) {
+				$pool = $pools['shortlist'];
+			} else {
+				$pool = $pools['normal'];
 			}
-			return $out;
+			if ( ! $pool ) {
+				return [];
+			}
+			$post = get_post( $pool[ array_rand( $pool ) ] );
+			return $post ? [ new \WPGraphQL\Model\Post( $post ) ] : [];
 		},
 	] );
 } );
@@ -645,3 +639,33 @@ add_action( 'graphql_register_types', function () {
 		},
 	] );
 } );
+
+/**
+ * Eligible photographer IDs grouped by homepage feature tier.
+ *
+ * @return array{pinned:int[],shortlist:int[],normal:int[]}
+ */
+function tpj_feature_pools() {
+	global $wpdb;
+	$rows = $wpdb->get_results(
+		"SELECT p.ID, COALESCE(t.meta_value, '') AS tier
+		   FROM {$wpdb->posts} p
+		   LEFT JOIN {$wpdb->postmeta} t ON t.post_id = p.ID AND t.meta_key = 'tpj_feature_tier'
+		  WHERE p.post_type = 'photographer' AND p.post_status = 'publish'
+		    AND CHAR_LENGTH(TRIM(p.post_content)) >= 80
+		    AND EXISTS (SELECT 1 FROM {$wpdb->postmeta} x WHERE x.post_id = p.ID
+		                AND ((x.meta_key = 'tpj_portrait_url' AND x.meta_value <> '') OR x.meta_key = '_thumbnail_id'))
+		    AND EXISTS (SELECT 1 FROM {$wpdb->postmeta} w JOIN {$wpdb->posts} a ON a.ID = w.post_id
+		                WHERE w.meta_key = 'tpj_photographer' AND w.meta_value = p.ID
+		                  AND a.post_status = 'publish' AND a.post_type IN ('essay','interview','feature'))"
+	);
+	$pools = [ 'pinned' => [], 'shortlist' => [], 'normal' => [] ];
+	foreach ( $rows as $r ) {
+		$tier = $r->tier;
+		if ( $tier === 'never' ) {
+			continue;
+		}
+		$pools[ isset( $pools[ $tier ] ) ? $tier : 'normal' ][] = (int) $r->ID;
+	}
+	return $pools;
+}

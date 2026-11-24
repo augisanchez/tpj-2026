@@ -44,7 +44,7 @@ function tpj_render_photographer_details_meta_box( $post ) {
 
 	$portrait_url  = get_post_meta( $post->ID, 'tpj_portrait_url', true );
 	$atomic_combo  = (bool) get_post_meta( $post->ID, 'tpj_atomic_combo', true );
-	$featured      = (bool) get_post_meta( $post->ID, 'tpj_featured_photographer', true );
+	$tier          = (string) get_post_meta( $post->ID, 'tpj_feature_tier', true );
 
 	$fields = [
 		'tpj_location'        => [ 'label' => 'Location',       'type' => 'text',  'placeholder' => 'Los Angeles, California' ],
@@ -124,12 +124,18 @@ function tpj_render_photographer_details_meta_box( $post ) {
 		$atomic_combo ? ' checked="checked"' : ''
 	);
 
+	$tier_options = tpj_feature_tier_options();
+	$opts = '';
+	foreach ( $tier_options as $value => $label ) {
+		$opts .= sprintf( '<option value="%s"%s>%s</option>', esc_attr( $value ), selected( $tier, $value, false ), esc_html( $label ) );
+	}
 	printf(
 		'<div class="tpj-meta-flag">
-			<label><input type="checkbox" name="tpj_featured_photographer" value="1"%1$s /> Feature on homepage</label>
-			<p>Shows this photographer in the homepage hero with their name, the start of their bio, and a cover from their work, linking to their profile. If several are ticked, one is picked at random.</p>
+			<label for="tpj_feature_tier">Homepage feature</label>
+			<select id="tpj_feature_tier" name="tpj_feature_tier">%1$s</select>
+			<p>The homepage hero features one photographer, changing about hourly. Shortlisted photographers are picked 3 times in 4. Everyone else shares the rest. Only photographers with a portrait, a bio and published work are eligible.</p>
 		</div>',
-		$featured ? ' checked="checked"' : ''
+		$opts
 	);
 
 	echo '<div class="tpj-meta-grid">';
@@ -257,32 +263,51 @@ add_action( 'save_post_photographer', function ( $post_id, $post ) {
 		delete_post_meta( $post_id, 'tpj_atomic_combo' );
 	}
 
-	if ( ! empty( $_POST['tpj_featured_photographer'] ) ) {
-		update_post_meta( $post_id, 'tpj_featured_photographer', 1 );
-	} else {
-		delete_post_meta( $post_id, 'tpj_featured_photographer' );
+	if ( isset( $_POST['tpj_feature_tier'] ) ) {
+		$tier = sanitize_key( wp_unslash( $_POST['tpj_feature_tier'] ) );
+		if ( $tier !== '' && array_key_exists( $tier, tpj_feature_tier_options() ) ) {
+			update_post_meta( $post_id, 'tpj_feature_tier', $tier );
+		} else {
+			delete_post_meta( $post_id, 'tpj_feature_tier' );
+		}
 	}
 }, 10, 2 );
 
-// Photographers list: show who is featured on the homepage.
+/**
+ * Homepage feature tiers for photographers (tpj_feature_tier meta).
+ * Empty = normal rotation.
+ */
+function tpj_feature_tier_options() {
+	return [
+		''          => 'Normal rotation',
+		'shortlist' => 'Shortlist (favored)',
+		'pinned'    => 'Always feature',
+		'never'     => 'Never feature',
+	];
+}
+
+// Photographers list: show each photographer's homepage tier.
 add_filter( 'manage_photographer_posts_columns', function ( $columns ) {
 	$out = [];
 	foreach ( $columns as $key => $label ) {
 		$out[ $key ] = $label;
 		if ( $key === 'title' ) {
-			$out['tpj_featured_photographer'] = 'Homepage';
+			$out['tpj_feature_tier'] = 'Homepage';
 		}
 	}
 	return $out;
 } );
 
 add_action( 'manage_photographer_posts_custom_column', function ( $column, $post_id ) {
-	if ( $column !== 'tpj_featured_photographer' ) {
+	if ( $column !== 'tpj_feature_tier' ) {
 		return;
 	}
-	if ( get_post_meta( $post_id, 'tpj_featured_photographer', true ) ) {
-		echo '<span style="display:inline-flex;padding:3px 10px;border-radius:999px;background:#e4ffb1;color:#1a1814;font-weight:700;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">Featured</span>';
-	} else {
+	$tier = (string) get_post_meta( $post_id, 'tpj_feature_tier', true );
+	if ( $tier === '' ) {
 		echo '<span aria-hidden="true" style="color:#999;">—</span>';
+		return;
 	}
+	$label = tpj_feature_tier_options()[ $tier ] ?? $tier;
+	$bg    = $tier === 'never' ? '#eee' : '#e4ffb1';
+	printf( '<span style="display:inline-flex;padding:3px 10px;border-radius:999px;background:%s;color:#1a1814;font-weight:700;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">%s</span>', esc_attr( $bg ), esc_html( $label ) );
 }, 10, 2 );
