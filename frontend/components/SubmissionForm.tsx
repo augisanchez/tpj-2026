@@ -1,5 +1,6 @@
 "use client";
 
+import { Turnstile, TURNSTILE_SITE_KEY } from "./Turnstile";
 import { useState, type FormEvent } from "react";
 import styles from "./SubmissionForm.module.css";
 
@@ -98,6 +99,7 @@ export function SubmissionForm() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formEl = event.currentTarget;
 
     if (state.trap) {
       setStatus("success");
@@ -134,7 +136,10 @@ export function SubmissionForm() {
       );
       body.set("_subject", `Submission: ${state.title} (${state.name})`);
 
-      const response = await fetch(BASIN_ENDPOINT, {
+      // With Turnstile on, go through the verifying relay; else straight to Basin.
+      const token = formEl.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value;
+      if (TURNSTILE_SITE_KEY && token) body.set("cf-turnstile-response", token);
+      const response = await fetch(TURNSTILE_SITE_KEY ? "/api/form?form=submit" : BASIN_ENDPOINT, {
         method: "POST",
         headers: { Accept: "application/json" },
         body,
@@ -343,6 +348,7 @@ export function SubmissionForm() {
         </p>
       )}
 
+      <Turnstile />
       <button
         type="submit"
         className={styles.submit}

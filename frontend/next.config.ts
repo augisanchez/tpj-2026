@@ -24,13 +24,13 @@ const slashOptional = (r: Redirect): Redirect =>
 const MEDIA_HOSTS = "https://cms.thephotographicjournal.com https://media.thephotographicjournal.com";
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://vercel.live",
+  "script-src 'self' 'unsafe-inline' https://vercel.live https://challenges.cloudflare.com",
   "style-src 'self' 'unsafe-inline' https://vercel.live",
   `img-src 'self' data: blob: ${MEDIA_HOSTS} https://vercel.live https://vercel.com`,
   "font-src 'self' https://vercel.live https://assets.vercel.com",
   `media-src 'self' ${MEDIA_HOSTS}`,
-  "connect-src 'self' https://usebasin.com https://vercel.live wss://ws-us3.pusher.com",
-  "frame-src https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com https://vercel.live",
+  "connect-src 'self' https://usebasin.com https://vercel.live wss://ws-us3.pusher.com https://challenges.cloudflare.com",
+  "frame-src https://challenges.cloudflare.com https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com https://vercel.live",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self' https://usebasin.com",
