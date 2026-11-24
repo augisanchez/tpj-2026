@@ -317,7 +317,9 @@ export async function fetchPhotographersIndex(): Promise<
 
   if (items.length > 0) {
     items.sort((a, b) => a.name.localeCompare(b.name));
-    return items;
+    // Only photographers with published work are listed (a record whose
+    // only article is a draft would lead to an empty page).
+    return items.filter((i) => i.articleCount > 0);
   }
 
   return deriveIndexFromArticles();
