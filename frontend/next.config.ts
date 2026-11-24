@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // TEMPORARY (DNS handover, 2026-11-24): some resolvers still ask GoDaddy
+  // for thephotographicjournal.com and can't see media.*. Serving images
+  // through /cdn on the v2 host lets Vercel (public DNS) fetch them. Remove
+  // once NEXT_PUBLIC_CDN_BASE points back at https://media.thephotographicjournal.com.
+  async rewrites() {
+    return [
+      { source: "/cdn/:path*", destination: "https://media.thephotographicjournal.com/:path*" },
+    ];
+  },
   async redirects() {
     return [
       // v1 / WordPress permalinks are plural; v2 routes are singular.
