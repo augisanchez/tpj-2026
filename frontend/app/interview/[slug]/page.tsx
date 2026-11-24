@@ -3,10 +3,13 @@ import { JsonLd } from "@/components/JsonLd";
 import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
 import { EssayIntro } from "@/components/EssayIntro";
+import { ExhibitionChecklist } from "@/components/ExhibitionChecklist";
 import { Hero } from "@/components/Hero";
 import { InterviewBody } from "@/components/InterviewBody";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
+import { hangPlates } from "@/lib/exhibition";
+import { accentFor } from "@/lib/accent";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchInterviewBySlug } from "@/lib/queries/interview-by-slug";
 import { previewTarget } from "@/lib/preview";
@@ -77,6 +80,10 @@ export default async function InterviewPage({ params }: Props) {
   bylineParts.push(formattedDate);
   const byline = bylineParts.join("  ·  ");
 
+  // Number the body photographs as plates (anchors + checklist).
+  const { html: bodyHtml, plates } = hangPlates(interview.body);
+  const year = new Date(interview.date).getFullYear() || null;
+
   return (
     <>
       <ReadingProgress />
@@ -98,11 +105,14 @@ export default async function InterviewPage({ params }: Props) {
         byline={byline}
         credit={interview.portraitCredit}
         backgroundImage={interview.heroImage ?? interview.featuredImage ?? undefined}
+        wallLabel={{ photographer: photographerDisplayName, year, count: plates.length }}
       />
 
       {interview.intro && <EssayIntro text={interview.intro} />}
 
-      <InterviewBody html={interview.body} />
+      <InterviewBody html={bodyHtml} />
+
+      <ExhibitionChecklist plates={plates} accent={accentFor(interview.slug)} />
 
       {interview.photographers.length > 0 && (
         <AboutPhotographerSection photographers={interview.photographers} />

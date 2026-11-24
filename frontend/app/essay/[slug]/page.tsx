@@ -4,9 +4,12 @@ import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
 import { ArticleBody } from "@/components/ArticleBody";
 import { EssayIntro } from "@/components/EssayIntro";
+import { ExhibitionChecklist } from "@/components/ExhibitionChecklist";
 import { Hero } from "@/components/Hero";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
+import { hangPlates } from "@/lib/exhibition";
+import { accentFor } from "@/lib/accent";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchEssayBySlug } from "@/lib/queries/essay-by-slug";
 import { previewTarget } from "@/lib/preview";
@@ -67,6 +70,10 @@ export default async function EssayPage({ params }: Props) {
     formatPhotographerNames(essay.photographers.map((p) => p.name)) ??
     essay.photographerName;
 
+  // Number the body photographs as plates (anchors + checklist).
+  const { html: bodyHtml, plates } = hangPlates(essay.body);
+  const year = new Date(essay.date).getFullYear() || null;
+
   return (
     <>
       <ReadingProgress />
@@ -87,15 +94,18 @@ export default async function EssayPage({ params }: Props) {
         title={essay.title}
         byline={
           photographerDisplayName
-            ? `Photographs by ${photographerDisplayName}  ·  ${formattedDate}`
+            ? `Photographs by ${photographerDisplayName}`
             : formattedDate
         }
         backgroundImage={essay.heroImage ?? essay.featuredImage ?? undefined}
+        wallLabel={{ photographer: photographerDisplayName, year, count: plates.length }}
       />
 
       {essay.intro && <EssayIntro text={essay.intro} />}
 
-      <ArticleBody html={essay.body} />
+      <ArticleBody html={bodyHtml} />
+
+      <ExhibitionChecklist plates={plates} accent={accentFor(essay.slug)} />
 
       {essay.photographers.length > 0 && (
         <AboutPhotographerSection photographers={essay.photographers} />

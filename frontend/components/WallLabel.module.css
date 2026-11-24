@@ -1,0 +1,30 @@
+.label {
+  display: flex;
+  flex-direction: column;
+  margin: 16px 0 0;
+  max-width: 44ch;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+
+.name {
+  font-weight: 700;
+}
+
+.line i {
+  font-style: italic;
+}
+
+.count {
+  color: var(--muted);
+}
+
+@media (min-width: 2400px) {
+  .label {
+    font-size: 15px;
+    line-height: 21px;
+  }
+}

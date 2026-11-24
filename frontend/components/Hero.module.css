@@ -27,11 +27,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 40%;
+  height: 62%;
   background: linear-gradient(
     to bottom,
     rgba(14, 14, 14, 0) 0%,
-    rgba(14, 14, 14, 0.85) 100%
+    rgba(14, 14, 14, 0.45) 45%,
+    rgba(14, 14, 14, 0.88) 100%
   );
   pointer-events: none;
 }
@@ -56,18 +57,41 @@
   flex-direction: column;
   gap: 16px;
   align-items: flex-start;
+  /* The title sizes against this width (cqi) so its longest word fits. */
+  container-type: inline-size;
 }
 
+/* Chip and credit share one small line above the title. */
+.eyebrowRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+/* Exhibition-scale title. Size = the smaller of the length tier (wide
+   screens up to 12vw / 200px for short titles), a height cap (so long
+   titles never outgrow the card), and a width fit: --lw is the longest
+   word in weighted characters (Hero.tsx), 0.5em a safe Oswald Bold
+   lowercase width (measured ~0.4em), so no word is wider than the
+   text column. */
 .title {
+  --tier: min(clamp(64px, 12vw, 200px), 21svh);
+  --fit: calc(100cqi / (var(--lw, 10) * 0.5));
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   color: var(--hero-text);
-  font-size: clamp(48px, 1.5rem + 2.8vw, 160px);
+  font-size: min(var(--tier), var(--fit));
   line-height: 0.9;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   margin: 0;
-  max-width: 16ch;
+  max-width: 100%;
+  overflow-wrap: normal;
+  text-wrap: balance;
 }
+.title[data-scale="l"] { --tier: min(clamp(56px, 9.5vw, 168px), 16svh); }
+.title[data-scale="m"] { --tier: min(clamp(44px, 6.6vw, 120px), 12svh); }
+.title[data-scale="s"] { --tier: min(clamp(36px, 5vw, 96px), 9svh); }
 
 .subtitle {
   font-family: var(--font-ui), system-ui, sans-serif;
@@ -88,9 +112,9 @@
   margin: 0;
 }
 
-/* Sits tight under the byline as part of the same credit block. */
+/* Portrait credit under the title; the margin clears its descenders. */
 .portraitCredit {
-  margin-top: -8px;
+  margin-top: 0.1em;
   font-weight: 400;
 }
 
@@ -114,7 +138,13 @@
     gap: 12px;
   }
   .title {
-    font-size: 48px;
+    --tier: 64px;
+  }
+  .title[data-scale="l"] { --tier: 52px; }
+  .title[data-scale="m"] { --tier: 44px; }
+  .title[data-scale="s"] { --tier: 36px; }
+  .eyebrowRow {
+    gap: 8px 12px;
   }
   .subtitle {
     display: none;
@@ -145,8 +175,9 @@
     bottom: 32px;
     gap: 8px;
   }
-  .title {
-    font-size: clamp(28px, 9svh, 44px);
+  .title,
+  .title[data-scale] {
+    --tier: clamp(28px, 9svh, 44px);
   }
   .subtitle {
     display: none;

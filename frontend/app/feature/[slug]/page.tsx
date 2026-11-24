@@ -4,9 +4,12 @@ import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
 import { ArticleBody } from "@/components/ArticleBody";
 import { EssayIntro } from "@/components/EssayIntro";
+import { ExhibitionChecklist } from "@/components/ExhibitionChecklist";
 import { Hero } from "@/components/Hero";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
+import { hangPlates } from "@/lib/exhibition";
+import { accentFor } from "@/lib/accent";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchFeatureBySlug } from "@/lib/queries/feature-by-slug";
 import { previewTarget } from "@/lib/preview";
@@ -93,6 +96,10 @@ export default async function FeaturePage({ params }: Props) {
     formattedDate
   );
 
+  // Number the body photographs as plates (anchors + checklist).
+  const { html: bodyHtml, plates } = hangPlates(feature.body);
+  const year = new Date(feature.date).getFullYear() || null;
+
   return (
     <>
       <ReadingProgress />
@@ -113,11 +120,14 @@ export default async function FeaturePage({ params }: Props) {
         title={feature.title}
         byline={byline}
         backgroundImage={feature.heroImage ?? feature.featuredImage ?? undefined}
+        wallLabel={{ photographer: photographerDisplayName, year, count: plates.length }}
       />
 
       {feature.intro && <EssayIntro text={feature.intro} />}
 
-      <ArticleBody html={feature.body} />
+      <ArticleBody html={bodyHtml} />
+
+      <ExhibitionChecklist plates={plates} accent={accentFor(feature.slug)} />
 
       {feature.photographers.length > 0 && (
         <AboutPhotographerSection photographers={feature.photographers} />
