@@ -38,7 +38,7 @@ function buildFeatureByline(
 export default async function FeaturePage({ params }: Props) {
   const { slug } = await params;
   const [feature, recent] = await Promise.all([
-    fetchFeatureBySlug(slug, await previewTarget(slug)),
+    fetchFeatureBySlug(slug, await previewTarget("feature", slug)),
     fetchRecentFeatures(8),
   ]);
 

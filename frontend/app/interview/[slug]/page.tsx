@@ -17,7 +17,7 @@ type Props = {
 export default async function InterviewPage({ params }: Props) {
   const { slug } = await params;
   const [interview, recent] = await Promise.all([
-    fetchInterviewBySlug(slug, await previewTarget(slug)),
+    fetchInterviewBySlug(slug, await previewTarget("interview", slug)),
     fetchRecentInterviews(8),
   ]);
 

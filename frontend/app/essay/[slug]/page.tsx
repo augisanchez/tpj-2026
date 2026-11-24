@@ -17,7 +17,7 @@ type Props = {
 export default async function EssayPage({ params }: Props) {
   const { slug } = await params;
   const [essay, recent] = await Promise.all([
-    fetchEssayBySlug(slug, await previewTarget(slug)),
+    fetchEssayBySlug(slug, await previewTarget("essay", slug)),
     fetchRecentEssays(8),
   ]);
 

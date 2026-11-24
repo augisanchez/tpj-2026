@@ -1,33 +1,34 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-import { draftMode } from "next/headers";
+import { cookies, draftMode } from "next/headers";
 import { redirect } from "next/navigation";
-
-const TYPES = new Set(["essay", "interview", "feature"]);
+import { encodePreviewCookie, PREVIEW_COOKIE, verifyPreview } from "@/lib/preview";
 
 /**
- * WordPress's Preview button lands here with a signed, expiring link
- * (inc/editor-experience.php → tpj_preview_url). On a valid signature
- * we turn on draft mode and open the article at preview-<id>.
+ * WordPress's Preview button lands here with a signed, expiring link.
+ * On a valid signature we turn on draft mode, store the signed fields
+ * (scoping the preview to this one article, see lib/preview.ts) and
+ * open the article at preview-<id>.
  */
 export async function GET(req: Request) {
-  const secret = process.env.TPJ_PREVIEW_SECRET;
   const q = new URL(req.url).searchParams;
-  const type = q.get("type") ?? "";
-  const id = q.get("id") ?? "";
-  const status = q.get("status") === "publish" ? "publish" : "draft";
-  const exp = Number(q.get("exp") ?? 0);
   const sig = q.get("sig") ?? "";
-
-  if (!secret || !TYPES.has(type) || !/^\d+$/.test(id) || !exp || exp < Date.now() / 1000) {
-    return new Response("Preview link invalid or expired. Use Preview in WordPress again.", { status: 401 });
-  }
-  const expected = createHmac("sha256", secret).update(`${type}|${id}|${status}|${exp}`).digest("hex");
-  const a = Buffer.from(expected);
-  const b = Buffer.from(sig);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) {
+  const signed = verifyPreview(
+    q.get("type") ?? "",
+    q.get("id") ?? "",
+    q.get("status") === "publish" ? "publish" : "draft",
+    q.get("exp") ?? "",
+    sig,
+  );
+  if (!signed) {
     return new Response("Preview link invalid or expired. Use Preview in WordPress again.", { status: 401 });
   }
 
   (await draftMode()).enable();
-  redirect(`/${type}/preview-${id}${status === "publish" ? "-p" : ""}`);
+  (await cookies()).set(PREVIEW_COOKIE, encodePreviewCookie(signed, sig), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: Math.max(1, Math.floor(signed.exp - Date.now() / 1000)),
+  });
+  redirect(`/${signed.type}/preview-${signed.id}${signed.status === "publish" ? "-p" : ""}`);
 }
