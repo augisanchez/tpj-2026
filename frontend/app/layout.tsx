@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Oswald, Inter, Source_Serif_4 } from "next/font/google";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
-import { PageTransition } from "@/components/PageTransition";
+import { MotionRoot } from "@/components/MotionRoot";
 import { RouteAnnouncer } from "@/components/RouteAnnouncer";
-import { RouteCurtain } from "@/components/RouteCurtain";
 import { SkipToContent } from "@/components/SkipToContent";
 import "./globals.css";
 
@@ -49,15 +48,26 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${oswald.variable} ${inter.variable} ${sourceSerif.variable}`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Turn on reveal hidden-states before first paint; drop them if
+            the app never hydrates so content can't stay invisible. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){var d=document.documentElement;if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('motion-on');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('motion-on')},3000)}})();",
+          }}
+        />
+      </head>
       <body suppressHydrationWarning>
         <SkipToContent />
         <Nav />
         <main id="main-content" tabIndex={-1}>
-          <PageTransition>{children}</PageTransition>
+          {children}
         </main>
         <Footer />
-        <RouteCurtain />
+        <MotionRoot />
         <RouteAnnouncer />
       </body>
     </html>

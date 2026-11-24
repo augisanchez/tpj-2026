@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
 import { ContentTypeChip } from "./ContentTypeChip";
-import { cardSpring, imageScaleVariants } from "@/lib/card-motion";
 import type { ArchiveFeature } from "@/lib/queries/archive-feature";
 import styles from "./ArchiveFeatureCard.module.css";
-
-const MotionLink = motion.create(Link);
 
 type Props = {
   feature: ArchiveFeature;
@@ -29,22 +25,17 @@ export function ArchiveFeatureCard({ feature }: Props) {
   const year = new Date(feature.date).getFullYear();
 
   return (
-    <MotionLink
+    <Link data-pz
       href={feature.href}
       className={styles.card}
-      initial="rest"
-      animate="rest"
-      whileHover="hover"
     >
       <span className={styles.imageWrapper}>
         {feature.featuredImage && (
           // eslint-disable-next-line @next/next/no-img-element
-          <motion.img
-            className={styles.image}
+          <img
+            className={`${styles.image} pz-media`}
             src={feature.featuredImage.src}
             alt={feature.featuredImage.alt}
-            variants={imageScaleVariants}
-            transition={cardSpring}
           />
         )}
       </span>
@@ -67,6 +58,6 @@ export function ArchiveFeatureCard({ feature }: Props) {
           </span>
         </span>
       </span>
-    </MotionLink>
+    </Link>
   );
 }

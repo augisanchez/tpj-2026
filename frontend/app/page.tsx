@@ -6,7 +6,6 @@ import { HomepageHeroCarousel, type HeroSlide } from "@/components/HomepageHeroC
 import { InterviewQuoteRotator } from "@/components/InterviewQuoteRotator";
 import { PurposeStatement } from "@/components/PurposeStatement";
 import { ScrollCue } from "@/components/ScrollCue";
-import { StaggerReveal } from "@/components/StaggerReveal";
 import { ThemeBrowser } from "@/components/ThemeBrowser";
 import { fetchArchivalArticles } from "@/lib/queries/archival-articles";
 import { fetchArchiveCounts } from "@/lib/queries/archive-counts";
@@ -247,8 +246,8 @@ export default async function Home() {
 
       <section className={styles.wideSection}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.eyebrow}>Recent Posts</h2>
-          <Link href="/explore" className={styles.exploreLink}>
+          <h2 className={styles.eyebrow} data-reveal="lines">Recent Posts</h2>
+          <Link href="/explore" className={styles.exploreLink} data-reveal>
             View all{archiveCounts ? ` ${archiveCounts.articles}` : ""}
             <span className={styles.exploreArrow} aria-hidden="true">
               →
@@ -256,7 +255,7 @@ export default async function Home() {
           </Link>
         </div>
 
-        <StaggerReveal className={styles.latestGrid}>
+        <div className={styles.latestGrid} data-reveal-children data-pz-group>
           {exploreArticles.map((article) => (
             <ArticleCard
               key={article.id}
@@ -270,7 +269,7 @@ export default async function Home() {
               }}
             />
           ))}
-        </StaggerReveal>
+        </div>
       </section>
 
       <ThemeBrowser

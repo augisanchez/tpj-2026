@@ -20,20 +20,26 @@ export function InterviewQuoteRotator({ quotes }: Props) {
 
   return (
     <section className={styles.section} aria-label="Interview excerpt">
-      <Link href={`/interview/${pick.slug}`} className={styles.block}>
+      <Link
+        href={`/interview/${pick.slug}`}
+        className={styles.block}
+        data-reveal="wipe"
+        data-pz
+        style={{ "--pz-amp": "8px" } as React.CSSProperties}
+      >
         {pick.image && (
           <TpjImage
-            className={styles.image}
+            className={`${styles.image} pz-media`}
             src={pick.image.src}
             alt={pick.image.alt}
             sizes="100vw"
           />
         )}
         <div className={styles.copy}>
-          <blockquote className={styles.quote}>
+          <blockquote className={styles.quote} data-reveal>
             <p>&ldquo;{pick.quote}&rdquo;</p>
           </blockquote>
-          <p className={styles.attribution}>
+          <p className={styles.attribution} data-reveal>
             <span className={styles.attributionName}>{pick.attribution}</span>
             <span className={styles.attributionArrow} aria-hidden="true">
               →

@@ -27,8 +27,8 @@ export default async function ThemePage({ params }: Props) {
     <>
       <header className={styles.banner}>
         <p className={styles.eyebrow}>Theme</p>
-        <h1 className={styles.name}>{theme.name}</h1>
-        <p className={styles.prompt}>{theme.prompt}</p>
+        <h1 className={styles.name} data-reveal="lines">{theme.name}</h1>
+        <p className={styles.prompt} data-reveal>{theme.prompt}</p>
         <p className={styles.count}>{essays.length} articles</p>
       </header>
 
@@ -38,7 +38,7 @@ export default async function ThemePage({ params }: Props) {
           note="Editorial review in progress."
         />
       ) : (
-        <section className={styles.grid}>
+        <section className={styles.grid} data-reveal-children data-pz-group>
           {essays.map((essay) => (
             <ArticleCard
               key={essay.id}

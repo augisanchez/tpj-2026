@@ -3,7 +3,7 @@ import styles from "./PurposeStatement.module.css";
 export function PurposeStatement() {
   return (
     <section className={styles.section} aria-label="About the publication">
-      <p className={styles.statement}>
+      <p className={styles.statement} data-reveal>
         Since 2012 The Photographic Journal publishes photo essays,
         photographer interviews, and topical features looking to explore
         creativity and artistic intent.

@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
 import { ContentTypeChip } from "./ContentTypeChip";
 import { TpjImage } from "./TpjImage";
-import { cardSpring, imageScaleVariants } from "@/lib/card-motion";
 import styles from "./HomepageHero.module.css";
-
-const MotionLink = motion.create(Link);
 
 type Props = {
   href: string;
@@ -53,19 +49,14 @@ export function HomepageHero({
 
   return (
     <div className={fill ? styles.fillOuter : styles.outer}>
-      <MotionLink
+      <Link
         href={href}
         className={`${styles.card}${fill ? " " + styles.fillCard : ""}`}
-        initial="rest"
-        animate="rest"
-        whileHover="hover"
+        data-pz
+        style={{ "--pz-amp": "10px" } as React.CSSProperties}
       >
         {backgroundImage && (
-          <motion.div
-            className={styles.imageWrap}
-            variants={imageScaleVariants}
-            transition={cardSpring}
-          >
+          <div className={`${styles.imageWrap} pz-media`}>
             <TpjImage
               src={backgroundImage.src}
               alt={backgroundImage.alt}
@@ -73,16 +64,18 @@ export function HomepageHero({
               priority={priority}
               className={styles.image}
             />
-          </motion.div>
+          </div>
         )}
         <div className={styles.gradient} aria-hidden="true" />
         <div className={styles.stack}>
-          <ContentTypeChip label={contentTypeLabel} size="large" />
-          <h1 className={styles.title}>{title}</h1>
-          {excerpt && <p className={styles.subtitle}>{excerpt}</p>}
-          {byline && <p className={styles.byline}>{byline}</p>}
+          <div data-reveal>
+            <ContentTypeChip label={contentTypeLabel} size="large" />
+          </div>
+          <h1 className={styles.title} data-reveal="lines">{title}</h1>
+          {excerpt && <p className={styles.subtitle} data-reveal>{excerpt}</p>}
+          {byline && <p className={styles.byline} data-reveal>{byline}</p>}
         </div>
-      </MotionLink>
+      </Link>
     </div>
   );
 }

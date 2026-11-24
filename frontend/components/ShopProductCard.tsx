@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
-import { cardSpring, imageScaleVariants } from "@/lib/card-motion";
 import styles from "./ShopPage.module.css";
 
 type Props = {
@@ -20,22 +18,18 @@ type Props = {
 export function ShopProductCard({ title, variant, image, href, cta }: Props) {
   const isExternal = href.startsWith("http");
   return (
-    <motion.a
+    <a data-pz
       href={href}
       className={styles.card}
       target={isExternal ? "_blank" : undefined}
       rel={isExternal ? "noopener noreferrer" : undefined}
-      initial="rest"
-      animate="rest"
-      whileHover="hover"
     >
       <div className={styles.cardImage}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <motion.img
+        <img
+          className="pz-media"
           src={image}
           alt={title}
-          variants={imageScaleVariants}
-          transition={cardSpring}
         />
       </div>
       <div className={styles.cardLabel}>
@@ -48,6 +42,6 @@ export function ShopProductCard({ title, variant, image, href, cta }: Props) {
           {isExternal ? "↗" : "→"}
         </span>
       </p>
-    </motion.a>
+    </a>
   );
 }

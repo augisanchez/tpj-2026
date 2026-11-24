@@ -15,8 +15,8 @@ export default async function PhotographersIndexPage() {
     <div className={styles.page}>
       <header className={styles.intro}>
         <p className={styles.eyebrow}>Photographer</p>
-        <h1 className={styles.title}>Photographers</h1>
-        <p className={styles.lede}>
+        <h1 className={styles.title} data-reveal="lines">Photographers</h1>
+        <p className={styles.lede} data-reveal>
           Every photographer who has appeared in TPJ over the past thirteen
           years.
         </p>

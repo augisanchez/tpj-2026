@@ -1,0 +1,326 @@
+"use client";
+
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { LogoStage } from "./LogoStage";
+
+/**
+ * The site's motion system (docs/MOTION-PLAN.md), in one place:
+ *
+ *  1. Page to page: internal link clicks run an exit (on-screen blocks
+ *     leave in reading order), show the animated logo on the page
+ *     background, push the route, wait for the new page, then hand off
+ *     to the reveals. Back/forward skip the logo.
+ *  (No root loading.tsx: it would stream pages in a Suspense boundary
+ *  and let this engine touch DOM before hydration. The logo overlay
+ *  already covers navigation waits.)
+ *  2. Content blocks: anything marked data-reveal / data-reveal-children
+ *     / inside data-reveal-scope rises (or wipes) in the first time it
+ *     enters the viewport. Items entering together stagger in reading
+ *     order (top+left), so grids ripple and titles set line by line.
+ *  3. Hover: [data-pz] frames get a pointer-driven zoom and drift
+ *     (fine pointers only); CSS does the motion, this sets the vars.
+ *
+ * All motion is transform / opacity / clip-path. Reduced motion: no
+ * exit, no logo hold, reveals become quick fades, no pointer drift.
+ */
+
+const STEP_MS = 50;
+const STAGGER_CAP = 8;
+const EXIT_STEP_MS = 30;
+const EXIT_CAP = 6;
+const EXIT_MS = 320;
+const LOGO_MIN_MS = 480;
+
+type Phase = "idle" | "leaving" | "loading";
+
+const REVEAL_SELECTOR =
+  "[data-reveal], [data-reveal-children] > *, [data-reveal-scope] figure";
+
+function reducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/** Wrap a text-only element's words into masked lines. */
+function splitLines(el: HTMLElement) {
+  if (el.dataset.rvSplit) return;
+  if ([...el.childNodes].some((n) => n.nodeType !== Node.TEXT_NODE)) return;
+  const text = el.textContent ?? "";
+  const words = text.trim().split(/\s+/);
+  if (!words.length) return;
+  el.setAttribute("aria-label", text.trim());
+  el.textContent = "";
+  const spans = words.map((w, i) => {
+    const s = document.createElement("span");
+    s.textContent = w + (i < words.length - 1 ? " " : "");
+    s.setAttribute("aria-hidden", "true");
+    el.appendChild(s);
+    return s;
+  });
+  const lines: HTMLSpanElement[][] = [];
+  let top = -1;
+  for (const s of spans) {
+    if (s.offsetTop !== top) {
+      lines.push([]);
+      top = s.offsetTop;
+    }
+    lines[lines.length - 1].push(s);
+  }
+  el.textContent = "";
+  lines.forEach((ws, li) => {
+    const line = document.createElement("span");
+    line.className = "rv-line";
+    line.setAttribute("aria-hidden", "true");
+    const inner = document.createElement("span");
+    inner.className = "rv-line-inner";
+    inner.style.setProperty("--rv-li", String(li));
+    inner.textContent = ws.map((w) => w.textContent).join("");
+    line.appendChild(inner);
+    el.appendChild(line);
+  });
+  el.dataset.rvSplit = "1";
+}
+
+export function MotionRoot() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [logoVisible, setLogoVisible] = useState(false);
+
+  const phase = useRef<Phase>("idle");
+  const queue = useRef<HTMLElement[]>([]);
+  const watching = useRef<Set<HTMLElement>>(new Set());
+  const active = useRef(false);
+  const seen = useRef<WeakSet<Element>>(new WeakSet());
+  const pending = useRef<{ href: string; startedAt: number; logoAt: number } | null>(null);
+
+  /* ---------------- reveals ---------------- */
+
+  const flush = () => {
+    if (phase.current !== "idle" || !queue.current.length) return;
+    const batch = queue.current.splice(0);
+    const rects = new Map(batch.map((el) => [el, el.getBoundingClientRect()]));
+    batch.sort((a, b) => {
+      const ra = rects.get(a)!;
+      const rb = rects.get(b)!;
+      return ra.top + ra.left * 0.5 - (rb.top + rb.left * 0.5);
+    });
+    batch.forEach((el, i) => {
+      if (el.dataset.reveal === "lines") splitLines(el);
+      el.style.setProperty("--rv-d", `${Math.min(i, STAGGER_CAP) * STEP_MS}ms`);
+      // next frame so the hidden state paints first
+      requestAnimationFrame(() => el.classList.add("rv-in"));
+    });
+  };
+
+  // Position check rather than IntersectionObserver: wipes start fully
+  // clipped, and IO treats clipped elements (and their children) as
+  // invisible, so they would never reveal.
+  const check = () => {
+    if (!active.current) return;
+    const vh = window.innerHeight;
+    for (const el of watching.current) {
+      if (!el.isConnected) {
+        watching.current.delete(el);
+        continue;
+      }
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) continue;
+      // Includes anything already scrolled past, so fast flings never
+      // leave a block hidden above the viewport.
+      if (r.top < vh * 0.92) {
+        watching.current.delete(el);
+        queue.current.push(el);
+      }
+    }
+    flush();
+  };
+
+  const register = () => {
+    if (!active.current) return;
+    document.querySelectorAll<HTMLElement>(REVEAL_SELECTOR).forEach((el) => {
+      if (seen.current.has(el)) return;
+      seen.current.add(el);
+      watching.current.add(el);
+    });
+    check();
+  };
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("motion-ready");
+    if (reducedMotion()) {
+      root.classList.remove("motion-on");
+      return;
+    }
+    root.classList.add("motion-on");
+    active.current = true;
+    register();
+
+    let raf = 0;
+    const mo = new MutationObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(register);
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+    let sraf = 0;
+    const onScroll = () => {
+      if (!sraf) sraf = requestAnimationFrame(() => { sraf = 0; check(); });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      mo.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ---------------- page to page ---------------- */
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = (e.target as HTMLElement | null)?.closest("a");
+      if (!link) return;
+      const href = link.getAttribute("href");
+      if (!href || href.startsWith("#") || /^(mailto|tel):/.test(href)) return;
+      if (link.target === "_blank" || link.hasAttribute("download")) return;
+      let url: URL;
+      try {
+        url = new URL(href, window.location.href);
+      } catch {
+        return;
+      }
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname.startsWith("/api/")) return;
+      if (url.pathname === window.location.pathname) return; // same page (query/hash changes stay native)
+      if (reducedMotion() || phase.current !== "idle") return;
+
+      e.preventDefault();
+      const target = url.pathname + url.search + url.hash;
+      router.prefetch(target);
+      phase.current = "leaving";
+
+      // Exit: on-screen revealed blocks leave in reading order.
+      const vh = window.innerHeight;
+      const onScreen = [...document.querySelectorAll<HTMLElement>("main .rv-in")]
+        .map((el) => ({ el, r: el.getBoundingClientRect() }))
+        .filter(({ r }) => r.bottom > 0 && r.top < vh && r.height > 0)
+        .sort((a, b) => a.r.top + a.r.left * 0.5 - (b.r.top + b.r.left * 0.5))
+        .slice(0, EXIT_CAP);
+      onScreen.forEach(({ el }, i) => {
+        el.style.setProperty("--rv-xd", `${i * EXIT_STEP_MS}ms`);
+        el.classList.add("rv-out");
+      });
+      document.body.classList.add("is-leaving");
+
+      const startedAt = performance.now();
+      window.setTimeout(() => {
+        phase.current = "loading";
+        pending.current = { href: target, startedAt, logoAt: performance.now() };
+        setLogoVisible(true);
+        router.push(target, { scroll: false });
+      }, EXIT_MS);
+    };
+
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [router]);
+
+  // When the new route has rendered (not its loading state), hand off.
+  useEffect(() => {
+    const p = pending.current;
+    if (!p || phase.current !== "loading") return;
+    let cancelled = false;
+    const ready = () => {
+      const main = document.querySelector("main");
+      return main && !main.querySelector('[data-logo-stage="inline"]') && main.children.length > 0;
+    };
+    const finish = () => {
+      if (cancelled) return;
+      if (!ready()) {
+        requestAnimationFrame(finish);
+        return;
+      }
+      const wait = Math.max(0, LOGO_MIN_MS - (performance.now() - p.logoAt));
+      window.setTimeout(() => {
+        if (cancelled) return;
+        window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+        document.querySelectorAll(".rv-out").forEach((el) => el.classList.remove("rv-out"));
+        document.body.classList.remove("is-leaving");
+        document.body.classList.add("is-arriving");
+        window.setTimeout(() => document.body.classList.remove("is-arriving"), 320);
+        setLogoVisible(false);
+        pending.current = null;
+        // Let the logo clear (200ms) before the new page starts arriving,
+        // so the hero wipe never plays underneath it.
+        window.setTimeout(() => {
+          phase.current = "idle";
+          register();
+          check();
+        }, 200);
+      }, wait);
+    };
+    requestAnimationFrame(finish);
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  /* ---------------- pointer zoom ---------------- */
+
+  useEffect(() => {
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (reducedMotion()) return;
+    let current: HTMLElement | null = null;
+    let raf = 0;
+    let last: PointerEvent | null = null;
+
+    const reset = (el: HTMLElement) => {
+      el.classList.remove("pz-on");
+      el.style.setProperty("--pz-x", "0");
+      el.style.setProperty("--pz-y", "0");
+    };
+
+    const apply = () => {
+      raf = 0;
+      if (!last) return;
+      const el = (last.target as HTMLElement | null)?.closest<HTMLElement>("[data-pz]") ?? null;
+      if (el !== current) {
+        if (current) reset(current);
+        current = el;
+        if (el) el.classList.add("pz-on");
+      }
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const x = Math.min(1, Math.max(0, (last.clientX - r.left) / r.width)) - 0.5;
+      const y = Math.min(1, Math.max(0, (last.clientY - r.top) / r.height)) - 0.5;
+      el.style.setProperty("--pz-x", x.toFixed(3));
+      el.style.setProperty("--pz-y", y.toFixed(3));
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      last = e;
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+    const onLeaveDoc = () => {
+      if (current) reset(current);
+      current = null;
+    };
+
+    document.addEventListener("pointermove", onMove, { passive: true });
+    document.addEventListener("pointerleave", onLeaveDoc);
+    window.addEventListener("blur", onLeaveDoc);
+    return () => {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerleave", onLeaveDoc);
+      window.removeEventListener("blur", onLeaveDoc);
+    };
+  }, []);
+
+  return <LogoStage variant="overlay" visible={logoVisible} />;
+}

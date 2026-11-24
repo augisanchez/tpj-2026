@@ -22,15 +22,15 @@ export default async function ThemesIndexPage() {
     <>
       <header className={styles.intro}>
         <p className={styles.eyebrow}>Theme</p>
-        <h1 className={styles.title}>Themes</h1>
-        <p className={styles.lede}>
+        <h1 className={styles.title} data-reveal="lines">Themes</h1>
+        <p className={styles.lede} data-reveal>
           Eleven threads that recur across thirteen years of TPJ. Each is a
           question we keep asking. Each photograph in the archive answers in
           its own way.
         </p>
       </header>
 
-      <div className={styles.grid}>
+      <div className={styles.grid} data-reveal-children data-pz-group>
         {THEMES.map((theme) => {
           const essays = themeGroups[theme.slug] ?? [];
           const images = essays

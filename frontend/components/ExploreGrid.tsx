@@ -248,7 +248,7 @@ export function ExploreGrid({ items, initialType }: Props) {
         <EmptyState heading="Nothing matches those filters yet." />
       ) : (
         <>
-          <div className={styles.grid}>
+          <div className={styles.grid} data-pz-group>
             {/* AnimatePresence + motion.div layout drives FLIP-style
                 reflow when filters/sort change. mode="popLayout"
                 removes exiting cards from layout flow immediately so

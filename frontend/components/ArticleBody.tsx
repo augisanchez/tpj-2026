@@ -15,6 +15,7 @@ export function ArticleBody({ html }: Props) {
       <div
         ref={bodyRef}
         className={styles.body}
+        data-reveal-scope
         dangerouslySetInnerHTML={{ __html: html }}
       />
       <ImageViewer containerRef={bodyRef} />

@@ -100,7 +100,7 @@ export function SearchPage({ initialTerm, results }: Props) {
       )}
 
       {showResults && results.length > 0 && (
-        <div className={styles.grid}>
+        <div className={styles.grid} data-pz-group>
           {results.map((item) => (
             <ArticleCard
               key={item.id}

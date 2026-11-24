@@ -19,7 +19,7 @@ export function Hero({
 }: Props) {
   return (
     <div className={styles.outer}>
-      <div className={styles.card}>
+      <div className={styles.card} data-reveal="wipe">
         {backgroundImage && (
           <TpjImage
             className={styles.image}
@@ -31,10 +31,12 @@ export function Hero({
         )}
         <div className={styles.gradient} aria-hidden="true" />
         <div className={styles.stack}>
-          <ContentTypeChip label={contentTypeLabel} size="large" />
-          <h1 className={styles.title}>{title}</h1>
-          {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-          {byline && <p className={styles.byline}>{byline}</p>}
+          <div data-reveal>
+            <ContentTypeChip label={contentTypeLabel} size="large" />
+          </div>
+          <h1 className={styles.title} data-reveal="lines">{title}</h1>
+          {subtitle && <p className={styles.subtitle} data-reveal>{subtitle}</p>}
+          {byline && <p className={styles.byline} data-reveal>{byline}</p>}
         </div>
       </div>
     </div>

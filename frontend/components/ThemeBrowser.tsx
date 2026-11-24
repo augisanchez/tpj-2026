@@ -24,7 +24,7 @@ type Props = {
 //   2. New group mounts; its cards run the visible variant (stagger
 //      from first to last, ~100ms apart, larger lift).
 // On first mount the cards also use the visible variant — same
-// cascade effect that StaggerReveal previously provided, but driven
+// cascade effect the site's reveal system provides elsewhere, but driven
 // here so chip-swap exit can share the same vocabulary.
 // Tuned so a full chip-swap (exit-then-enter via mode="wait") lands
 // just under a second. Exit is intentionally tighter than enter —
@@ -101,8 +101,8 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
     <section className={styles.section}>
       <div className={styles.header}>
         <div className={styles.headerTop}>
-          <h2 className={styles.title}>Explore by Theme</h2>
-          <Link href="/themes" className={styles.exploreLink}>
+          <h2 className={styles.title} data-reveal="lines">Explore by Theme</h2>
+          <Link href="/themes" className={styles.exploreLink} data-reveal>
             View all {THEMES.length}
             <span className={styles.exploreArrow} aria-hidden="true">
               →
@@ -113,6 +113,7 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
 
       <div
         className={`${styles.chipRow} ${styles.desktopOnly}`}
+        data-reveal-children
         role="tablist"
         aria-label="Themes"
       >
@@ -179,6 +180,7 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
           role="tabpanel"
           aria-labelledby={`theme-tab-${activeSlug}`}
           className={styles.cards}
+          data-pz-group
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -204,9 +206,12 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
               <Link
                 href={`/theme/${activeSlug}`}
                 className={styles.moreTile}
+                data-pz
                 aria-label={`${activeCount} articles`}
               >
-                <ThemeThumbnail images={tileImages} fillParent />
+                <div className="pz-media" style={{ position: "absolute", inset: 0 }}>
+                  <ThemeThumbnail images={tileImages} fillParent />
+                </div>
                 <span className={styles.moreCount}>+{remaining}</span>
               </Link>
             </motion.div>

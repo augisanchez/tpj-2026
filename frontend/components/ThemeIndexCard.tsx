@@ -1,12 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
 import { ThemeThumbnail } from "./ThemeThumbnail";
-import { cardSpring, imageScaleVariants } from "@/lib/card-motion";
 import styles from "./ThemesIndex.module.css";
-
-const MotionLink = motion.create(Link);
 
 type Props = {
   slug: string;
@@ -19,25 +15,20 @@ type Props = {
 /**
  * Single theme card on the /themes index. Extracted into its own
  * client component so the surrounding async server page can stay
- * server-rendered while the card opts into motion (spring scale on
+ * server-rendered while the card opts into the pointer zoom (on
  * the composite thumbnail).
  */
 export function ThemeIndexCard({ slug, name, prompt, count, images }: Props) {
   return (
-    <MotionLink
+    <Link data-pz
       href={`/theme/${slug}`}
       className={styles.card}
-      initial="rest"
-      animate="rest"
-      whileHover="hover"
     >
-      <motion.div
-        className={styles.cardThumb}
-        variants={imageScaleVariants}
-        transition={cardSpring}
+      <div
+        className={`${styles.cardThumb} pz-media`}
       >
         <ThemeThumbnail images={images} />
-      </motion.div>
+      </div>
       <div className={styles.cardText}>
         {count != null && (
           <p className={styles.cardCount}>
@@ -47,6 +38,6 @@ export function ThemeIndexCard({ slug, name, prompt, count, images }: Props) {
         <h2 className={styles.cardName}>{name}</h2>
         <p className={styles.cardPrompt}>{prompt}</p>
       </div>
-    </MotionLink>
+    </Link>
   );
 }

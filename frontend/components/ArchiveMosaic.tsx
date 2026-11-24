@@ -26,22 +26,27 @@ export function ArchiveMosaic({ tiles, total }: Props) {
   return (
     <section className={styles.section}>
       <div className={styles.header}>
-        <h2 className={styles.title}>Revisit</h2>
-        <Link href="/explore" className={styles.viewAll}>
+        <h2 className={styles.title} data-reveal="lines">Revisit</h2>
+        <Link href="/explore" className={styles.viewAll} data-reveal>
           View all{total ? ` ${total}` : ""}
           <span className={styles.arrow} aria-hidden="true">→</span>
         </Link>
       </div>
 
-      <ul className={styles.grid}>
+      <ul className={styles.grid} data-reveal-children data-pz-group>
         {tiles.map((t, i) => (
           <li key={t.href} className={`${styles.cell} ${styles[`s${i}`] ?? ""}`}>
-            <Link href={t.href} className={styles.tile}>
+            <Link
+              href={t.href}
+              className={styles.tile}
+              data-pz
+              style={{ "--pz-amp": i === 0 || i === 14 ? "18px" : "12px" } as React.CSSProperties}
+            >
               <TpjImage
                 src={t.src}
                 alt={t.title}
                 sizes={i === 0 || i === 14 ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 768px) 17vw, 50vw"}
-                className={styles.image}
+                className={`${styles.image} pz-media`}
               />
               <span className={styles.caption}>
                 <span className={styles.type}>{TYPE_LABEL[t.contentType]}</span>

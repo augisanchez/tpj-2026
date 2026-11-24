@@ -167,7 +167,7 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
       {...bindDrag()}
       style={{ touchAction: "pan-y" }}
     >
-      <div className={styles.frame}>
+      <div className={styles.frame} data-reveal="wipe">
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={activeKey}

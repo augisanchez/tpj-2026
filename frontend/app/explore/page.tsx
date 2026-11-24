@@ -24,8 +24,8 @@ export default async function ExplorePage({
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Explore</h1>
-        <p className={styles.lede}>
+        <h1 className={styles.title} data-reveal="lines">Explore</h1>
+        <p className={styles.lede} data-reveal>
           Every photo essay, interview, and feature published in TPJ since
           2012.
         </p>

@@ -20,7 +20,6 @@
   height: 100%;
   object-fit: cover;
   object-position: center 25%;
-  transition: transform 800ms ease-out;
 }
 
 /* Dark veil moved from a sibling .overlay onto .copy itself
@@ -92,9 +91,6 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .block:hover .image {
-    transform: scale(1.02);
-  }
   .block:hover .attributionArrow {
     transform: translateX(4px);
   }

@@ -109,7 +109,7 @@ export function PhotographersFilters({ photographers }: Props) {
               <h2 className={styles.letterHeading}>
                 <span className={styles.letterMark}>{letter}</span>
               </h2>
-              <div className={indexStyles.grid}>
+              <div className={indexStyles.grid} data-reveal-children data-pz-group>
                 {list.map((p) => (
                   <PhotographerListCard
                     key={p.id}

@@ -13,7 +13,7 @@ type Props = {
 export function EssayIntro({ text }: Props) {
   return (
     <section className={styles.intro}>
-      <p className={styles.text}>{text.trim()}</p>
+      <p className={styles.text} data-reveal>{text.trim()}</p>
     </section>
   );
 }

@@ -173,3 +173,34 @@
 .title4up { font-size: clamp(22px, 0.7rem + 0.9vw, 40px); } /* caps ~3422 */
 .title5up { font-size: clamp(20px, 0.7rem + 0.7vw, 36px); } /* caps ~3543 */
 .title6up { font-size: clamp(18px, 0.6rem + 0.6vw, 30px); } /* caps ~3200 */
+
+/* Listing hover (fine pointers): the photo zooms and drifts with the
+   pointer ([data-pz], globals.css); the title nudges and draws its
+   underline; the whole card presses on click. */
+.titleText {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1.5px;
+  transition: background-size 300ms var(--ease-out);
+}
+
+.card {
+  transition: transform 120ms var(--ease-out);
+}
+
+.card:active {
+  transform: scale(0.985);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card .title {
+    transition: transform 300ms var(--ease-out);
+  }
+  .card:hover .title {
+    transform: translateX(2px);
+  }
+  .card:hover .titleText {
+    background-size: 100% 1.5px;
+  }
+}

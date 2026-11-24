@@ -28,7 +28,7 @@ type View = "photographs" | "interviews";
 // articles grid. Container drives the stagger orchestration; each
 // item is a motion.div that picks up the active variant via
 // inheritance. Items lift 18px while fading in — slightly more
-// than the page-level PageTransition fade (12px) so the per-section
+// than the page-level rise (16px) so the per-section
 // arrival feels distinct from the overall route arrival.
 const containerVariants: Variants = {
   hidden: {},
@@ -109,10 +109,10 @@ export function PhotographerProfileBody({
 
         <div className={styles.meta}>
           <motion.div className={styles.identity} variants={itemVariants}>
-            <p className={styles.eyebrow}>
+            <p className={styles.eyebrow} data-reveal>
               {isInterviewer ? "Photographer & Interviewer" : "Photographer"}
             </p>
-            <h1 className={styles.name}>{photographer.name}</h1>
+            <h1 className={styles.name} data-reveal="lines">{photographer.name}</h1>
             {metaLine && <p className={styles.locationCount}>{metaLine}</p>}
             {photographer.representedBy && (
               <p className={styles.representedBy}>
@@ -123,7 +123,7 @@ export function PhotographerProfileBody({
 
           <motion.div className={styles.bioColumn} variants={itemVariants}>
             {photographer.bio && (
-              <p className={styles.bio}>{photographer.bio}</p>
+              <p className={styles.bio} data-reveal>{photographer.bio}</p>
             )}
             {photographer.socials.length > 0 && (
               <div className={styles.socials}>
@@ -187,7 +187,7 @@ export function PhotographerProfileBody({
                   {totalArticles === 1 ? "article" : "articles"}
                 </p>
               )}
-              <div className={styles.grid}>
+              <div className={styles.grid} data-reveal-children data-pz-group>
                 {shown.map((a) => (
                   <ArticleCard
                     key={a.id}

@@ -48,6 +48,16 @@
      and the photographer Spotlight. Listings fill the viewport
      instead and don't use this token. */
   --content-max: 1376px;
+
+  /* Motion (docs/MOTION-PLAN.md). Arrivals ease out, exits ease in,
+     travel eases in-out. Only transform / opacity / clip-path move. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.87, 0, 0.13, 1);
+  --dur-exit: 220ms;
+  --dur-enter: 560ms;
+  --step: 50ms;
+  --rise: 16px;
 }
 
 *,
@@ -120,48 +130,135 @@ img {
   display: block;
 }
 
-/* ------------------------------------------------------------------ */
-/* Stagger reveal                                                     */
-/* ------------------------------------------------------------------ */
-/* Wrap any row/grid in <StaggerReveal> and its direct children fade  */
-/* up one-by-one. The reveal triggers on mount for above-the-fold     */
-/* containers and on IntersectionObserver for below-the-fold ones.    */
-/* --stagger-step is the inter-child delay (default 100ms, passed     */
-/* through as a prop on the wrapper).                                 */
 
-.stagger-children > * {
+
+/* ------------------------------------------------------------------ */
+/* Motion system: reveals, page exit, pointer hover                    */
+/* (components/MotionRoot.tsx drives the classes)                      */
+/* ------------------------------------------------------------------ */
+/* Hidden states apply only once html.motion-on is set (inline script  */
+/* in layout, removed by a safety timer if the app never hydrates), so */
+/* content is never stuck invisible without JS.                        */
+
+.motion-on [data-reveal]:not(.rv-in):not([data-reveal="lines"]),
+.motion-on [data-reveal-children] > *:not(.rv-in),
+.motion-on [data-reveal-scope] figure:not(.rv-in) {
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(var(--rise));
 }
 
-.stagger-revealed > * {
-  animation: tpj-stagger-in 700ms cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+.motion-on [data-reveal="wipe"]:not(.rv-in),
+.motion-on [data-reveal-scope] figure:not(.rv-in) {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 100% 0);
 }
 
-.stagger-revealed > *:nth-child(2) { animation-delay: calc(1 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(3) { animation-delay: calc(2 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(4) { animation-delay: calc(3 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(5) { animation-delay: calc(4 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(6) { animation-delay: calc(5 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(7) { animation-delay: calc(6 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(8) { animation-delay: calc(7 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(9) { animation-delay: calc(8 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(10) { animation-delay: calc(9 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(11) { animation-delay: calc(10 * var(--stagger-step, 100ms)); }
-.stagger-revealed > *:nth-child(12) { animation-delay: calc(11 * var(--stagger-step, 100ms)); }
+.motion-on [data-reveal="lines"]:not(.rv-in) {
+  opacity: 0;
+}
 
-@keyframes tpj-stagger-in {
-  to {
-    opacity: 1;
-    transform: translateY(0);
+.rv-in {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 0 0);
+  transition:
+    opacity var(--dur-enter) var(--ease-out) var(--rv-d, 0ms),
+    transform var(--dur-enter) var(--ease-out) var(--rv-d, 0ms),
+    clip-path 760ms var(--ease-out) var(--rv-d, 0ms);
+}
+
+/* Line-by-line titles: each line rises inside its own mask. */
+.rv-line {
+  display: block;
+  overflow: hidden;
+  /* room for descenders inside the mask */
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.rv-line-inner {
+  display: block;
+  transform: translateY(105%);
+}
+
+.rv-in .rv-line-inner {
+  transform: none;
+  transition: transform 820ms var(--ease-out)
+    calc(var(--rv-d, 0ms) + var(--rv-li, 0) * 60ms);
+}
+
+/* Page exit: tagged elements on screen leave in reading order, then
+   the rest of the page fades under the logo stage. */
+.rv-out {
+  opacity: 0 !important;
+  transform: translateY(-10px) !important;
+  clip-path: inset(0 0 0 0) !important;
+  transition:
+    opacity var(--dur-exit) var(--ease-in) var(--rv-xd, 0ms),
+    transform var(--dur-exit) var(--ease-in) var(--rv-xd, 0ms) !important;
+}
+
+body.is-leaving main,
+body.is-leaving footer {
+  opacity: 0;
+  transition: opacity 200ms var(--ease-in) 140ms;
+}
+
+body.is-arriving main,
+body.is-arriving footer {
+  animation: tpj-arrive 300ms var(--ease-out) both;
+}
+
+@keyframes tpj-arrive {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Pointer zoom (listing pages, fine pointers only): the photo scales
+   and drifts against the cursor inside a fixed frame. */
+[data-pz] {
+  --pz-x: 0;
+  --pz-y: 0;
+  --pz-s: 1;
+  --pz-amp: 12px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-pz] .pz-media {
+    transform:
+      translate3d(
+        calc(var(--pz-x) * var(--pz-amp) * -2),
+        calc(var(--pz-y) * var(--pz-amp) * -2),
+        0
+      )
+      scale(var(--pz-s));
+    transition: transform 700ms var(--ease-out), opacity 300ms ease-out;
+    will-change: transform;
+  }
+
+  [data-pz].pz-on {
+    --pz-s: 1.06;
+  }
+
+  [data-pz-group] [data-pz] {
+    transition: opacity 300ms var(--ease-out);
+  }
+
+  [data-pz-group]:has(.pz-on) [data-pz]:not(.pz-on) {
+    opacity: 0.85;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stagger-children > *,
-  .stagger-revealed > * {
-    animation: none;
-    opacity: 1;
-    transform: none;
+  .rv-in,
+  .rv-in .rv-line-inner,
+  .rv-out {
+    transition: opacity 150ms linear !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+  [data-pz] .pz-media {
+    transform: none !important;
   }
 }
