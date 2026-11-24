@@ -1,17 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { IndexPerson } from "./StoryIndexList";
+import type { IndexPerson, IndexRow } from "./StoryIndexList";
 import styles from "./StoryIndex.module.css";
 
 type Props = {
   /** id of the <ol>; a linked credit is a row's second link. */
   listId: string;
-  persons: IndexPerson[];
-  /** Each row's credit: an index into persons, or plain text. */
-  credits: (string | number)[];
-  /** Shared URL prefix for the portrait tails. */
-  prefix: string;
+  /** The rows, in list order; a linked credit carries its person. */
+  rows: IndexRow[];
 };
 
 const GAP = 8;
@@ -25,7 +22,7 @@ const CREDIT = "li > a:nth-child(2)";
  * moves the list. Fine pointers only: touch gets the plain list.
  * One listener set on the list, not one per name.
  */
-export function IndexPhotographerCard({ listId, persons, credits, prefix }: Props) {
+export function IndexPhotographerCard({ listId, rows: data }: Props) {
   const box = useRef<HTMLDivElement>(null);
   const [enabled, setEnabled] = useState(false);
   const [person, setPerson] = useState<IndexPerson | null>(null);
@@ -60,8 +57,7 @@ export function IndexPhotographerCard({ listId, persons, credits, prefix }: Prop
     const show = (link: HTMLElement) => {
       if (link === current) return;
       current = link;
-      const credit = credits[rows.get(link.parentElement!) ?? -1];
-      const p = typeof credit === "number" ? persons[credit] : undefined;
+      const p = data[rows.get(link.parentElement!) ?? -1]?.person;
       if (!p) return hide();
       setPerson(p);
       // Place after React has filled the card, so its size is final.
@@ -102,19 +98,19 @@ export function IndexPhotographerCard({ listId, persons, credits, prefix }: Prop
       list.removeEventListener("focusout", hide);
       window.removeEventListener("scroll", hide);
     };
-  }, [enabled, listId, persons, credits]);
+  }, [enabled, listId, data]);
 
   if (!enabled) return null;
-  const tail = person?.[2];
-  const count = person?.[3] ?? 0;
+  const portrait = person?.portrait;
+  const count = person?.count ?? 0;
   return (
     <div ref={box} className={styles.person} aria-hidden="true" data-on="">
       <div className={styles.personPhoto}>
-        {tail ? (
+        {portrait ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={tail} src={prefix + tail} alt="" decoding="async" />
+          <img key={portrait} src={portrait} alt="" decoding="async" />
         ) : (
-          <span>{initials(person?.[0] ?? "")}</span>
+          <span>{initials(person?.name ?? "")}</span>
         )}
       </div>
       {count > 0 && (

@@ -89,6 +89,8 @@ const nextConfig: NextConfig = {
       { source: "/tag/:slug", destination: "/explore", permanent: true },
       { source: "/author/:slug", destination: "/about", permanent: true },
       { source: "/submissions", destination: "/submit", permanent: true },
+      // The numbered Index is now Explore's List view.
+      { source: "/index", destination: "/explore?view=list", permanent: true },
       { source: "/articles-essays", destination: "/explore?type=essay", permanent: true },
       { source: "/articles-interviews", destination: "/explore?type=interview", permanent: true },
       { source: "/articles-features", destination: "/explore?type=feature", permanent: true },

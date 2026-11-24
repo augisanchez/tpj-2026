@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   AnimatePresence,
   animate,
@@ -8,7 +9,6 @@ import {
   useMotionValue,
 } from "motion/react";
 import { ArticleCard } from "./ArticleCard";
-import { EmptyState } from "./EmptyState";
 import {
   ExploreFilters,
   type ExploreType,
@@ -16,7 +16,10 @@ import {
   type ExploreSort,
 } from "./ExploreFilters";
 import { ExploreFiltersSheet } from "./ExploreFiltersSheet";
-import type { ExploreItem } from "@/lib/queries/explore";
+import { ExploreViewSwitch, type ExploreView } from "./ExploreViewSwitch";
+import { StoryIndexList, type IndexPerson, type IndexRow } from "./StoryIndexList";
+import { cdnImageUrl } from "@/lib/cdn";
+import type { ExploreItem, ExploreStory } from "@/lib/queries/explore";
 import styles from "./ExploreGrid.module.css";
 
 const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = {
@@ -24,6 +27,17 @@ const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = {
   interview: "Interview",
   feature: "Feature",
 };
+
+const ROW_TYPE: Record<ExploreItem["contentType"], string> = {
+  essay: "Essay",
+  interview: "Interview",
+  feature: "Feature",
+};
+
+const LIST_ID = "explore-list";
+
+/** Portrait URL ("" for none) and work count, keyed by profile slug. */
+export type ExplorePeople = Record<string, [string, number]>;
 
 const INITIAL_BATCH = 24;
 const LOAD_INCREMENT = 12;
@@ -69,17 +83,42 @@ function readSavedState(): SavedState | null {
   }
 }
 
+/**
+ * Reports the URL's query whenever the router changes it (a link to
+ * /explore?view=list while already on Explore, Back or Forward between
+ * two Explore entries). useSearchParams makes its subtree client-only
+ * on this static page, so it lives in its own empty Suspense boundary
+ * and the grid above it still renders on the server.
+ */
+function QueryWatcher({ onChange }: { onChange: (search: string) => void }) {
+  const params = useSearchParams();
+  const search = params.toString();
+  useEffect(() => {
+    onChange(search ? `?${search}` : "");
+  }, [search, onChange]);
+  return null;
+}
+
 type Props = {
-  items: ExploreItem[];
+  items: ExploreStory[];
+  /** Portraits and counts for the list's photographer cards. */
+  people?: ExplorePeople;
   /** Starting type filter from the URL (?type=essay). Wins over saved state. */
   initialType?: ExploreType;
 };
 
-export function ExploreGrid({ items, initialType }: Props) {
+const NO_PEOPLE: ExplorePeople = {};
+
+export function ExploreGrid({ items, people = NO_PEOPLE, initialType }: Props) {
   const [type, setType] = useState<ExploreType>(initialType ?? "all");
   const [theme, setTheme] = useState<ExploreTheme>("all");
   const [sort, setSort] = useState<ExploreSort>("newest");
   const [shuffleSeed, setShuffleSeed] = useState(0);
+  const [view, setView] = useState<ExploreView>("grid");
+  const countRef = useRef<HTMLHeadingElement>(null);
+  // The query this component last wrote itself, so the watcher can tell
+  // its own replaceState from a navigation.
+  const writtenRef = useRef<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const restoredRef = useRef(false);
@@ -98,7 +137,9 @@ export function ExploreGrid({ items, initialType }: Props) {
   // then on mount restore the saved filters/visibleCount/scrollY. Two
   // requestAnimationFrames give React time to render the larger grid
   // before we restore scroll position.
-  useEffect(() => {
+  // A layout effect: on a client-side return to Explore the restored view
+  // is in place before the first paint, so the grid never flashes first.
+  useLayoutEffect(() => {
     if (restoredRef.current) return;
     restoredRef.current = true;
 
@@ -117,6 +158,7 @@ export function ExploreGrid({ items, initialType }: Props) {
     if (t === "essay" || t === "interview" || t === "feature") setType(t);
     if (th) setTheme(th as ExploreTheme);
     if (so === "random" || so === "newest") setSort(so as ExploreSort);
+    if (q.get("view") === "list") setView("list");
     if (seed > 0) setShuffleSeed(seed);
     if (n > INITIAL_BATCH) setVisibleCount(n);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -150,8 +192,10 @@ export function ExploreGrid({ items, initialType }: Props) {
       q.set("sort", sort);
       if (shuffleSeed > 0) q.set("seed", String(shuffleSeed));
     }
-    if (visibleCount > INITIAL_BATCH) q.set("n", String(visibleCount));
+    if (view === "list") q.set("view", "list");
+    else if (visibleCount > INITIAL_BATCH) q.set("n", String(visibleCount));
     const search = q.toString() ? `?${q}` : "";
+    writtenRef.current = search;
     if (search !== window.location.search) {
       window.history.replaceState(window.history.state, "", `${window.location.pathname}${search}`);
     }
@@ -163,6 +207,7 @@ export function ExploreGrid({ items, initialType }: Props) {
           type,
           theme,
           sort,
+          view,
           visibleCount,
           scrollY: window.scrollY,
           search,
@@ -189,7 +234,34 @@ export function ExploreGrid({ items, initialType }: Props) {
       window.removeEventListener("pagehide", save);
       if (timeoutId !== undefined) clearTimeout(timeoutId);
     };
-  }, [type, theme, sort, visibleCount, shuffleSeed]);
+  }, [type, theme, sort, visibleCount, shuffleSeed, view]);
+
+  // A navigation that changed the query from outside (the footer's Index
+  // link while already here, Back or Forward between Explore entries):
+  // adopt it. The query this component wrote itself is ignored.
+  const onQuery = useCallback((search: string) => {
+    // Stale (the URL has moved on) or our own write: nothing to adopt.
+    if (search !== window.location.search || search === writtenRef.current) return;
+    const q = new URLSearchParams(search);
+    const t = q.get("type");
+    const so = q.get("sort");
+    const seed = Number(q.get("seed"));
+    setType(t === "essay" || t === "interview" || t === "feature" ? t : "all");
+    setTheme((q.get("theme") as ExploreTheme | null) ?? "all");
+    setSort(so === "random" ? "random" : "newest");
+    if (seed > 0) setShuffleSeed(seed);
+    setView(q.get("view") === "list" ? "list" : "grid");
+  }, []);
+
+  // The pre-paint script in app/explore/page.tsx flags a List URL on
+  // <html> so the server-rendered grid stays hidden until this takes
+  // over. Keep the flag true to the view, and clear it on the way out.
+  useLayoutEffect(() => {
+    document.documentElement.dataset.exploreView = view;
+  }, [view]);
+  useEffect(() => () => {
+    delete document.documentElement.dataset.exploreView;
+  }, []);
 
   const filtered = useMemo(() => {
     let next = items;
@@ -247,6 +319,44 @@ export function ExploreGrid({ items, initialType }: Props) {
     return () => observer.disconnect();
   }, [visibleCount, ordered.length]);
 
+  // List rows exist only while the list is showing: the grid view never
+  // builds or renders them.
+  const rows = useMemo<IndexRow[]>(() => {
+    if (view !== "list") return [];
+    const persons = new Map<string, IndexPerson>();
+    const personFor = (name: string, slug: string) => {
+      let p = persons.get(slug);
+      if (!p) {
+        const [portrait, count] = people[slug] ?? ["", 0];
+        p = { name, href: `/photographer/${slug}`, portrait: portrait || null, count };
+        persons.set(slug, p);
+      }
+      return p;
+    };
+    return ordered.map((item) => ({
+      no: item.no,
+      title: item.title,
+      href: `/${item.contentType}/${item.slug}`,
+      typeLabel: ROW_TYPE[item.contentType],
+      year: new Date(item.date).getFullYear(),
+      credit: item.photographer,
+      person:
+        item.photographer && item.photographerSlug
+          ? personFor(item.photographer, item.photographerSlug)
+          : null,
+      image: item.featuredImage
+        ? cdnImageUrl(item.featuredImage.src, { width: 800, quality: 80 })
+        : null,
+    }));
+  }, [view, ordered, people]);
+
+  const clearFilters = () => {
+    setType("all");
+    setTheme("all");
+    // The button goes away with the empty state; keep focus on the page.
+    requestAnimationFrame(() => countRef.current?.focus());
+  };
+
   const handleSortChange = (next: ExploreSort) => {
     setSort(next);
     if (next === "random") setShuffleSeed(Math.floor(Math.random() * 1e9) + 1);
@@ -269,6 +379,8 @@ export function ExploreGrid({ items, initialType }: Props) {
           onTypeChange={setType}
           onThemeChange={setTheme}
           onSortChange={handleSortChange}
+          view={view}
+          onViewChange={setView}
         />
       </div>
       <div className={styles.mobileFilters}>
@@ -281,16 +393,33 @@ export function ExploreGrid({ items, initialType }: Props) {
           onSortChange={handleSortChange}
           resultCount={ordered.length}
         />
+        <ExploreViewSwitch view={view} onChange={setView} size="touch" />
       </div>
+      <Suspense fallback={null}>
+        <QueryWatcher onChange={onQuery} />
+      </Suspense>
 
-      <h2 className={styles.count} aria-live="polite">
+      <h2 className={styles.count} aria-live="polite" ref={countRef} tabIndex={-1}>
         {displayCount === items.length
           ? `${items.length} pieces in the archive`
           : `${displayCount} of ${items.length} pieces`}
       </h2>
 
       {ordered.length === 0 ? (
-        <EmptyState heading="Nothing matches those filters yet." />
+        <div className={styles.empty}>
+          <p className={styles.emptyLine}>Nothing hanging here yet.</p>
+          <button type="button" className={styles.emptyClear} onClick={clearFilters}>
+            Clear filters
+          </button>
+        </div>
+      ) : view === "list" ? (
+        <div className={styles.listView}>
+          <StoryIndexList
+            rows={rows}
+            listId={LIST_ID}
+            label={sort === "random" ? "Stories, in random order" : "Stories, newest first"}
+          />
+        </div>
       ) : (
         <>
           <div className={styles.grid}>
@@ -323,6 +452,7 @@ export function ExploreGrid({ items, initialType }: Props) {
                       date: item.date,
                       href: `/${item.contentType}/${item.slug}`,
                       contentTypeLabel: LABEL_BY_TYPE[item.contentType],
+                      photographer: item.photographer,
                       featuredImage: item.featuredImage ?? undefined,
                     }}
                   />

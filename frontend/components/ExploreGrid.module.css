@@ -10,8 +10,78 @@
   .desktopFilters {
     display: none;
   }
+  /* Filters sheet trigger on the left, Grid / List on the right. */
   .mobileFilters {
-    display: block;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+}
+
+/* A List URL loads with the server-rendered grid, and the script in
+   app/explore/page.tsx flags it on <html> before first paint. Keep the
+   grid invisible and one screen tall until the list replaces it, so
+   nothing visible moves (CLS) and the grid never flashes. */
+:global(html[data-explore-view="list"]) .grid {
+  visibility: hidden;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+/* The count is focused after "Clear filters"; it isn't a control. */
+.count:focus {
+  outline: none;
+}
+
+.listView {
+  margin-top: 8px;
+}
+
+/* No results: one line and a way out, left-aligned like the page. */
+.empty {
+  padding: 64px 0 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.emptyLine {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-intro);
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
+.emptyClear {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--text);
+  border-radius: var(--radius);
+  min-height: 40px;
+  padding: 0 16px;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+
+@media (hover: hover) {
+  .emptyClear:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emptyClear {
+    transition: none;
   }
 }
 

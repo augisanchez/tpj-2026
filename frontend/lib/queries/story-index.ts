@@ -7,7 +7,7 @@ import { resolvePhotographerCredit } from "./recent-essays";
 
 export type StoryType = "essay" | "interview" | "feature";
 
-/** One published story, as the numbered index and /random need it. */
+/** One published story, as /random, the 404 photo and the menu need it. */
 export type IndexStory = {
   /** Sequential catalogue number: the oldest story is No. 1. */
   no: number;
@@ -123,8 +123,8 @@ async function loadStoryIndex(): Promise<IndexStory[]> {
 
 /**
  * Every published essay, interview and feature, newest first, numbered
- * oldest = No. 1. Cached for an hour as one small entry, so /index,
- * /random and the 404 photo share it and the CMS sees at most one
+ * oldest = No. 1. Cached for an hour as one small entry, so /random,
+ * the 404 photo and the menu share it and the CMS sees at most one
  * rebuild per hour.
  */
 export const fetchStoryIndex = unstable_cache(loadStoryIndex, ["story-index-v2"], {

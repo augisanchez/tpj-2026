@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { IndexRow } from "./StoryIndexList";
 import styles from "./StoryIndex.module.css";
 
 type Props = {
   /** id of the <ol> whose rows the thumbnails belong to. */
   listId: string;
-  /** Shared URL prefix; each tail completes one row's image (or ""). */
-  prefix: string;
-  tails: string[];
+  /** The rows, in list order; each may carry an image. */
+  rows: IndexRow[];
 };
 
 const OFFSET = 24;
@@ -19,7 +19,7 @@ const OFFSET = 24;
  * moves the list. Fine pointers only: touch gets the plain list.
  * One listener pair on the list, not one per row.
  */
-export function IndexThumbs({ listId, prefix, tails }: Props) {
+export function IndexThumbs({ listId, rows: data }: Props) {
   const box = useRef<HTMLDivElement>(null);
   const [enabled, setEnabled] = useState(false);
   // No <img> until there is a real source to show.
@@ -61,12 +61,12 @@ export function IndexThumbs({ listId, prefix, tails }: Props) {
     const show = (i: number) => {
       if (i === current) return;
       current = i;
-      const tail = tails[i];
-      if (!tail) {
+      const image = data[i]?.image;
+      if (!image) {
         el.dataset.on = "";
         return;
       }
-      setSrc(prefix + tail);
+      setSrc(image);
       el.dataset.on = "1";
     };
     const hide = () => {
@@ -115,7 +115,7 @@ export function IndexThumbs({ listId, prefix, tails }: Props) {
       list.removeEventListener("focusout", hide);
       window.removeEventListener("scroll", hide);
     };
-  }, [enabled, listId, prefix, tails]);
+  }, [enabled, listId, data]);
 
   if (!enabled) return null;
   return (

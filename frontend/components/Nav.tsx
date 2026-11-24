@@ -7,7 +7,7 @@ const RECENT_COUNT = 5;
 /**
  * The five photographers behind the newest stories, for the menu's
  * "Recently published" list. Read from the story index, which is
- * already cached for an hour and shared with /index and /random, so
+ * already cached for an hour and shared with /random and the 404 page, so
  * this adds no CMS requests. Only credits linked to a profile count.
  */
 async function recentPhotographers(): Promise<DrawerPhotographer[]> {

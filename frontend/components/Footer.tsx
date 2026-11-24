@@ -3,7 +3,7 @@ import styles from "./Footer.module.css";
 
 const FOOTER_LINKS = [
   { label: "Explore", href: "/explore" },
-  { label: "Index", href: "/index" },
+  { label: "Index", href: "/explore?view=list" },
   { label: "Photographers", href: "/photographers" },
   { label: "Themes", href: "/themes" },
   { label: "About", href: "/about" },

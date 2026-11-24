@@ -1,33 +1,6 @@
-/* The numbered index (/index): one story per row, a tight type grid.
-   Row markup is deliberately bare (li > a > 5 spans) to keep ~750 rows
-   light; the cells are styled by position. */
-
-.page {
-  padding: var(--space-section) var(--gutter);
-}
-
-.header {
-  margin-bottom: var(--space-block);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.title {
-  font-size: var(--text-hero);
-  line-height: 0.88;
-  text-transform: uppercase;
-  margin: 0;
-}
-
-.lede {
-  font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
-  font-size: var(--text-intro);
-  line-height: 1.5;
-  color: var(--text);
-  max-width: 38em;
-  margin: 0;
-}
+/* The numbered story list (Explore's List view): one story per row, a
+   tight type grid. Row markup is deliberately bare (li > a > 5 spans) to
+   keep several hundred rows light; the cells are styled by position. */
 
 /* Shared column template: header row and every story row. The <li>
    holds the template; the story link spans it as a subgrid, and a

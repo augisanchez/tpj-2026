@@ -1,32 +1,38 @@
 "use client";
 
-import { slugifyName } from "@/lib/text-utils";
 import { IndexPhotographerCard } from "./IndexPhotographerCard";
 import { IndexThumbs } from "./IndexThumbs";
 import styles from "./StoryIndex.module.css";
 
-/** [no, title, credit, type, year, slug, image tail]. The credit is a
- *  number (an index into persons) when it names a profile, otherwise
- *  the plain credit text. */
-export type IndexRow = [number, string, string | number, 0 | 1 | 2, number, string, string];
+/** A profile a credit links to, with what its hover card shows. */
+export type IndexPerson = {
+  name: string;
+  href: string;
+  portrait: string | null;
+  count: number;
+};
 
-/** [name, slug ("" when it is slugifyName(name)), portrait tail, work count] */
-export type IndexPerson = [string, string, string, number];
-
-const TYPES = [
-  ["essay", "Essay"],
-  ["interview", "Interview"],
-  ["feature", "Feature"],
-] as const;
-
-const LIST_ID = "story-index";
+/** One numbered story row. */
+export type IndexRow = {
+  /** Permanent catalogue number (oldest = No. 1), not the list position. */
+  no: number;
+  title: string;
+  href: string;
+  typeLabel: string;
+  year: number;
+  /** Plain-text credit, when it names no profile. */
+  credit: string | null;
+  /** The profile the credit names, when it is linked. */
+  person: IndexPerson | null;
+  /** Hover thumbnail URL. */
+  image: string | null;
+};
 
 /**
- * The index rows, rendered from compact tuples. A client component on
- * purpose: the server would otherwise ship every row twice (as HTML and
- * again as React element JSON in the page payload). Tuples are about a
- * third of that JSON. The HTML is still fully server-rendered, so every
- * story is a real link before any script runs.
+ * The numbered story rows (Explore's List view), with the hover
+ * thumbnail and the photographer card. Row markup is deliberately bare
+ * (li > a > 5 spans) to keep several hundred rows light; the cells are
+ * styled by position in StoryIndex.module.css.
  *
  * A credit that names a profile is its own link, laid over the row's
  * photographer column (links can't nest). Its third cell in the story
@@ -34,46 +40,41 @@ const LIST_ID = "story-index";
  */
 export function StoryIndexList({
   rows,
-  prefix,
-  persons,
-  portraitPrefix,
+  listId,
+  label,
 }: {
   rows: IndexRow[];
-  prefix: string;
-  persons: IndexPerson[];
-  portraitPrefix: string;
+  /** id for the <ol>; the hover helpers find their rows through it. */
+  listId: string;
+  /** Accessible name for the list. */
+  label: string;
 }) {
   return (
     <>
-      <ol className={styles.list} id={LIST_ID} aria-label={`${rows.length} stories, newest first`}>
-        {rows.map(([no, title, credit, type, year, slug]) => {
-          const person = typeof credit === "number" ? persons[credit] : null;
-          return (
-            <li key={no}>
-              {/* Plain <a>: MotionRoot routes in-site clicks already. */}
-              <a href={`/${TYPES[type][0]}/${slug}`}>
-                <span>{`No. ${no}`}</span>
-                <span>{title}</span>
-                <span>{person ? null : credit}</span>
-                <span>{TYPES[type][1]}</span>
-                <span>{year}</span>
-              </a>
-              {person && (
-                <a href={`/photographer/${person[1] || slugifyName(person[0])}`}>
-                  {person[0]}
-                </a>
-              )}
-            </li>
-          );
-        })}
+      <div className={styles.cols} aria-hidden="true">
+        <span>No.</span>
+        <span>Title</span>
+        <span>Photographer</span>
+        <span>Type</span>
+        <span>Year</span>
+      </div>
+      <ol className={styles.list} id={listId} aria-label={label}>
+        {rows.map((r) => (
+          <li key={r.no}>
+            {/* Plain <a>: MotionRoot routes in-site clicks already. */}
+            <a href={r.href}>
+              <span>{`No. ${r.no}`}</span>
+              <span>{r.title}</span>
+              <span>{r.person ? null : r.credit}</span>
+              <span>{r.typeLabel}</span>
+              <span>{r.year}</span>
+            </a>
+            {r.person && <a href={r.person.href}>{r.person.name}</a>}
+          </li>
+        ))}
       </ol>
-      <IndexThumbs listId={LIST_ID} prefix={prefix} tails={rows.map((r) => r[6])} />
-      <IndexPhotographerCard
-        listId={LIST_ID}
-        persons={persons}
-        credits={rows.map((r) => r[2])}
-        prefix={portraitPrefix}
-      />
+      <IndexThumbs listId={listId} rows={rows} />
+      <IndexPhotographerCard listId={listId} rows={rows} />
     </>
   );
 }

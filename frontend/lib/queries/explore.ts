@@ -1,6 +1,7 @@
 import { gql } from "graphql-request";
 import { wpClient } from "../api";
 import { rewriteMediaUrl } from "../media";
+import { resolvePhotographerCredit } from "./recent-essays";
 
 export type ExploreItem = {
   id: string;
@@ -10,6 +11,17 @@ export type ExploreItem = {
   contentType: "essay" | "interview" | "feature";
   featuredImage: { src: string; alt: string; width?: number; height?: number } | null;
   themes: string[];
+};
+
+/** An Explore item with its credit and catalogue number, as the grid
+ *  and the numbered list need it. */
+export type ExploreStory = ExploreItem & {
+  /** Display credit, same precedence as the story pages. */
+  photographer: string | null;
+  /** Profile slug when the credit is a linked Photographer record. */
+  photographerSlug: string | null;
+  /** Permanent catalogue number across every story: the oldest is No. 1. */
+  no: number;
 };
 
 // One content type per request, paged. Asking for the whole archive in
@@ -47,6 +59,9 @@ function pagedQuery(field: string) {
             slug
           }
         }
+        photographerName
+        linkedPhotographer { title slug }
+        linkedPhotographers { title slug }
         }
       }
     }
@@ -63,6 +78,9 @@ type RawNode = {
     node: { sourceUrl: string | null; altText: string | null; mediaDetails?: { width: number | null; height: number | null } | null; } | null;
   } | null;
   themes: { nodes: { slug: string | null }[] | null } | null;
+  photographerName: string | null;
+  linkedPhotographer: { title: string | null; slug: string | null } | null;
+  linkedPhotographers: { title: string | null; slug: string | null }[] | null;
 };
 
 type PageResponse = Record<
@@ -70,10 +88,18 @@ type PageResponse = Record<
   { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: RawNode[] }
 >;
 
+/** Slug of the record the credit names (same precedence as
+ *  resolvePhotographerCredit), or null for a plain-text credit. */
+function creditSlug(n: RawNode): string | null {
+  if (n.linkedPhotographers?.[0]?.title) return n.linkedPhotographers[0].slug ?? null;
+  if (n.linkedPhotographer?.title) return n.linkedPhotographer.slug ?? null;
+  return null;
+}
+
 function toItem(
   node: RawNode,
   contentType: ExploreItem["contentType"]
-): ExploreItem {
+): Omit<ExploreStory, "no"> {
   const fi = node.featuredImage?.node;
   const src = fi ? rewriteMediaUrl(fi.sourceUrl) : null;
   const themes =
@@ -90,16 +116,18 @@ function toItem(
       ? { src, alt: fi?.altText || node.title, width: fi?.mediaDetails?.width ?? undefined, height: fi?.mediaDetails?.height ?? undefined }
       : null,
     themes,
+    photographer: resolvePhotographerCredit(node),
+    photographerSlug: creditSlug(node),
   };
 }
 
 async function fetchType(
   contentType: ExploreItem["contentType"],
   limit: number
-): Promise<ExploreItem[]> {
+): Promise<Omit<ExploreStory, "no">[]> {
   const field = LIST_FIELD[contentType];
   const query = pagedQuery(field);
-  const out: ExploreItem[] = [];
+  const out: Omit<ExploreStory, "no">[] = [];
   let after: string | null = null;
   while (out.length < limit) {
     const data: PageResponse = await wpClient.request<PageResponse>(query, {
@@ -114,14 +142,18 @@ async function fetchType(
   return out;
 }
 
-export async function fetchExplore(perType = 1000): Promise<ExploreItem[]> {
+export async function fetchExplore(perType = 1000): Promise<ExploreStory[]> {
   // Sequential on purpose: one modest request at a time for the CMS.
   const essays = await fetchType("essay", perType);
   const interviews = await fetchType("interview", perType);
   const features = await fetchType("feature", perType);
-  const items = [...essays, ...interviews, ...features];
-  items.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  const time = (d: string) => new Date(d).getTime();
+  // Number oldest first, in the same order as lib/queries/story-index.ts
+  // (which the 404 page reads), so a story keeps one number site-wide.
+  const oldestFirst = [...essays, ...interviews, ...features].sort(
+    (a, b) => time(a.date) - time(b.date)
   );
+  const items: ExploreStory[] = oldestFirst.map((s, i) => ({ ...s, no: i + 1 }));
+  items.sort((a, b) => time(b.date) - time(a.date));
   return items;
 }

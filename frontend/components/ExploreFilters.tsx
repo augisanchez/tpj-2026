@@ -1,6 +1,7 @@
 "use client";
 
 import { THEMES } from "@/lib/themes";
+import { ExploreViewSwitch, type ExploreView } from "./ExploreViewSwitch";
 import styles from "./ExploreFilters.module.css";
 
 export type ExploreType = "all" | "essay" | "interview" | "feature";
@@ -20,6 +21,8 @@ type Props = {
   onTypeChange: (next: ExploreType) => void;
   onThemeChange: (next: ExploreTheme) => void;
   onSortChange: (next: ExploreSort) => void;
+  view: ExploreView;
+  onViewChange: (next: ExploreView) => void;
 };
 
 export function ExploreFilters({
@@ -29,6 +32,8 @@ export function ExploreFilters({
   onTypeChange,
   onThemeChange,
   onSortChange,
+  view,
+  onViewChange,
 }: Props) {
   return (
     <div className={styles.bar}>
@@ -109,6 +114,11 @@ export function ExploreFilters({
             Random
           </button>
         </div>
+      </div>
+
+      <div className={styles.group}>
+        <p className={styles.label} aria-hidden="true">View</p>
+        <ExploreViewSwitch view={view} onChange={onViewChange} />
       </div>
     </div>
   );
