@@ -87,7 +87,7 @@
 }
 
 /* Sits tight under the byline as part of the same credit block. */
-.credit {
+.portraitCredit {
   margin-top: -8px;
   font-weight: 400;
 }
