@@ -12,13 +12,24 @@ export type ExploreItem = {
   themes: string[];
 };
 
-const ExploreQuery = gql`
-  query Explore($first: Int = 24) {
-    essays(
-      first: $first
-      where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }
-    ) {
-      nodes {
+// One content type per request, paged. Asking for the whole archive in
+// one query ran the 1GB CMS out of PHP memory during builds.
+const PAGE = 200;
+const LIST_FIELD = { essay: "essays", interview: "interviews", feature: "features" } as const;
+
+function pagedQuery(field: string) {
+  return gql`
+    query ExplorePage($first: Int!, $after: String) {
+      ${field}(
+        first: $first
+        after: $after
+        where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }
+      ) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
         __typename
         id
         title
@@ -35,56 +46,11 @@ const ExploreQuery = gql`
             slug
           }
         }
-      }
-    }
-    interviews(
-      first: $first
-      where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }
-    ) {
-      nodes {
-        __typename
-        id
-        title
-        slug
-        date
-        featuredImage {
-          node {
-            sourceUrl(size: LARGE)
-            altText
-          }
-        }
-        themes {
-          nodes {
-            slug
-          }
         }
       }
     }
-    features(
-      first: $first
-      where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }
-    ) {
-      nodes {
-        __typename
-        id
-        title
-        slug
-        date
-        featuredImage {
-          node {
-            sourceUrl(size: LARGE)
-            altText
-          }
-        }
-        themes {
-          nodes {
-            slug
-          }
-        }
-      }
-    }
-  }
-`;
+  `;
+}
 
 type RawNode = {
   __typename: string;
@@ -98,11 +64,10 @@ type RawNode = {
   themes: { nodes: { slug: string | null }[] | null } | null;
 };
 
-type Response = {
-  essays: { nodes: RawNode[] };
-  interviews: { nodes: RawNode[] };
-  features: { nodes: RawNode[] };
-};
+type PageResponse = Record<
+  string,
+  { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: RawNode[] }
+>;
 
 function toItem(
   node: RawNode,
@@ -127,20 +92,35 @@ function toItem(
   };
 }
 
+async function fetchType(
+  contentType: ExploreItem["contentType"],
+  limit: number
+): Promise<ExploreItem[]> {
+  const field = LIST_FIELD[contentType];
+  const query = pagedQuery(field);
+  const out: ExploreItem[] = [];
+  let after: string | null = null;
+  while (out.length < limit) {
+    const data: PageResponse = await wpClient.request<PageResponse>(query, {
+      first: Math.min(PAGE, limit - out.length),
+      after,
+    });
+    const page = data[field];
+    out.push(...page.nodes.map((n) => toItem(n, contentType)));
+    if (!page.pageInfo.hasNextPage || !page.pageInfo.endCursor) break;
+    after = page.pageInfo.endCursor;
+  }
+  return out;
+}
+
 export async function fetchExplore(perType = 1000): Promise<ExploreItem[]> {
-  const data = await wpClient.request<Response>(ExploreQuery, {
-    first: perType,
-  });
-
-  const items = [
-    ...data.essays.nodes.map((n) => toItem(n, "essay")),
-    ...data.interviews.nodes.map((n) => toItem(n, "interview")),
-    ...data.features.nodes.map((n) => toItem(n, "feature")),
-  ];
-
+  // Sequential on purpose: one modest request at a time for the CMS.
+  const essays = await fetchType("essay", perType);
+  const interviews = await fetchType("interview", perType);
+  const features = await fetchType("feature", perType);
+  const items = [...essays, ...interviews, ...features];
   items.sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
-
   return items;
 }
