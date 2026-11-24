@@ -113,3 +113,39 @@
     column-gap: 12px;
   }
 }
+
+/* Not-yet-rendered letter (LazyLetterGrid): roughly the rows it will
+   need, so jumps and the scrollbar stay close to final. */
+.gridPlaceholder {
+  --cols: 5;
+  --row: 470px;
+  min-height: calc(round(up, var(--n) / var(--cols), 1) * var(--row));
+}
+@media (max-width: 1280px) {
+  .gridPlaceholder { --cols: 4; }
+}
+@media (max-width: 1024px) {
+  .gridPlaceholder { --cols: 3; }
+}
+@media (max-width: 768px) {
+  .gridPlaceholder { --cols: 2; --row: 330px; }
+}
+@media (min-width: 1920px) {
+  .gridPlaceholder { --cols: 6; }
+}
+@media (min-width: 2560px) {
+  .gridPlaceholder { --cols: 7; }
+}
+
+/* Links for crawlers and screen readers until the cards render. */
+.srList {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

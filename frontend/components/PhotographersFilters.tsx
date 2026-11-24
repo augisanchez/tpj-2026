@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { PhotographerListCard } from "./PhotographerListCard";
+import { LazyLetterGrid } from "./LazyLetterGrid";
 import type { PhotographerIndexItem } from "@/lib/queries/photographers-index";
 import indexStyles from "./PhotographersIndex.module.css";
 import styles from "./PhotographersFilters.module.css";
@@ -100,7 +101,7 @@ export function PhotographersFilters({ photographers }: Props) {
         </p>
       ) : (
         <div className={styles.sections}>
-          {grouped.map(([letter, list]) => (
+          {grouped.map(([letter, list], i) => (
             <section
               key={letter}
               id={`letter-${letter}`}
@@ -109,6 +110,7 @@ export function PhotographersFilters({ photographers }: Props) {
               <h2 className={styles.letterHeading}>
                 <span className={styles.letterMark}>{letter}</span>
               </h2>
+              <LazyLetterGrid eager={isFiltering || i < 2} people={list}>
               <div className={indexStyles.grid} data-reveal-children>
                 {list.map((p) => (
                   <PhotographerListCard
@@ -122,6 +124,7 @@ export function PhotographersFilters({ photographers }: Props) {
                   />
                 ))}
               </div>
+              </LazyLetterGrid>
             </section>
           ))}
         </div>
