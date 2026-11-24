@@ -60,7 +60,8 @@
      as a full screen on laptops and tall monitors alike. */
   grid-auto-rows: clamp(170px, min(16vw, 24svh), 340px);
   grid-auto-flow: dense;
-  gap: 8px;
+  /* Same spacing as the Recent Posts cards. */
+  gap: var(--space-element);
 }
 
 .cell {
@@ -147,15 +148,12 @@
   font-size: clamp(30px, 1rem + 2vw, 64px);
 }
 
-@media (hover: hover) and (pointer: fine) {
-}
-
 /* Phones: 2 columns, lead tile full width, first 7 tiles. */
 @media (max-width: 767px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: 44vw;
-    gap: 6px;
+    gap: 12px;
   }
   .s0 { grid-column: span 2; grid-row: span 2; }
   .s1, .s6, .s15 { grid-row: span 1; }

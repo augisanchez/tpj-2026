@@ -30,7 +30,7 @@ export default async function ThemesIndexPage() {
         </p>
       </header>
 
-      <div className={styles.grid} data-reveal-children data-pz-group>
+      <div className={styles.grid} data-reveal-children>
         {THEMES.map((theme) => {
           const essays = themeGroups[theme.slug] ?? [];
           const images = essays

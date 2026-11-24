@@ -38,7 +38,7 @@ export default async function ThemePage({ params }: Props) {
           note="Editorial review in progress."
         />
       ) : (
-        <section className={styles.grid} data-reveal-children data-pz-group>
+        <section className={styles.grid} data-reveal-children>
           {essays.map((essay) => (
             <ArticleCard
               key={essay.id}

@@ -33,14 +33,13 @@ export function ArchiveMosaic({ tiles, total }: Props) {
         </Link>
       </div>
 
-      <ul className={styles.grid} data-reveal-children data-pz-group>
+      <ul className={styles.grid} data-reveal-children>
         {tiles.map((t, i) => (
           <li key={t.href} className={`${styles.cell} ${styles[`s${i}`] ?? ""}`}>
             <Link
               href={t.href}
               className={styles.tile}
               data-pz
-              style={{ "--pz-amp": i === 0 || i === 14 ? "18px" : "12px" } as React.CSSProperties}
             >
               <TpjImage
                 src={t.src}

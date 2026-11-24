@@ -180,7 +180,6 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
           role="tabpanel"
           aria-labelledby={`theme-tab-${activeSlug}`}
           className={styles.cards}
-          data-pz-group
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"

@@ -25,7 +25,7 @@ export function InterviewQuoteRotator({ quotes }: Props) {
         className={styles.block}
         data-reveal="wipe"
         data-pz
-        style={{ "--pz-amp": "8px" } as React.CSSProperties}
+        style={{ "--pz-range": "0.8%" } as React.CSSProperties}
       >
         {pick.image && (
           <TpjImage

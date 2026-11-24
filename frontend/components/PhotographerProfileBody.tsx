@@ -187,7 +187,7 @@ export function PhotographerProfileBody({
                   {totalArticles === 1 ? "article" : "articles"}
                 </p>
               )}
-              <div className={styles.grid} data-reveal-children data-pz-group>
+              <div className={styles.grid} data-reveal-children>
                 {shown.map((a) => (
                   <ArticleCard
                     key={a.id}

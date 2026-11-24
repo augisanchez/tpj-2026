@@ -53,7 +53,7 @@ export function HomepageHero({
         href={href}
         className={`${styles.card}${fill ? " " + styles.fillCard : ""}`}
         data-pz
-        style={{ "--pz-amp": "10px" } as React.CSSProperties}
+        style={{ "--pz-range": "1%" } as React.CSSProperties}
       >
         {backgroundImage && (
           <div className={`${styles.imageWrap} pz-media`}>

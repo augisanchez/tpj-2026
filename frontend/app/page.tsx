@@ -258,7 +258,7 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className={styles.latestGrid} data-reveal-children data-pz-group>
+        <div className={styles.latestGrid} data-reveal-children>
           {exploreArticles.map((article) => (
             <ArticleCard
               key={article.id}
