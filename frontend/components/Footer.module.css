@@ -10,42 +10,22 @@
   container-type: inline-size;
 }
 
+/* Links centered, copyright under them; the cropped wordmark below is
+   the only mark in the footer. */
 .row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-}
-
-.brand {
-  display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.mark {
-  height: 56px;
-  width: auto;
-  display: block;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
 }
 
 .copyright {
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  margin: 0;
-}
-
-.est {
-  font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 500;
   font-size: 12px;
-  letter-spacing: 0.02em;
-  /* Footer bg is #e5e5e5 (darker than body); --muted (#6e6e6e) only
-     hits 4.05:1 against it. Darken for AA compliance. */
+  letter-spacing: 0.04em;
+  /* On acid: #555 is 6.3:1. */
   color: #555;
   margin: 0;
 }
@@ -53,7 +33,7 @@
 .links {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
   gap: 16px 32px;
 }
@@ -107,26 +87,26 @@
 
 @media (max-width: 640px) {
   .footer {
-    padding: 64px 16px 0;
+    padding: 56px 16px 0;
   }
-  .row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 32px;
+  /* Phones get the links too (they were hidden), wrapped and centered
+     with room for thumbs. */
+  .links {
+    gap: 4px 20px;
+  }
+  .link {
+    padding: 10px 0;
   }
   /* Three lines on phones; "Journal" takes the crop. */
   .crop {
     --wm: 15.4cqw;
     height: calc(var(--wm) * 2.55);
-    margin-top: 48px;
+    margin-top: 40px;
   }
   .wordmark {
     line-height: 0.96;
   }
   .wordmark > span {
     display: block;
-  }
-  .links {
-    display: none;
   }
 }

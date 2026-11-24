@@ -50,7 +50,7 @@
 	min-width: 44px;
 	height: 44px;
 	padding: 0 10px;
-	border-radius: 9999px;
+	border-radius: var(--radius);
 	background: var(--text);
 	color: #fff;
 	font-family: var(--font-display), Impact, sans-serif;

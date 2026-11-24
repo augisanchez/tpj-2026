@@ -3,7 +3,7 @@
   margin: 0 auto 96px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius);
   padding: clamp(24px, 4vw, 48px);
   display: flex;
   flex-direction: column;
@@ -69,7 +69,7 @@
   color: var(--chip-text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius);
   padding: 10px 16px;
   transition: background 150ms ease-out, color 150ms ease-out,
     border-color 150ms ease-out;
@@ -108,7 +108,7 @@
   color: var(--text);
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 10px 14px;
   transition: border-color 150ms ease-out;
   width: 100%;
@@ -213,7 +213,7 @@
   margin: 0;
   padding: 12px 16px;
   background: rgba(176, 0, 32, 0.06);
-  border-radius: 8px;
+  border-radius: var(--radius);
 }
 
 .submit {
@@ -224,7 +224,7 @@
   background: var(--text);
   color: var(--surface);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 14px 28px;
   cursor: pointer;
   transition: background 150ms ease-out, color 150ms ease-out;
@@ -246,7 +246,7 @@
   max-width: 880px;
   margin: 0 auto 96px;
   background: var(--chip-bg);
-  border-radius: 16px;
+  border-radius: var(--radius);
   padding: 40px clamp(24px, 4vw, 48px);
   display: flex;
   flex-direction: column;

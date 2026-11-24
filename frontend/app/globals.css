@@ -8,6 +8,8 @@
   --placeholder: #d1d1d1;
   /* Every photograph, any size: a hairline round, like a mounted print. */
   --radius-img: 3px;
+  /* Same corner for every other box: buttons, chips, forms, quotes. */
+  --radius: 3px;
   /* House colors. Two, with fixed jobs:
      Acid green is ours: brand surfaces (chips, banners, the band, the
      footer) and the hover frame on photographs. Always full strength,
@@ -15,7 +17,7 @@
      Cobalt is for interaction only: focus rings and primary buttons.
      Acid on the light grey has almost no edge (1.03:1), so it is never
      used for text, outlines or anything that must be seen on --bg. */
-  --acid: #bfff00;
+  --acid: #ceff00; /* Volt-like: Nike's acid green is the reference */
   --acid-ink: #111111;
   --cobalt: #2b4dff;
   --cobalt-ink: #ffffff;

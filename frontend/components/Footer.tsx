@@ -19,15 +19,6 @@ export function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.row}>
-        <div className={styles.brand}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/svg/tpj_black.svg" alt="The Photographic Journal" className={styles.mark} />
-          <p className={styles.copyright}>
-            &copy; {year} The Photographic Journal
-          </p>
-          <p className={styles.est}>Est. 2012</p>
-        </div>
-
         <nav className={styles.links} aria-label="Footer">
           {FOOTER_LINKS.map((link) => (
             <Link
@@ -41,10 +32,13 @@ export function Footer() {
             </Link>
           ))}
         </nav>
+        <p className={styles.copyright}>
+          &copy; {year}{" "}The Photographic Journal &middot; Est. 2012
+        </p>
       </div>
 
       {/* The journal's name, oversized and cropped by the footer's bottom
-          edge. Decorative: the mark above already names the site. It
+          edge. Decorative: the copyright line already names the site. It
           rises into place once, as the footer enters view (MotionRoot). */}
       <div className={styles.crop} aria-hidden="true">
         <p className={styles.wordmark} data-reveal>

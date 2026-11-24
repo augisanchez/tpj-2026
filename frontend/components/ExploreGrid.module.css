@@ -62,7 +62,7 @@
   border: 1px solid var(--text);
   color: var(--text);
   padding: 12px 24px;
-  border-radius: 999px;
+  border-radius: var(--radius);
   cursor: pointer;
   transition: background-color 150ms ease-out, color 150ms ease-out;
 }

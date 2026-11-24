@@ -103,7 +103,7 @@
   gap: 10px;
   min-height: 52px;
   padding: 0 28px;
-  border-radius: 999px;
+  border-radius: var(--radius);
   background: var(--text);
   color: var(--bg);
   font-family: var(--font-ui), system-ui, sans-serif;
