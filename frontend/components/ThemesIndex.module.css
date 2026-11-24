@@ -1,39 +1,5 @@
 .intro {
-  padding: 96px var(--gutter) 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.eyebrow {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0;
-}
-
-.title {
-  font-family: var(--font-display), Impact, sans-serif;
-  font-weight: 700;
-  font-size: clamp(48px, 2.5rem + 3vw, 176px); /* caps ~4267 */
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  margin: 0;
-}
-
-.lede {
-  font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
-  font-weight: 400;
-  font-size: var(--text-intro);
-  line-height: 1.5;
-  color: var(--text);
-  max-width: 880px;
-  margin: 0;
+  padding-inline: var(--gutter);
 }
 
 /* Grid of theme cards — Spotify-playlist treatment with a 2×2
@@ -41,7 +7,7 @@
    1 at mobile. */
 .grid {
   margin: 0 auto;
-  padding: 24px var(--gutter) 120px;
+  padding: 0 var(--gutter) 120px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   column-gap: 32px;
@@ -114,11 +80,11 @@
 
 @media (max-width: 640px) {
   .intro {
-    padding: 64px 16px 24px;
+    padding-inline: 16px;
   }
   .grid {
     grid-template-columns: 1fr;
-    padding: 16px 16px 64px;
+    padding: 0 16px 64px;
     row-gap: 64px;
   }
 }

@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Icon, type IconName } from "./Icon";
 import styles from "./Footer.module.css";
 
-const FOOTER_LINKS = [
+// Text-led: an icon, when given, sits before the word at text size.
+const FOOTER_LINKS: { label: string; href: string; icon?: IconName }[] = [
   { label: "Explore", href: "/explore" },
   { label: "Index", href: "/explore?view=list" },
   { label: "Photographers", href: "/photographers" },
@@ -10,7 +12,7 @@ const FOOTER_LINKS = [
   { label: "Submit", href: "/submit" },
   { label: "Contact", href: "/contact" },
   { label: "Shop", href: "/shop" },
-  { label: "Shuffle", href: "/random" },
+  { label: "Random", href: "/random", icon: "shuffle" },
 ];
 
 export function Footer() {
@@ -28,6 +30,7 @@ export function Footer() {
               // /random picks on every visit; a prefetch would fix the pick.
               prefetch={link.href === "/random" ? false : undefined}
             >
+              {link.icon && <Icon name={link.icon} inline className={styles.icon} />}
               {link.label}
             </Link>
           ))}

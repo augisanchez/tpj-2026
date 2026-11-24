@@ -1,71 +1,7 @@
+/* --inset is the side padding, shared with the search bar. */
 .page {
-  margin: 0 auto;
-  padding: 96px var(--gutter) 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
-}
-
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.eyebrow {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0;
-}
-
-.inputWrap {
-  position: relative;
-  border-bottom: 1px solid var(--text);
-}
-
-.input {
-  width: 100%;
-  padding: 16px 48px 16px 0;
-  background: transparent;
-  border: 0;
-  font-family: var(--font-display), Impact, sans-serif;
-  font-weight: 700;
-  font-size: clamp(40px, 1.5rem + 3vw, 160px); /* caps ~4267 */
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  color: var(--text);
-}
-
-.input::placeholder {
-  color: var(--muted);
-  font-weight: 700;
-}
-
-.input:focus {
-  outline: none;
-}
-
-.icon {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  pointer-events: none;
-}
-
-.summary {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0;
+  --inset: var(--gutter);
+  padding: 0 var(--inset) 120px;
 }
 
 .empty {
@@ -104,8 +40,8 @@
 
 @media (max-width: 768px) {
   .page {
-    padding: 64px 16px;
-    gap: 32px;
+    --inset: 16px;
+    padding-bottom: 64px;
   }
   .grid {
     grid-template-columns: repeat(2, 1fr);

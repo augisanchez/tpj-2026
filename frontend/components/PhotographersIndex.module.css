@@ -1,55 +1,14 @@
+/* --inset is the page's side padding, shared by the header, the
+   filter bar and the count line. */
 .page {
+  --inset: var(--gutter);
   display: flex;
   flex-direction: column;
   padding-bottom: 120px;
 }
 
 .intro {
-  padding: 96px var(--gutter) 64px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.eyebrow {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0;
-}
-
-.title {
-  font-family: var(--font-display), Impact, sans-serif;
-  font-weight: 700;
-  font-size: clamp(48px, 2.5rem + 3vw, 176px); /* caps ~4267 */
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  margin: 0;
-}
-
-.lede {
-  font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
-  font-weight: 400;
-  font-size: var(--text-intro);
-  line-height: 1.5;
-  color: var(--text);
-  max-width: 880px;
-  margin: 0;
-}
-
-.summary {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 8px 0 0;
+  padding-inline: var(--inset);
 }
 
 /* 5 across at desktop. Step down progressively so tablets and phones
@@ -91,8 +50,8 @@
 }
 
 @media (max-width: 768px) {
-  .intro {
-    padding: 64px 16px 48px;
+  .page {
+    --inset: 16px;
   }
   .grid {
     padding: 0 16px;

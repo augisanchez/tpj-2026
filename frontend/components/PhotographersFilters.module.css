@@ -1,131 +1,5 @@
-/* Sticky filter bar mirroring the Explore page pattern: search field on
-   the left, alphabet shortcut floated right. Sticky behavior matches —
-   top: 0, z-index 90 (the global Nav at z-100 covers it on scroll-up,
-   and reveals it when the Nav auto-hides on scroll-down). */
-.bar {
-  position: sticky;
-  top: 0;
-  z-index: 90;
-  background: var(--bg);
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px 48px;
-  padding: 20px 32px;
-  border-bottom: 1px solid var(--border);
-  margin: 0 0 48px;
-}
-
-.group {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.label {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0;
-  flex-shrink: 0;
-}
-
-.input {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 500;
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 8px 14px;
-  border-radius: var(--radius);
-  width: 280px;
-  max-width: 100%;
-  transition: border-color 150ms ease-out;
-}
-
-.input::placeholder {
-  color: var(--muted);
-}
-
-.input:hover,
-.input:focus {
-  border-color: var(--text);
-}
-
-/* Keyboard and click focus both land here for a text field. */
-.input:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-
-/* Live "X of Y" annotation, shown only when search is active. Same
-   visual register as the field labels — small uppercase muted —
-   so it reads as metadata about the search, not a control. */
-.count {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0;
-  flex-shrink: 0;
-}
-
-/* Grid / List: a plain text toggle, the current view in full ink. */
-.views {
-  display: flex;
-  align-items: center;
-}
-
-.viewItem {
-  display: inline-flex;
-  align-items: center;
-}
-
-.viewSep {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: 12px;
-  color: var(--muted);
-  padding: 0 2px;
-}
-
-.viewButton {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  background: transparent;
-  border: 0;
-  border-radius: var(--radius);
-  min-height: 44px;
-  padding: 0 8px;
-  cursor: pointer;
-  transition: color 150ms ease-out;
-}
-
-.viewButton:hover {
-  color: var(--text);
-}
-
-.viewButton[aria-pressed="true"] {
-  color: var(--text);
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 6px;
-}
-
-.alphabetGroup {
-  margin-left: auto;
-}
+/* The bar, field, toggle and count line come from FilterBar.module.css;
+   this file holds the alphabet shortcut and the lettered sections. */
 
 .alphabet {
   display: flex;
@@ -134,29 +8,15 @@
   align-items: center;
 }
 
-.letterChip {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.05em;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  width: 44px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius);
-  text-decoration: none;
-  transition: background-color 150ms ease-out, border-color 150ms ease-out,
-    color 150ms ease-out;
+/* A square control per letter. */
+a.letter {
+  min-width: 36px;
+  padding: 0 6px;
 }
 
-.letterChip:hover {
-  border-color: var(--chip-active);
-  background: var(--chip-active);
-  color: var(--chip-active-text);
+/* The count line lines up with the page gutter. */
+.count {
+  padding-inline: var(--inset, var(--gutter));
 }
 
 .sections {
@@ -207,18 +67,31 @@
 }
 
 @media (max-width: 768px) {
-  .bar {
-    padding: 16px;
-    gap: 12px 24px;
+  /* Field and Grid / List share one row; the field takes the room and
+     its label is read, not shown (the placeholder names it). */
+  div.searchGroup {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-wrap: nowrap;
   }
-  .input {
-    width: 100%;
+  div.searchGroup > span {
+    flex: 1 1 auto;
+    width: auto;
+  }
+  label.searchLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
   /* Hide the alphabet jump menu on mobile — it wraps onto several rows
      and competes with search, which is the natural find-tool with a
      soft keyboard right there. Section IDs stay rendered so any
      existing hash links keep scrolling correctly. */
-  .alphabetGroup {
+  div.alphabetGroup {
     display: none;
   }
   .letterHeading {
@@ -230,12 +103,5 @@
   }
   .sections {
     gap: 80px;
-  }
-}
-
-/* iOS zooms the page when a field under 16px is focused (audit M16). */
-@media (max-width: 768px) {
-  .input {
-    font-size: 16px;
   }
 }

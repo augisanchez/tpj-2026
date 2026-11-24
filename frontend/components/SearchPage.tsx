@@ -4,9 +4,12 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArticleCard } from "./ArticleCard";
 import { EmptyState } from "./EmptyState";
+import { Icon } from "./Icon";
 import { PhotographerListCard } from "./PhotographerListCard";
 import type { ExploreItem } from "@/lib/queries/explore";
 import type { SearchItem, SearchPhotographer } from "@/lib/queries/search";
+import f from "./FilterBar.module.css";
+import ih from "./IndexHeader.module.css";
 import styles from "./SearchPage.module.css";
 
 const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = {
@@ -54,48 +57,42 @@ export function SearchPage({ initialTerm, results, photographers = [] }: Props) 
   const showResults = trimmed.length > 0;
   const empty =
     showResults && results.length === 0 && photographers.length === 0 && !isPending;
+  const counted = [
+    photographers.length > 0 &&
+      `${photographers.length} ${photographers.length === 1 ? "photographer" : "photographers"}`,
+    `${results.length} ${results.length === 1 ? "story" : "stories"}`,
+  ].filter(Boolean);
+  const summary = `${counted.join(" and ")} for \u201c${trimmed}\u201d`;
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.eyebrow}>Search</h1>
-        <div className={styles.inputWrap}>
+      <header className={ih.intro}>
+        <h1 className={ih.title} data-reveal="lines">Search</h1>
+        <p className={ih.lede} data-reveal>
+          Find a story or a photographer.
+        </p>
+      </header>
+
+      <div className={`${f.bar} ${f.bleed}`}>
+        <span className={`${f.fieldWrap} ${f.wide}`}>
           <input
             ref={inputRef}
             type="search"
-            className={styles.input}
+            className={`${f.control} ${f.field}`}
             value={term}
             onChange={(e) => setTerm(e.target.value)}
-            placeholder="Search…"
+            placeholder="Search the archive"
             aria-label="Search the archive"
             spellCheck={false}
             autoComplete="off"
           />
-          <span className={styles.icon} aria-hidden="true">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </span>
-        </div>
-      </header>
+          <Icon name="search" size={16} className={f.fieldIcon} />
+        </span>
+      </div>
 
-      {showResults && (
-        <p className={styles.summary}>
-          {isPending
-            ? "Searching…"
-            : `${results.length} result${results.length === 1 ? "" : "s"} for "${trimmed}"`}
-        </p>
-      )}
+      <p className={f.count} aria-live="polite">
+        {!showResults ? "" : isPending ? "Searching…" : summary}
+      </p>
 
       {empty && (
         <EmptyState

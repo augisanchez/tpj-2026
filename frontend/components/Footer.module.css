@@ -54,6 +54,10 @@
   opacity: 0.6;
 }
 
+.icon {
+  margin-right: 0.5em;
+}
+
 /* Oversized wordmark, cropped by the footer's bottom edge. Sized to
    the footer's inner width so it runs edge to edge at any viewport;
    the crop shows the top of the capitals. */

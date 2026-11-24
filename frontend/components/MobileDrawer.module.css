@@ -67,6 +67,12 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* Oswald's cap height, so the glyph stands as tall as the capitals. */
+.icon {
+  --cap: 0.81em;
+  margin-right: 0.3em;
+}
+
 .link:last-child {
   border-bottom: 0;
 }

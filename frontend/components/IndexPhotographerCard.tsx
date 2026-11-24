@@ -115,7 +115,7 @@ export function IndexPhotographerCard({ listId, rows: data }: Props) {
       </div>
       {count > 0 && (
         <p className={styles.personCount}>
-          {count} {count === 1 ? "article" : "articles"}
+          {count} {count === 1 ? "story" : "stories"}
         </p>
       )}
     </div>

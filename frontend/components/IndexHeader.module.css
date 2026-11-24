@@ -1,0 +1,39 @@
+/* One header for the index pages (Explore, Photographers, Themes,
+   Search): title, lede, then the page's controls bar and its count line
+   (FilterBar.module.css). Vertical rhythm only; each page sets its own
+   side padding. */
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding-top: var(--space-section);
+  padding-bottom: var(--space-block);
+}
+
+.title {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: var(--text-display);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+}
+
+.lede {
+  font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
+  font-weight: 400;
+  font-size: var(--text-intro);
+  line-height: 1.5;
+  color: var(--text);
+  max-width: 880px;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .intro {
+    padding-top: 64px;
+  }
+}

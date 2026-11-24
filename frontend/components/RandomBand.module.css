@@ -22,8 +22,10 @@
   max-width: 100%;
 }
 
-.arrow {
-  display: inline-block;
+/* The shuffle glyph at the display line's cap height (Oswald, 0.81em),
+   standing on the baseline like a capital. */
+.icon {
+  --cap: 0.81em;
   transition: transform 300ms var(--ease-out);
 }
 
@@ -42,17 +44,17 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .band:hover .arrow {
+  .band:hover .icon {
     transform: translateX(0.12em);
   }
 }
 
-.band:focus-visible .arrow {
+.band:focus-visible .icon {
   transform: translateX(0.12em);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .arrow {
+  .icon {
     transition: none;
   }
 }

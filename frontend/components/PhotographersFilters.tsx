@@ -4,8 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { PhotographerListCard } from "./PhotographerListCard";
 import { PhotographersIndexList } from "./PhotographersIndexList";
 import { LazyLetterGrid } from "./LazyLetterGrid";
+import { Icon } from "./Icon";
+import { ViewToggle, type View } from "./ViewToggle";
 import type { PhotographerIndexItem } from "@/lib/queries/photographers-index";
 import indexStyles from "./PhotographersIndex.module.css";
+import f from "./FilterBar.module.css";
 import styles from "./PhotographersFilters.module.css";
 
 type Props = {
@@ -23,13 +26,6 @@ function firstLetter(name: string): string {
   }
   return "#";
 }
-
-type View = "grid" | "list";
-
-const VIEWS: { value: View; label: string }[] = [
-  { value: "grid", label: "Grid" },
-  { value: "list", label: "List" },
-];
 
 export function PhotographersFilters({ photographers }: Props) {
   const [search, setSearch] = useState("");
@@ -89,61 +85,36 @@ export function PhotographersFilters({ photographers }: Props) {
 
   return (
     <>
-      <div className={styles.bar}>
-        <div className={styles.group}>
-          <label className={styles.label} htmlFor="photog-search">
+      <div className={f.bar}>
+        <div className={`${f.group} ${styles.searchGroup}`}>
+          <label className={`${f.label} ${styles.searchLabel}`} htmlFor="photog-search">
             Search
           </label>
-          <input
-            id="photog-search"
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search photographers"
-            className={styles.input}
-            autoComplete="off"
-          />
-          {isFiltering && (
-            <p className={styles.count} aria-live="polite">
-              {filteredCount} of {totalCount}
-            </p>
-          )}
+          <span className={f.fieldWrap}>
+            <input
+              id="photog-search"
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search photographers"
+              className={`${f.control} ${f.field}`}
+              autoComplete="off"
+            />
+            <Icon name="search" size={16} className={f.fieldIcon} />
+          </span>
         </div>
 
-        <div className={styles.group} role="group" aria-label="View">
-          <p className={styles.label} aria-hidden="true">
-            View
-          </p>
-          <div className={styles.views}>
-            {VIEWS.map((v, i) => (
-              <span key={v.value} className={styles.viewItem}>
-                {i > 0 && (
-                  <span className={styles.viewSep} aria-hidden="true">
-                    /
-                  </span>
-                )}
-                <button
-                  type="button"
-                  className={styles.viewButton}
-                  aria-pressed={view === v.value}
-                  onClick={() => chooseView(v.value)}
-                >
-                  {v.label}
-                </button>
-              </span>
-            ))}
-          </div>
-        </div>
+        <ViewToggle view={view} onChange={chooseView} />
 
         {grouped.length > 0 && (
-          <div className={`${styles.group} ${styles.alphabetGroup}`}>
-            <p className={styles.label}>Jump to</p>
+          <div className={`${f.group} ${f.end} ${styles.alphabetGroup}`}>
+            <p className={f.label}>Jump to</p>
             <div className={styles.alphabet}>
               {grouped.map(([letter]) => (
                 <a
                   key={letter}
                   href={`#letter-${letter}`}
-                  className={styles.letterChip}
+                  className={`${f.control} ${styles.letter}`}
                 >
                   {letter}
                 </a>
@@ -152,6 +123,12 @@ export function PhotographersFilters({ photographers }: Props) {
           </div>
         )}
       </div>
+
+      <p className={`${f.count} ${styles.count}`} aria-live="polite">
+        {isFiltering
+          ? `${filteredCount} of ${totalCount} photographers`
+          : `${totalCount} ${totalCount === 1 ? "photographer" : "photographers"}`}
+      </p>
 
       {grouped.length === 0 ? (
         <p className={styles.noResults}>

@@ -3,6 +3,7 @@ import { cdnImageUrl } from "@/lib/cdn";
 import { ExploreGrid, type ExplorePeople } from "@/components/ExploreGrid";
 import { fetchExplore } from "@/lib/queries/explore";
 import { fetchPhotographersIndex } from "@/lib/queries/photographers-index";
+import ih from "@/components/IndexHeader.module.css";
 import styles from "./page.module.css";
 
 export const metadata = pageMetadata({
@@ -38,9 +39,9 @@ export default async function ExplorePage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title} data-reveal="lines">Explore</h1>
-        <p className={styles.lede} data-reveal>
+      <header className={ih.intro}>
+        <h1 className={ih.title} data-reveal="lines">Explore</h1>
+        <p className={ih.lede} data-reveal>
           Every photo essay, interview, and feature published in TPJ since
           2012.
         </p>

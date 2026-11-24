@@ -3,6 +3,7 @@ import { ThemeIndexCard } from "@/components/ThemeIndexCard";
 import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
 import { fetchThemeCounts } from "@/lib/queries/theme-counts";
 import { THEMES } from "@/lib/themes";
+import ih from "@/components/IndexHeader.module.css";
 import styles from "@/components/ThemesIndex.module.css";
 
 export const metadata = pageMetadata({
@@ -21,12 +22,12 @@ export default async function ThemesIndexPage() {
 
   return (
     <>
-      <header className={styles.intro}>
-        <h1 className={styles.title} data-reveal="lines">Themes</h1>
-        <p className={styles.lede} data-reveal>
-          Eleven threads that recur across thirteen years of TPJ. Each is a
-          question we keep asking. Each photograph in the archive answers in
-          its own way.
+      <header className={`${ih.intro} ${styles.intro}`}>
+        <h1 className={ih.title} data-reveal="lines">Themes</h1>
+        <p className={ih.lede} data-reveal>
+          Eleven threads that recur across TPJ since 2012. Each is a question
+          we keep asking. Each photograph in the archive answers in its own
+          way.
         </p>
       </header>
 

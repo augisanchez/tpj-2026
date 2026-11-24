@@ -1,0 +1,12 @@
+/* An icon set in a line of type. The glyph is drawn from 3 to 21 of the
+   24 unit box, so a box of cap / 0.75 makes the drawing exactly as tall
+   as a capital, and dropping it by an eighth of the box (cap / 6) puts
+   the bottom of the drawing on the baseline. --cap is the cap height of
+   the surrounding face, Inter's when unset; Oswald contexts set 0.81em. */
+.inline {
+  display: inline-block;
+  flex: none;
+  width: calc(var(--cap, 0.727em) / 0.75);
+  height: calc(var(--cap, 0.727em) / 0.75);
+  vertical-align: calc(var(--cap, 0.727em) / -6);
+}

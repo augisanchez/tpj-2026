@@ -210,7 +210,7 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
                   <span className={styles.count}>
                     <span className={styles.srOnly}>, </span>
                     {count}
-                    <span className={styles.srOnly}> articles</span>
+                    <span className={styles.srOnly}> stories</span>
                   </span>
                 ) : null}
               </span>
@@ -254,7 +254,7 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
                 href={`/theme/${shownSlug}`}
                 className={styles.moreTile}
                 data-pz
-                aria-label={`All ${activeCount} articles`}
+                aria-label={`All ${activeCount} stories`}
               >
                 <div className="pz-media" style={{ position: "absolute", inset: 0 }}>
                   <ThemeThumbnail images={tileImages} fillParent />

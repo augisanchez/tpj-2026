@@ -2,6 +2,7 @@ import { pageMetadata } from "@/lib/seo";
 import { EmptyState } from "@/components/EmptyState";
 import { PhotographersFilters } from "@/components/PhotographersFilters";
 import { fetchPhotographersIndex } from "@/lib/queries/photographers-index";
+import ih from "@/components/IndexHeader.module.css";
 import styles from "@/components/PhotographersIndex.module.css";
 
 export const metadata = pageMetadata({
@@ -15,19 +16,11 @@ export default async function PhotographersIndexPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.intro}>
-        <p className={styles.eyebrow}>Photographer</p>
-        <h1 className={styles.title} data-reveal="lines">Photographers</h1>
-        <p className={styles.lede} data-reveal>
-          Every photographer who has appeared in TPJ over the past thirteen
-          years.
+      <header className={`${ih.intro} ${styles.intro}`}>
+        <h1 className={ih.title} data-reveal="lines">Photographers</h1>
+        <p className={ih.lede} data-reveal>
+          Every photographer who has appeared in TPJ since 2012.
         </p>
-        {photographers.length > 0 && (
-          <p className={styles.summary}>
-            {photographers.length}{" "}
-            {photographers.length === 1 ? "photographer" : "photographers"}
-          </p>
-        )}
       </header>
 
       {photographers.length === 0 ? (

@@ -1,5 +1,7 @@
+/* The desktop bar is laid out as part of the page, so it stays sticky
+   for the length of the grid (a wrapper box would pin it in place). */
 .desktopFilters {
-  display: block;
+  display: contents;
 }
 
 .mobileFilters {
@@ -10,13 +12,14 @@
   .desktopFilters {
     display: none;
   }
-  /* Filters sheet trigger on the left, Grid / List on the right. */
   .mobileFilters {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
+    display: contents;
   }
+}
+
+/* Filters sheet trigger on the left, Grid / List on the right. */
+.mobileBar {
+  justify-content: space-between;
 }
 
 /* A List URL loads with the server-rendered grid, and the script in
@@ -83,16 +86,6 @@
   .emptyClear {
     transition: none;
   }
-}
-
-.count {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 24px;
 }
 
 .grid {

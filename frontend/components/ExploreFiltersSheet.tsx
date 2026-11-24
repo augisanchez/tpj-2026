@@ -4,18 +4,17 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useDrag } from "@use-gesture/react";
 import { useState } from "react";
 import { THEMES } from "@/lib/themes";
-import type {
-  ExploreType,
-  ExploreTheme,
-  ExploreSort,
+import {
+  Chevron,
+  SortControl,
+  TYPE_LABELS,
+  type ExploreType,
+  type ExploreTheme,
+  type ExploreSort,
 } from "./ExploreFilters";
+import { Icon } from "./Icon";
+import f from "./FilterBar.module.css";
 import styles from "./ExploreFiltersSheet.module.css";
-
-const TYPE_LABELS: Record<Exclude<ExploreType, "all">, string> = {
-  essay: "Photo Essays",
-  interview: "Interviews",
-  feature: "Features",
-};
 
 const SWIPE_CLOSE_DISTANCE = 80;
 const SWIPE_CLOSE_VELOCITY = 0.5;
@@ -67,11 +66,13 @@ export function ExploreFiltersSheet({
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button type="button" className={styles.trigger}>
+        <button type="button" className={f.control}>
+          <Icon name="filter" size={16} />
           <span>Filters</span>
           {activeCount > 0 && (
-            <span className={styles.count} aria-label={`${activeCount} active`}>
+            <span className={styles.count}>
               {activeCount}
+              <span className={styles.srOnly}> active</span>
             </span>
           )}
         </button>
@@ -93,32 +94,19 @@ export function ExploreFiltersSheet({
           <div className={styles.header}>
             <Dialog.Title className={styles.title}>Filters</Dialog.Title>
             <Dialog.Close className={styles.close} aria-label="Close filters">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <Icon name="close" />
             </Dialog.Close>
           </div>
 
           <div className={styles.body}>
             <div className={styles.group}>
-              <label className={styles.label} htmlFor="filter-type">
+              <label className={f.label} htmlFor="filter-type">
                 Type
               </label>
-              <span className={styles.selectWrap}>
+              <span className={`${f.selectWrap} ${styles.full}`}>
                 <select
                   id="filter-type"
-                  className={styles.select}
+                  className={`${f.control} ${f.select}${type !== "all" ? " " + f.selected : ""}`}
                   value={type}
                   onChange={(e) => onTypeChange(e.target.value as ExploreType)}
                 >
@@ -129,30 +117,18 @@ export function ExploreFiltersSheet({
                     </option>
                   ))}
                 </select>
-                <svg
-                  className={styles.chevron}
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
-                    fill="currentColor"
-                  />
-                </svg>
+                <Chevron />
               </span>
             </div>
 
             <div className={styles.group}>
-              <label className={styles.label} htmlFor="filter-theme">
+              <label className={f.label} htmlFor="filter-theme">
                 Theme
               </label>
-              <span className={styles.selectWrap}>
+              <span className={`${f.selectWrap} ${styles.full}`}>
                 <select
                   id="filter-theme"
-                  className={styles.select}
+                  className={`${f.control} ${f.select}${theme !== "all" ? " " + f.selected : ""}`}
                   value={theme}
                   onChange={(e) =>
                     onThemeChange(e.target.value as ExploreTheme)
@@ -165,42 +141,13 @@ export function ExploreFiltersSheet({
                     </option>
                   ))}
                 </select>
-                <svg
-                  className={styles.chevron}
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
-                    fill="currentColor"
-                  />
-                </svg>
+                <Chevron />
               </span>
             </div>
 
             <div className={styles.group}>
-              <p className={styles.label}>Sort</p>
-              <div className={styles.chips}>
-                <button
-                  type="button"
-                  className={`${styles.chip}${sort === "newest" ? " " + styles.chipActive : ""}`}
-                  onClick={() => onSortChange("newest")}
-                  aria-pressed={sort === "newest"}
-                >
-                  Newest
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.chip}${sort === "random" ? " " + styles.chipActive : ""}`}
-                  onClick={() => onSortChange("random")}
-                  aria-pressed={sort === "random"}
-                >
-                  Random
-                </button>
-              </div>
+              <p className={f.label} aria-hidden="true">Sort</p>
+              <SortControl sort={sort} onSortChange={onSortChange} />
             </div>
           </div>
 
@@ -210,7 +157,7 @@ export function ExploreFiltersSheet({
               className={styles.applyButton}
               onClick={() => setOpen(false)}
             >
-              Show {resultCount} {resultCount === 1 ? "result" : "results"}
+              Show {resultCount} {resultCount === 1 ? "story" : "stories"}
             </button>
           </div>
         </Dialog.Content>

@@ -32,7 +32,7 @@ export function ThemeIndexCard({ slug, name, prompt, count, images }: Props) {
       <div className={styles.cardText}>
         {count != null && (
           <p className={styles.cardCount}>
-            {count} {count === 1 ? "article" : "articles"}
+            {count} {count === 1 ? "story" : "stories"}
           </p>
         )}
         <h2 className={styles.cardName}>{name}</h2>

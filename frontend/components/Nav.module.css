@@ -118,13 +118,13 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* Below 1080px the 6 desktop links plus Shuffle and Search collide with
+/* Below 1080px the 6 desktop links plus Random and Search collide with
    the wordmark (they need about 1,030px with the gutters), so the
    hamburger takes over. Wordmark stays visible in the 641–1080px band. */
 @media (max-width: 1080px) {
   .desktopLink,
   .shuffle {
-    /* Shuffle lives in the menu at these widths. */
+    /* Random lives in the menu at these widths. */
     display: none;
   }
   .hamburger {

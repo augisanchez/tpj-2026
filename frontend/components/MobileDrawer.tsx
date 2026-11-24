@@ -3,9 +3,11 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
+import { Icon, type IconName } from "./Icon";
 import styles from "./MobileDrawer.module.css";
 
-type NavLink = { label: string; href: string };
+/** A menu link; an icon, when given, is set before the word. */
+export type DrawerLink = { label: string; href: string; icon?: IconName };
 
 /** A photographer behind one of the newest stories. */
 export type DrawerPhotographer = { name: string; slug: string };
@@ -15,7 +17,7 @@ export function MobileDrawer({
   recent = [],
   trigger,
 }: {
-  links: NavLink[];
+  links: DrawerLink[];
   recent?: DrawerPhotographer[];
   trigger: ReactNode;
 }) {
@@ -36,9 +38,18 @@ export function MobileDrawer({
                 key={link.href}
                 href={link.href}
                 className={styles.link}
+                // /random picks on every visit; a prefetch would fix the pick.
+                prefetch={link.href === "/random" ? false : undefined}
                 onClick={() => setOpen(false)}
               >
-                {link.label}
+                {link.icon ? (
+                  <span>
+                    <Icon name={link.icon} inline className={styles.icon} />
+                    {link.label}
+                  </span>
+                ) : (
+                  link.label
+                )}
               </Link>
             ))}
             <Link

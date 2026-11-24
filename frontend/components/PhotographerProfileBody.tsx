@@ -90,7 +90,7 @@ export function PhotographerProfileBody({
   if (totalArticles > 0) {
     metaSegments.push(
       `${totalArticles} ${
-        totalArticles === 1 ? "article" : "articles"
+        totalArticles === 1 ? "story" : "stories"
       } in TPJ${startYear ? ` since ${startYear}` : ""}`
     );
   }
@@ -197,7 +197,7 @@ export function PhotographerProfileBody({
               {!hasTabs && (
                 <p className={styles.articlesHead}>
                   {totalArticles}{" "}
-                  {totalArticles === 1 ? "article" : "articles"}
+                  {totalArticles === 1 ? "story" : "stories"}
                 </p>
               )}
               <div className={styles.grid} data-reveal-children>

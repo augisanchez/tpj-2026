@@ -61,7 +61,7 @@ export function PhotographerListCard({
       {!compact && bio && <p className={styles.cardBio}>{bio}</p>}
       {articleCount > 0 && (
         <p className={styles.cardCount}>
-          {articleCount} {articleCount === 1 ? "article" : "articles"}
+          {articleCount} {articleCount === 1 ? "story" : "stories"}
           {appearsInCount > 0 && `  ·  appears in ${appearsInCount}`}
           <span className={styles.cardCountArrow} aria-hidden="true">
             →

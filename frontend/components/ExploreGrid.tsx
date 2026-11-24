@@ -16,10 +16,11 @@ import {
   type ExploreSort,
 } from "./ExploreFilters";
 import { ExploreFiltersSheet } from "./ExploreFiltersSheet";
-import { ExploreViewSwitch, type ExploreView } from "./ExploreViewSwitch";
+import { ViewToggle, type View as ExploreView } from "./ViewToggle";
 import { StoryIndexList, type IndexPerson, type IndexRow } from "./StoryIndexList";
 import { cdnImageUrl } from "@/lib/cdn";
 import type { ExploreItem, ExploreStory } from "@/lib/queries/explore";
+import f from "./FilterBar.module.css";
 import styles from "./ExploreGrid.module.css";
 
 const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = {
@@ -384,25 +385,27 @@ export function ExploreGrid({ items, people = NO_PEOPLE, initialType }: Props) {
         />
       </div>
       <div className={styles.mobileFilters}>
-        <ExploreFiltersSheet
-          type={type}
-          theme={theme}
-          sort={sort}
-          onTypeChange={setType}
-          onThemeChange={setTheme}
-          onSortChange={handleSortChange}
-          resultCount={ordered.length}
-        />
-        <ExploreViewSwitch view={view} onChange={setView} size="touch" />
+        <div className={`${f.bar} ${f.bleed} ${styles.mobileBar}`}>
+          <ExploreFiltersSheet
+            type={type}
+            theme={theme}
+            sort={sort}
+            onTypeChange={setType}
+            onThemeChange={setTheme}
+            onSortChange={handleSortChange}
+            resultCount={ordered.length}
+          />
+          <ViewToggle view={view} onChange={setView} />
+        </div>
       </div>
       <Suspense fallback={null}>
         <QueryWatcher onChange={onQuery} />
       </Suspense>
 
-      <h2 className={styles.count} aria-live="polite" ref={countRef} tabIndex={-1}>
+      <h2 className={`${f.count} ${styles.count}`} aria-live="polite" ref={countRef} tabIndex={-1}>
         {displayCount === items.length
-          ? `${items.length} pieces in the archive`
-          : `${displayCount} of ${items.length} pieces`}
+          ? `${items.length} stories in the archive`
+          : `${displayCount} of ${items.length} stories`}
       </h2>
 
       {ordered.length === 0 ? (

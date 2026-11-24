@@ -119,7 +119,7 @@ export function ArticleCard({
           {typeof badgeCount === "number" && badgeCount > 0 && (
             <span
               className={styles.imageBadge}
-              aria-label={`${badgeCount} articles in this collection`}
+              aria-label={`${badgeCount} stories in this collection`}
             >
               {badgeCount}
             </span>

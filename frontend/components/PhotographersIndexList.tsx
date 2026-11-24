@@ -29,7 +29,7 @@ export function PhotographersIndexList({ people }: { people: PhotographerIndexIt
                 )}
               </span>
               <span className={styles.count}>
-                {p.articleCount} {p.articleCount === 1 ? "article" : "articles"}
+                {p.articleCount} {p.articleCount === 1 ? "story" : "stories"}
               </span>
             </Link>
           </li>

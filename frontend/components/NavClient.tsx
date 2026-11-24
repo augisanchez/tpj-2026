@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { MobileDrawer, type DrawerPhotographer } from "./MobileDrawer";
+import { Icon } from "./Icon";
+import { MobileDrawer, type DrawerLink, type DrawerPhotographer } from "./MobileDrawer";
 import styles from "./Nav.module.css";
 
 const NAV_LINKS = [
@@ -14,13 +15,13 @@ const NAV_LINKS = [
   { label: "Submit", href: "/submit" },
 ];
 
-// The menu also carries Contact and Shuffle (the desktop header has no
-// room for Contact; its Shuffle is the icon beside Search). Shuffle goes
-// to a random story via /random.
-const DRAWER_LINKS = [
+// The menu also carries Contact and Random (the desktop header has no
+// room for Contact; its Random is the shuffle icon beside Search). Random
+// goes to a random story via /random.
+const DRAWER_LINKS: DrawerLink[] = [
   ...NAV_LINKS,
   { label: "Contact", href: "/contact" },
-  { label: "Shuffle", href: "/random" },
+  { label: "Random", href: "/random", icon: "shuffle" },
 ];
 
 const DEAD_ZONE = 16;
@@ -84,42 +85,13 @@ export function NavClient({ recent }: { recent: DrawerPhotographer[] }) {
         <Link
           href="/random"
           prefetch={false}
-          aria-label="Shuffle: open a random story"
+          aria-label="Random"
           className={`${styles.search} ${styles.shuffle}`}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="16 3 21 3 21 8" />
-            <line x1="4" y1="20" x2="21" y2="3" />
-            <polyline points="21 16 21 21 16 21" />
-            <line x1="15" y1="15" x2="21" y2="21" />
-            <line x1="4" y1="4" x2="9" y2="9" />
-          </svg>
+          <Icon name="shuffle" />
         </Link>
         <Link href="/search" aria-label="Search" className={styles.search}>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+          <Icon name="search" />
         </Link>
         <MobileDrawer
           links={DRAWER_LINKS}

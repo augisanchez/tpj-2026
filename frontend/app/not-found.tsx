@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { randomStory } from "@/lib/queries/story-index";
 import { NOT_FOUND_META } from "@/lib/seo";
+import { Icon } from "@/components/Icon";
 import { TpjImage } from "@/components/TpjImage";
 import styles from "@/components/NotFoundPage.module.css";
 
@@ -29,6 +30,7 @@ export default async function NotFound() {
             See what&rsquo;s on view
           </Link>
           <Link href="/random" prefetch={false} className={styles.secondary}>
+            <Icon name="shuffle" inline className={styles.icon} />
             Show me something
           </Link>
         </div>

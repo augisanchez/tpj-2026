@@ -48,7 +48,7 @@ export default async function ThemePage({ params }: Props) {
         <p className={styles.eyebrow}>Theme</p>
         <h1 className={styles.name} data-reveal="lines">{theme.name}</h1>
         <p className={styles.prompt} data-reveal>{theme.prompt}</p>
-        <p className={styles.count}>{items.length} {items.length === 1 ? "article" : "articles"}</p>
+        <p className={styles.count}>{items.length} {items.length === 1 ? "story" : "stories"}</p>
       </header>
 
       {items.length === 0 ? (
