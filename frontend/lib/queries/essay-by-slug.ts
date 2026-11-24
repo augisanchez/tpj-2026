@@ -19,6 +19,7 @@ const EssayBySlugQuery = gql`
       title
       slug
       date
+      dateGmt
       content
       excerpt
       articleIntro
@@ -52,6 +53,7 @@ export type Essay = {
   title: string;
   slug: string;
   date: string;
+  dateGmt?: string | null;
   body: string;
   excerpt: string | null;
   intro: string | null;
@@ -73,6 +75,7 @@ type RawEssay = {
   title: string;
   slug: string;
   date: string;
+  dateGmt?: string | null;
   content: string | null;
   excerpt: string | null;
   articleIntro: string | null;
@@ -128,6 +131,7 @@ export async function fetchEssayBySlug(
     title: raw.title,
     slug: raw.slug,
     date: raw.date,
+    dateGmt: raw.dateGmt ?? null,
     body,
     excerpt: raw.excerpt,
     intro: intro || null,

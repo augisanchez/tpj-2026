@@ -1,13 +1,14 @@
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { ContactForm } from "@/components/ContactForm";
 import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/ContactPage.module.css";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Contact — The Photographic Journal",
-  description:
-    "Get in touch with The Photographic Journal for advertising, press, and general inquiries.",
-};
+  description: "Get in touch with The Photographic Journal for advertising, press, and general inquiries.",
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (

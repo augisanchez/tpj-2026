@@ -22,6 +22,9 @@ import {
 import { THEMES } from "@/lib/themes";
 import { isCdnEnabled } from "@/lib/cdn";
 import type { RecentEssay } from "@/lib/queries/recent-essays";
+import type { Metadata } from "next";
+import { pageMetadata, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import styles from "./page.module.css";
 
 function summarize(
@@ -90,6 +93,18 @@ function buildThemeGroups(
     }
   }
   return result;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  // Share image: the current lead story's photo.
+  const [lead] = await fetchRecentArticles(1).catch(() => []);
+  return pageMetadata({
+    title: SITE_NAME,
+    description:
+      "The Photographic Journal publishes photo essays, photographer interviews, and topical features that explore creativity and artistic intent.",
+    path: "/",
+    image: lead?.featuredImage ?? null,
+  });
 }
 
 export default async function Home() {
@@ -238,6 +253,19 @@ export default async function Home() {
 
   return (
     <div className={styles.homepage}>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: SITE_NAME,
+          url: SITE_URL,
+          potentialAction: {
+            "@type": "SearchAction",
+            target: `${SITE_URL}/search?q={search_term_string}`,
+            "query-input": "required name=search_term_string",
+          },
+        }}
+      />
       {heroSlides.length > 0 && <HomepageHeroCarousel slides={heroSlides} />}
 
       <ScrollCue />

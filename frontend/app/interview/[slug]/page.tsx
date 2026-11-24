@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/JsonLd";
 import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
 import { EssayIntro } from "@/components/EssayIntro";
@@ -11,7 +12,7 @@ import { previewTarget } from "@/lib/preview";
 import { fetchRecentInterviews } from "@/lib/queries/recent-interviews";
 import { normalizeSlug } from "@/lib/text-utils";
 import type { Metadata } from "next";
-import { describe, pageMetadata } from "@/lib/seo";
+import { describe, pageMetadata, articleJsonLd, isoDate } from "@/lib/seo";
 
 // Render each page on its first visit, then serve it from Vercel's
 // cache (refreshed hourly, or immediately when WordPress saves). Without
@@ -35,11 +36,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const names = a.photographers.map((p) => p.name).filter(Boolean);
   return pageMetadata({
     title: `${a.title} — The Photographic Journal`,
-    description: describe(a.excerpt, a.intro, a.body),
+    description: describe(a.intro, a.excerpt, a.body),
     path: `/interview/${a.slug}`,
     image: a.heroImage ?? a.featuredImage,
     type: "article",
-    publishedTime: a.date,
+    publishedTime: isoDate(a.date, a.dateGmt),
     authors: names.length ? names : a.photographerName ? [a.photographerName] : undefined,
   });
 }
@@ -78,6 +79,18 @@ export default async function InterviewPage({ params }: Props) {
   return (
     <>
       <ReadingProgress />
+      <JsonLd
+        data={articleJsonLd({
+          title: interview.title,
+          path: `/interview/${interview.slug}`,
+          section: "Interviews",
+          sectionPath: "/explore?type=interview",
+          description: describe(interview.intro, interview.excerpt, interview.body),
+          image: interview.heroImage ?? interview.featuredImage,
+          datePublished: isoDate(interview.date, interview.dateGmt),
+          people: interview.photographers.map((p) => ({ name: p.name, slug: p.slug })),
+        })}
+      />
       <Hero
         contentTypeLabel="Interview"
         title={interview.title}

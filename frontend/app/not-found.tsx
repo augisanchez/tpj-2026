@@ -26,6 +26,8 @@ export default async function NotFound() {
 
   return (
     <Link href="/" className={styles.cover}>
+      {/* React hoists these into <head>. Next adds the noindex robots tag. */}
+      <title>Page not found — The Photographic Journal</title>
       {choice?.featuredImage && (
         <TpjImage
           className={styles.bg}

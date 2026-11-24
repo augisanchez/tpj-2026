@@ -1,12 +1,13 @@
+import { pageMetadata } from "@/lib/seo";
 import { ShopProductCard } from "@/components/ShopProductCard";
 import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/ShopPage.module.css";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Store — The Photographic Journal",
-  description:
-    "Limited-edition books and merchandise from The Photographic Journal.",
-};
+  description: "Limited-edition books and merchandise from The Photographic Journal.",
+  path: "/shop",
+});
 
 const PRODUCTS: {
   title: string;

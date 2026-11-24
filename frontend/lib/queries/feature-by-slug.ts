@@ -19,6 +19,7 @@ const FeatureBySlugQuery = gql`
       title
       slug
       date
+      dateGmt
       content
       excerpt
       articleIntro
@@ -69,6 +70,7 @@ type RawFeature = {
   title: string;
   slug: string;
   date: string;
+  dateGmt?: string | null;
   content: string | null;
   excerpt: string | null;
   articleIntro: string | null;
@@ -125,6 +127,7 @@ export async function fetchFeatureBySlug(
     title: raw.title,
     slug: raw.slug,
     date: raw.date,
+    dateGmt: raw.dateGmt ?? null,
     body,
     excerpt: raw.excerpt,
     intro: intro || null,

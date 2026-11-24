@@ -11,7 +11,18 @@ const LEGACY_CATEGORY: Record<string, string> = {
   "sally-reynolds": "/photographer/sally-reynolds",
 };
 
+/** Where WordPress uploads live now (media domain, or the temporary proxy). */
+const MEDIA_BASE = `${process.env.NEXT_PUBLIC_CDN_BASE ?? "https://media.thephotographicjournal.com"}${process.env.NEXT_PUBLIC_CDN_PATH_PREFIX ?? "/tpj"}`;
+
+/** Legacy URLs often end in "/". Accept both forms in one rule, so every
+ *  old link resolves in a single redirect (Next's own slash redirect is
+ *  off; a catch-all at the end strips slashes for everything else). */
+type Redirect = { source: string; destination: string; permanent: boolean };
+const slashOptional = (r: Redirect): Redirect =>
+  r.source.endsWith("/") || r.source.includes(":path") ? r : { ...r, source: `${r.source}{/}?` };
+
 const nextConfig: NextConfig = {
+  skipTrailingSlashRedirect: true,
   async headers() {
     return [
       {
@@ -24,6 +35,14 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Only the public domain is indexable. v2., previews and any other
+        // host get noindex as a header, so launching is just pointing the
+        // domain here: no setting to remember.
+        source: "/:path*",
+        missing: [{ type: "host", value: "(www\\.)?thephotographicjournal\\.com" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
         // Static art in /public: cache a week, serve stale while it refreshes.
         source: "/:dir(svg|about|photographers)/:path*",
         headers: [
@@ -33,7 +52,7 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
-    return [
+    const rules: Redirect[] = [
       ...(legacyTags as [string, string][]).map(([tag, to]) => ({
         source: `/tag/${tag}`,
         destination: to,
@@ -86,6 +105,24 @@ const nextConfig: NextConfig = {
       // those URLs is dead; redirect to the closest editorial sibling.
       { source: "/collections", destination: "/themes", permanent: true },
       { source: "/collection/:slug", destination: "/themes", permanent: true },
+      // Old feed addresses.
+      { source: "/rss", destination: "/feed", permanent: true },
+      { source: "/rss2", destination: "/feed", permanent: true },
+      { source: "/feed/rss2", destination: "/feed", permanent: true },
+      { source: "/feed/atom", destination: "/feed", permanent: true },
+    ];
+    return [
+      ...rules.map(slashOptional),
+      // Old image links (Pinterest, Google Images, newsletters) go to the
+      // same file on the media host. Temporary until the media domain is
+      // final (see CUTOVER.md), then make it permanent.
+      {
+        source: "/wp-content/uploads/:path*",
+        destination: `${MEDIA_BASE}/wp-content/uploads/:path*`,
+        permanent: false,
+      },
+      // Everything else: strip a trailing slash in one hop.
+      { source: "/:path+/", destination: "/:path+", permanent: true },
     ];
   },
 };

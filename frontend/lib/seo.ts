@@ -29,9 +29,13 @@ type PageMeta = {
   authors?: string[];
 };
 
+/** Site-wide share image (public/og-default.jpg): the team's polaroid
+ *  wall under the TPJ mark. Used wherever a page has no photo of its own. */
+export const DEFAULT_SHARE_IMAGE = { url: "/og-default.jpg", width: 1200, height: 630, alt: SITE_NAME };
+
 export function pageMetadata({ title, description, path, image, type = "website", publishedTime, authors }: PageMeta): Metadata {
   const ogImage = image?.src ? cdnImageUrl(image.src, { width: 1200, quality: 80, format: "jpeg" }) : null;
-  const images = ogImage ? [{ url: ogImage, alt: image?.alt || title }] : undefined;
+  const images = ogImage ? [{ url: ogImage, alt: image?.alt || title }] : [DEFAULT_SHARE_IMAGE];
   return {
     title,
     description,
@@ -45,6 +49,68 @@ export function pageMetadata({ title, description, path, image, type = "website"
       images,
       ...(type === "article" && publishedTime ? { publishedTime, authors } : {}),
     },
-    twitter: { card: images ? "summary_large_image" : "summary", title, description, images: images?.map((i) => i.url) },
+    twitter: { card: "summary_large_image", title, description, images: images.map((i) => i.url) },
+  };
+}
+
+/** WordPress dates are local with no offset; dateGmt + "Z" is exact. */
+export function isoDate(date: string | null | undefined, dateGmt?: string | null): string | undefined {
+  if (dateGmt) return dateGmt.endsWith("Z") ? dateGmt : `${dateGmt}Z`;
+  return date ?? undefined;
+}
+
+const PUBLISHER = {
+  "@type": "Organization",
+  name: SITE_NAME,
+  url: SITE_URL,
+  logo: { "@type": "ImageObject", url: `${SITE_URL}/svg/tpj_black.svg` },
+};
+
+/** Article + breadcrumb JSON-LD for essays, interviews and features. */
+export function articleJsonLd(a: {
+  title: string;
+  path: string;
+  section: string;
+  sectionPath: string;
+  description?: string;
+  image?: { src: string } | null;
+  datePublished?: string;
+  people: { name: string; slug?: string }[];
+}): object[] {
+  const image = a.image?.src ? cdnImageUrl(a.image.src, { width: 1200, quality: 80, format: "jpeg" }) : null;
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: a.title,
+      url: `${SITE_URL}${a.path}`,
+      mainEntityOfPage: `${SITE_URL}${a.path}`,
+      ...(a.description ? { description: a.description } : {}),
+      ...(image ? { image: [image] } : {}),
+      ...(a.datePublished ? { datePublished: a.datePublished } : {}),
+      author: a.people.map((p) => ({
+        "@type": "Person",
+        name: p.name,
+        ...(p.slug ? { url: `${SITE_URL}/photographer/${p.slug}` } : {}),
+      })),
+      publisher: PUBLISHER,
+    },
+    breadcrumbJsonLd([
+      { name: a.section, path: a.sectionPath },
+      { name: a.title, path: a.path },
+    ]),
+  ];
+}
+
+export function breadcrumbJsonLd(items: { name: string; path: string }[]): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [{ name: SITE_NAME, path: "/" }, ...items].map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: it.name,
+      item: `${SITE_URL}${it.path}`,
+    })),
   };
 }

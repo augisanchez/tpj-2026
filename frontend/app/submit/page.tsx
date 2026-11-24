@@ -1,12 +1,13 @@
+import { pageMetadata } from "@/lib/seo";
 import { SubmissionForm } from "@/components/SubmissionForm";
 import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/SubmitPage.module.css";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Submit — The Photographic Journal",
-  description:
-    "How to submit your photo essay to The Photographic Journal.",
-};
+  description: "How to submit your photo essay to The Photographic Journal.",
+  path: "/submit",
+});
 
 const GUIDELINES: { title: string; detail?: string }[] = [
   {

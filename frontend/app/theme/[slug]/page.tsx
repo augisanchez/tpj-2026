@@ -21,10 +21,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const theme = THEMES.find((t) => t.slug === slug);
   if (!theme) return {};
+  // Share image: the newest piece in the theme with a cover.
+  const cover = (await fetchExplore(1000).catch(() => []))
+    .find((i) => i.themes.includes(theme.slug) && i.featuredImage)?.featuredImage;
   return pageMetadata({
     title: `${theme.name} — The Photographic Journal`,
     description: theme.prompt,
     path: `/theme/${theme.slug}`,
+    image: cover ?? null,
   });
 }
 

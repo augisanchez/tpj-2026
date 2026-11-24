@@ -6,7 +6,7 @@ import { MotionRoot } from "@/components/MotionRoot";
 import { RouteAnnouncer } from "@/components/RouteAnnouncer";
 import { SkipToContent } from "@/components/SkipToContent";
 import "./globals.css";
-import { SITE_NAME, SITE_URL } from "@/lib/seo";
+import { SITE_NAME, DEFAULT_SHARE_IMAGE, SITE_URL } from "@/lib/seo";
 
 // Self-hosted (app/fonts) so builds never depend on Google Fonts being
 // reachable. Oswald and Inter are variable files covering every weight.
@@ -38,14 +38,11 @@ export const metadata: Metadata = {
   title: SITE_NAME,
   description:
     "The Photographic Journal publishes photo essays, photographer interviews, and topical features that explore creativity and artistic intent.",
-  alternates: { canonical: "/" },
-  openGraph: { type: "website", siteName: SITE_NAME, url: "/" },
-  twitter: { card: "summary" },
-  // Preview deployments (v2 subdomain) stay out of search results so
-  // they don't compete with the live v1 site.
-  ...(process.env.NEXT_PUBLIC_NOINDEX === "1" && {
-    robots: { index: false, follow: false },
-  }),
+  // No canonical here: it would be inherited by every page without its
+  // own (the 404 page pointed at the homepage). Pages set theirs.
+  alternates: { types: { "application/rss+xml": [{ url: "/feed", title: SITE_NAME }] } },
+  openGraph: { type: "website", siteName: SITE_NAME, images: [DEFAULT_SHARE_IMAGE] },
+  twitter: { card: "summary_large_image", images: [DEFAULT_SHARE_IMAGE.url] },
 };
 
 export default function RootLayout({

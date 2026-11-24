@@ -1,14 +1,15 @@
+import { pageMetadata } from "@/lib/seo";
 import { ThemeIndexCard } from "@/components/ThemeIndexCard";
 import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
 import { fetchThemeCounts } from "@/lib/queries/theme-counts";
 import { THEMES } from "@/lib/themes";
 import styles from "@/components/ThemesIndex.module.css";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Themes — The Photographic Journal",
-  description:
-    "Eleven themes that thread through the TPJ archive.",
-};
+  description: "Eleven themes that thread through the TPJ archive.",
+  path: "/themes",
+});
 
 export default async function ThemesIndexPage() {
   // Pull 4 tagged essays per theme for the composite thumbnail +

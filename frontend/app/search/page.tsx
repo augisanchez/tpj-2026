@@ -1,9 +1,11 @@
+import { pageMetadata } from "@/lib/seo";
 import { SearchPage } from "@/components/SearchPage";
 import { fetchSearchResults } from "@/lib/queries/search";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Search — The Photographic Journal",
-};
+  path: "/search",
+});
 
 type Props = {
   searchParams: Promise<{ q?: string }>;

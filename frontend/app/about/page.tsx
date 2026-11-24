@@ -1,11 +1,12 @@
+import { pageMetadata } from "@/lib/seo";
 import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/AboutPage.module.css";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "About — The Photographic Journal",
-  description:
-    "About The Photographic Journal: editorial mission and the team behind the publication.",
-};
+  description: "About The Photographic Journal: editorial mission and the team behind the publication.",
+  path: "/about",
+});
 
 const TEAM = [
   { name: "Agustin Sanchez", role: "Founder, Publisher" },

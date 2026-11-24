@@ -1,12 +1,13 @@
+import { pageMetadata } from "@/lib/seo";
 import { ExploreGrid } from "@/components/ExploreGrid";
 import { fetchExplore } from "@/lib/queries/explore";
 import styles from "./page.module.css";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Explore — The Photographic Journal",
-  description:
-    "Browse the full archive of photo essays, interviews, and features.",
-};
+  description: "Browse the full archive of photo essays, interviews, and features.",
+  path: "/explore",
+});
 
 // Static (cached) page: the ?type= filter is read in the browser by
 // ExploreGrid, so the server never renders per request.

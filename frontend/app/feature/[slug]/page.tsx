@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/JsonLd";
 import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
 import { ArticleBody } from "@/components/ArticleBody";
@@ -11,7 +12,7 @@ import { previewTarget } from "@/lib/preview";
 import { fetchRecentFeatures } from "@/lib/queries/recent-features";
 import { normalizeSlug } from "@/lib/text-utils";
 import type { Metadata } from "next";
-import { describe, pageMetadata } from "@/lib/seo";
+import { describe, pageMetadata, articleJsonLd, isoDate } from "@/lib/seo";
 
 // Render each page on its first visit, then serve it from Vercel's
 // cache (refreshed hourly, or immediately when WordPress saves). Without
@@ -55,11 +56,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const names = a.photographers.map((p) => p.name).filter(Boolean);
   return pageMetadata({
     title: `${a.title} — The Photographic Journal`,
-    description: describe(a.excerpt, a.intro, a.body),
+    description: describe(a.intro, a.excerpt, a.body),
     path: `/feature/${a.slug}`,
     image: a.heroImage ?? a.featuredImage,
     type: "article",
-    publishedTime: a.date,
+    publishedTime: isoDate(a.date, a.dateGmt),
     authors: names.length ? names : a.photographerName ? [a.photographerName] : undefined,
   });
 }
@@ -94,6 +95,18 @@ export default async function FeaturePage({ params }: Props) {
   return (
     <>
       <ReadingProgress />
+      <JsonLd
+        data={articleJsonLd({
+          title: feature.title,
+          path: `/feature/${feature.slug}`,
+          section: "Features",
+          sectionPath: "/explore?type=feature",
+          description: describe(feature.intro, feature.excerpt, feature.body),
+          image: feature.heroImage ?? feature.featuredImage,
+          datePublished: isoDate(feature.date, feature.dateGmt),
+          people: [...(feature.writer ? [{ name: feature.writer }] : []), ...feature.photographers.map((p) => ({ name: p.name, slug: p.slug }))],
+        })}
+      />
       <Hero
         contentTypeLabel="Feature"
         title={feature.title}

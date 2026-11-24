@@ -1,12 +1,14 @@
+import { pageMetadata } from "@/lib/seo";
 import { EmptyState } from "@/components/EmptyState";
 import { PhotographersFilters } from "@/components/PhotographersFilters";
 import { fetchPhotographersIndex } from "@/lib/queries/photographers-index";
 import styles from "@/components/PhotographersIndex.module.css";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Photographers — The Photographic Journal",
   description: "Every photographer published in The Photographic Journal.",
-};
+  path: "/photographers",
+});
 
 export default async function PhotographersIndexPage() {
   const photographers = await fetchPhotographersIndex();
