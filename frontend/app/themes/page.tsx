@@ -21,7 +21,6 @@ export default async function ThemesIndexPage() {
   return (
     <>
       <header className={styles.intro}>
-        <p className={styles.eyebrow}>Theme</p>
         <h1 className={styles.title} data-reveal="lines">Themes</h1>
         <p className={styles.lede} data-reveal>
           Eleven threads that recur across thirteen years of TPJ. Each is a
