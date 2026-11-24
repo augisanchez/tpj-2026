@@ -127,6 +127,9 @@ const nextConfig: NextConfig = {
       // those URLs is dead; redirect to the closest editorial sibling.
       { source: "/collections", destination: "/themes", permanent: true },
       { source: "/collection/:slug", destination: "/themes", permanent: true },
+      // The old static storefront.
+      { source: "/store", destination: "/shop", permanent: true },
+      { source: "/store/residence", destination: "/shop/residence", permanent: true },
       // Old feed addresses.
       { source: "/rss", destination: "/feed", permanent: true },
       { source: "/rss2", destination: "/feed", permanent: true },
