@@ -6,7 +6,7 @@ import { ArticleCard } from "./ArticleCard";
 import { EmptyState } from "./EmptyState";
 import { PhotographerListCard } from "./PhotographerListCard";
 import type { ExploreItem } from "@/lib/queries/explore";
-import type { SearchPhotographer } from "@/lib/queries/search";
+import type { SearchItem, SearchPhotographer } from "@/lib/queries/search";
 import styles from "./SearchPage.module.css";
 
 const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = {
@@ -19,7 +19,7 @@ const DEBOUNCE_MS = 300;
 
 type Props = {
   initialTerm: string;
-  results: ExploreItem[];
+  results: SearchItem[];
   /** Photographers whose name matches, shown above the articles. */
   photographers?: SearchPhotographer[];
 };
@@ -99,7 +99,7 @@ export function SearchPage({ initialTerm, results, photographers = [] }: Props) 
 
       {empty && (
         <EmptyState
-          heading="Nothing in the archive matched that search."
+          heading="Nothing in the archive by that name. Yet."
           note="Try a photographer name, a place, or a single word from a title."
         />
       )}
@@ -131,6 +131,7 @@ export function SearchPage({ initialTerm, results, photographers = [] }: Props) 
                 date: item.date,
                 href: `/${item.contentType}/${item.slug}`,
                 contentTypeLabel: LABEL_BY_TYPE[item.contentType],
+                photographer: item.photographer,
                 featuredImage: item.featuredImage ?? undefined,
               }}
             />

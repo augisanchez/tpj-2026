@@ -14,6 +14,9 @@
      scrollbar height stays accurate before content renders. */
   content-visibility: auto;
   contain-intrinsic-size: auto 480px;
+  /* Fill the grid cell so a row of cards ends on one line whether or
+     not each has a credit line; the date sits at the bottom. */
+  height: 100%;
 }
 
 .imageWrapper {
@@ -102,6 +105,7 @@
 .textStack {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .title {
@@ -112,6 +116,23 @@
   margin: 8px 0 0 0;
   max-width: 22ch;
   overflow-wrap: anywhere;
+}
+
+/* Two-tone headline: the photographer's name sits on its own line in
+   the same face and size as the title, in grey. It replaces any
+   separate byline, so the name is shown once. */
+.titleCredit {
+  display: block;
+  color: var(--muted);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .description {
@@ -129,7 +150,9 @@
   font-size: clamp(14px, 0.8rem + 0.1vw, 17px); /* caps ~3360 */
   color: var(--muted);
   letter-spacing: 0.02em;
-  margin-top: 12px;
+  font-variant-numeric: tabular-nums;
+  margin-top: auto;
+  padding-top: 12px;
 }
 
 /* Card title scale — every variant clamps so cards keep growing at

@@ -155,15 +155,14 @@ export function SubmissionForm() {
   if (status === "success") {
     return (
       <section className={styles.success} role="status">
-        <p className={styles.successEyebrow}>Got it</p>
+        <p className={styles.successEyebrow}>Essay received</p>
         <p className={styles.successHeadline}>
-          Thanks for sending your work.
+          Got it. We read everything.
         </p>
         <p className={styles.successBody}>
-          We read everything that comes in. If your essay is a fit, we’ll be
-          in touch with next steps, including a request for a profile picture
-          and any final-resolution files. Please give us a few weeks before
-          following up.
+          If your essay is a fit, we’ll be in touch with next steps, including
+          a request for a profile picture and any final-resolution files.
+          Please give us a few weeks before following up. We love you.
         </p>
       </section>
     );

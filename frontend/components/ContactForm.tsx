@@ -110,13 +110,12 @@ export function ContactForm() {
   if (status === "success") {
     return (
       <section className={styles.success} role="status">
-        <p className={styles.successEyebrow}>Got it</p>
+        <p className={styles.successEyebrow}>Message sent</p>
         <p className={styles.successHeadline}>
-          Thanks for writing.
+          Got it. We read everything. We love you.
         </p>
         <p className={styles.successBody}>
-          We read everything that comes in and we’ll get back to you as
-          soon as we can.
+          We’ll get back to you as soon as we can.
         </p>
       </section>
     );

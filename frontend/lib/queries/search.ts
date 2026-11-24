@@ -4,6 +4,7 @@ import { rewriteMediaUrl } from "../media";
 import type { ExploreItem } from "./explore";
 import { fetchPhotographerArticles } from "./photographer-articles";
 import { htmlToInlineText } from "../text-utils";
+import { resolvePhotographerCredit } from "./recent-essays";
 
 const SearchQuery = gql`
   query Search($term: String!) {
@@ -16,6 +17,9 @@ const SearchQuery = gql`
         title
         slug
         date
+        photographerName
+        linkedPhotographer { title }
+        linkedPhotographers { title }
         featuredImage {
           node {
             sourceUrl
@@ -34,6 +38,9 @@ const SearchQuery = gql`
         title
         slug
         date
+        photographerName
+        linkedPhotographer { title }
+        linkedPhotographers { title }
         featuredImage {
           node {
             sourceUrl
@@ -52,6 +59,9 @@ const SearchQuery = gql`
         title
         slug
         date
+        photographerName
+        linkedPhotographer { title }
+        linkedPhotographers { title }
         featuredImage {
           node {
             sourceUrl
@@ -69,10 +79,16 @@ type RawNode = {
   title: string;
   slug: string;
   date: string;
+  photographerName: string | null;
+  linkedPhotographer: { title: string | null } | null;
+  linkedPhotographers: { title: string | null }[] | null;
   featuredImage: {
     node: { sourceUrl: string | null; altText: string | null; mediaDetails?: { width: number | null; height: number | null } | null; } | null;
   } | null;
 };
+
+/** A search hit: an Explore item plus its photographer credit, when known. */
+export type SearchItem = ExploreItem & { photographer?: string | null };
 
 type Response = {
   essays: { nodes: RawNode[] };
@@ -83,7 +99,7 @@ type Response = {
 function toItem(
   node: RawNode,
   contentType: ExploreItem["contentType"]
-): ExploreItem {
+): SearchItem {
   const fi = node.featuredImage?.node;
   const src = fi ? rewriteMediaUrl(fi.sourceUrl) : null;
   return {
@@ -94,6 +110,7 @@ function toItem(
     contentType,
     featuredImage: src ? { src, alt: fi?.altText || node.title, width: fi?.mediaDetails?.width ?? undefined, height: fi?.mediaDetails?.height ?? undefined } : null,
     themes: [],
+    photographer: resolvePhotographerCredit(node),
   };
 }
 
@@ -144,7 +161,7 @@ export type SearchResults = {
   /** Photographers whose name matches the search. */
   photographers: SearchPhotographer[];
   /** Articles: text matches plus everything the matched photographers shot or appear in. */
-  items: ExploreItem[];
+  items: SearchItem[];
 };
 
 const norm = (s: string) =>
@@ -184,7 +201,7 @@ export async function fetchSearchResults(term: string): Promise<SearchResults> {
     };
   });
 
-  const items: ExploreItem[] = [
+  const items: SearchItem[] = [
     ...data.essays.nodes.map((n) => toItem(n, "essay")),
     ...data.interviews.nodes.map((n) => toItem(n, "interview")),
     ...data.features.nodes.map((n) => toItem(n, "feature")),
@@ -196,7 +213,10 @@ export async function fetchSearchResults(term: string): Promise<SearchResults> {
     photographers.slice(0, 3).map((p) => fetchPhotographerArticles(p.slug).catch(() => null))
   );
   const seen = new Set(items.map((i) => `${i.contentType}/${i.slug}`));
-  for (const w of works) {
+  works.forEach((w, i) => {
+    // Their own work carries their name; pieces they appear in don't
+    // have a credit in this payload, so those cards show none.
+    const own = new Set(w?.articles ?? []);
     for (const a of [...(w?.articles ?? []), ...(w?.appearsIn ?? [])]) {
       const key = `${a.contentType}/${a.slug}`;
       if (seen.has(key)) continue;
@@ -209,9 +229,10 @@ export async function fetchSearchResults(term: string): Promise<SearchResults> {
         contentType: a.contentType,
         featuredImage: a.featuredImage,
         themes: [],
+        photographer: own.has(a) ? photographers[i].name : null,
       });
     }
-  }
+  });
 
   items.sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()

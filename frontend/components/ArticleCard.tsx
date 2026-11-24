@@ -29,6 +29,9 @@ type Article = {
   date: string;
   href: string;
   contentTypeLabel: string;
+  /** Photographer credit, set as the grey second line of the headline.
+   *  Omitted when the card's data source doesn't carry one. */
+  photographer?: string | null;
   description?: string;
   featuredImage?: { src: string; alt: string; width?: number; height?: number };
 };
@@ -51,6 +54,17 @@ type Props = {
    */
   badgeCount?: number;
 };
+
+const fold = (s: string) =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+/** The credit line, unless the title already names the photographer
+ *  (interviews are usually titled with the name), so it shows once. */
+function creditFor(title: string, photographer?: string | null): string | null {
+  const name = photographer?.trim();
+  if (!name) return null;
+  return fold(title).includes(fold(name)) ? null : name;
+}
 
 const CHIP_SIZE_BY_VARIANT: Record<ArticleCardVariant, ContentTypeChipSize> = {
   "1up": "large",
@@ -77,6 +91,7 @@ export function ArticleCard({
   });
 
   const wrapperClass = styles.imageWrapper;
+  const credit = creditFor(article.title, article.photographer);
 
   return (
     <Link href={article.href} className={styles.card}>
@@ -118,6 +133,12 @@ export function ArticleCard({
         />
         <h3 className={titleClass}>
           <span className={styles.titleText}>{article.title}</span>
+          {credit && (
+            <span className={styles.titleCredit}>
+              <span className={styles.srOnly}>Photographed by </span>
+              {credit}
+            </span>
+          )}
         </h3>
         {article.description && (
           <p className={styles.description}>{article.description}</p>
