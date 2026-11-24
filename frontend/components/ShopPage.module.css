@@ -20,23 +20,15 @@
 
 /* Product grid */
 
+/* Capped to the banner's 880px column so the single Residence card sits
+   under the "Store" title instead of stranded at the left of a wide grid. */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   column-gap: 24px;
   row-gap: 64px;
-}
-
-@media (min-width: 2560px) {
-  .grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-@media (min-width: 1920px) and (max-width: 2559.98px) {
-  .grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  max-width: 880px;
+  margin: 0 auto;
 }
 
 .card {
@@ -107,12 +99,6 @@
 
 .card:hover .cardCtaArrow {
   transform: translateX(4px);
-}
-
-@media (max-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (max-width: 640px) {
