@@ -59,7 +59,9 @@
   column-gap: 0.18em;
   row-gap: 0.04em;
   font-family: var(--font-display), Impact, sans-serif;
-  font-size: clamp(40px, 1rem + 5vw, 120px);
+  /* Big enough to read as a wall, small enough that the wall and the
+     cards it controls fit one screen, so a click visibly does something. */
+  font-size: clamp(32px, 0.75rem + 2.6vw, 72px);
   /* Hang the highlighter padding into the gutter so the caps line up
      with the label and the cards. */
   margin-left: -0.1em;
@@ -93,18 +95,19 @@
   white-space: nowrap;
   padding: 0 0.1em 0.1em;
   border-radius: var(--radius);
-  opacity: 0.28;
-  transition: opacity 150ms ease-out;
+  /* Inactive words in grey, not faded: #858585 is 3.3:1 on --bg, enough
+     for type this large (the 28% fade was about 2:1). */
+  color: #858585;
+  transition: color 150ms ease-out;
 }
 
-.tab:focus-visible .word,
-.tab[aria-selected="true"] .word {
-  opacity: 1;
+.tab:focus-visible .word {
+  color: var(--text);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .tab:hover .word {
-    opacity: 1;
+    color: var(--text);
   }
 }
 

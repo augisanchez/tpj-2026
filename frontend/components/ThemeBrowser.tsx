@@ -22,7 +22,6 @@ const OUT_MS = 150;
 const IN_MS = 520;
 const IN_STEP_MS = 60;
 const IN_SHIFT = "24px";
-const HOVER_INTENT_MS = 150;
 const EASE_IN = "cubic-bezier(0.7, 0, 0.84, 0)";
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -61,7 +60,6 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
   const shownRef = useRef(shownSlug);
   const targetRef = useRef(shownSlug);
   const outTimer = useRef(0);
-  const hoverTimer = useRef(0);
   const entering = useRef(false);
   const mounted = useRef(false);
 
@@ -145,7 +143,6 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
   useEffect(
     () => () => {
       window.clearTimeout(outTimer.current);
-      window.clearTimeout(hoverTimer.current);
     },
     [],
   );
@@ -166,14 +163,6 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
     tabRefs.current.get(slug)?.focus();
   };
 
-  // Fine pointers: resting on a word briefly selects it, so a sweep
-  // across the wall previews each theme.
-  const onPointerEnter = (e: React.PointerEvent, slug: string) => {
-    if (e.pointerType !== "mouse") return;
-    window.clearTimeout(hoverTimer.current);
-    hoverTimer.current = window.setTimeout(() => select(slug), HOVER_INTENT_MS);
-  };
-  const onPointerLeave = () => window.clearTimeout(hoverTimer.current);
 
   return (
     <section className={styles.section}>
@@ -182,7 +171,7 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
           Themes
         </h2>
         <Link href="/themes" className={styles.exploreLink} data-reveal>
-          View all {THEMES.length}
+          Explore themes
           <span className={styles.exploreArrow} aria-hidden="true">
             →
           </span>
@@ -214,8 +203,6 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
               className={styles.tab}
               onClick={() => select(theme.slug)}
               onKeyDown={(e) => onKeyDown(e, index)}
-              onPointerEnter={(e) => onPointerEnter(e, theme.slug)}
-              onPointerLeave={onPointerLeave}
             >
               <span className={styles.word}>
                 {theme.name}
