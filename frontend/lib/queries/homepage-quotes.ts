@@ -69,13 +69,16 @@ export async function fetchHomepageQuotes(
       if (!quote) return null;
       const fi = node.featuredImage?.node;
       const src = fi ? rewriteMediaUrl(fi.sourceUrl) : null;
+      // The homepage quote block is built around its photograph; an
+      // interview without one never makes the homepage.
+      if (!src) return null;
       const title = decodeHtmlEntities(node.title);
       return {
         id: node.id,
         slug: node.slug,
         attribution: title,
         quote,
-        image: src ? { src, alt: fi?.altText || title } : null,
+        image: { src, alt: fi?.altText || title },
       };
     })
     .filter((q): q is InterviewQuote => q !== null);
