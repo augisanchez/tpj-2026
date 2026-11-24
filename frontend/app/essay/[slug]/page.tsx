@@ -115,9 +115,11 @@ export default async function EssayPage({ params }: Props) {
         <AboutPhotographerSection photographers={essay.photographers} />
       )}
 
-      <RelatedStrip label="Related stories" stories={related} />
-
+      {/* Band before the strip: the footer is acid too, and two acid
+          blocks must never touch. */}
       <SubmitBand />
+
+      <RelatedStrip label="Related stories" stories={related} />
     </>
   );
 }

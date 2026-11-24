@@ -11,9 +11,6 @@
   background: var(--acid);
   color: var(--acid-ink);
   text-decoration: none;
-  /* The footer is acid too: a strip of page ground keeps the band (one
-     link) from reading as the top of the footer. */
-  margin-bottom: var(--space-element);
 }
 
 .line {
