@@ -81,5 +81,10 @@ export async function fetchHomepageQuotes(
         image: { src, alt: fi?.altText || title },
       };
     })
-    .filter((q): q is InterviewQuote => q !== null);
+    .filter((q): q is InterviewQuote => q !== null)
+    // Random order per render (ISR), so the page shows a different
+    // interview after each revalidation.
+    .map((q) => ({ q, k: Math.random() }))
+    .sort((a, b) => a.k - b.k)
+    .map(({ q }) => q);
 }

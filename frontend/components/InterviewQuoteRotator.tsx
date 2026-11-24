@@ -16,7 +16,8 @@ type Props = {
 
 export function InterviewQuoteRotator({ quotes }: Props) {
   if (quotes.length === 0) return null;
-  const pick = quotes[Math.floor(Math.random() * quotes.length)];
+  // The query returns quotes in random order; render the first.
+  const pick = quotes[0];
 
   return (
     <section className={styles.section} aria-label="Interview excerpt">
