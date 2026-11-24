@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { AnimatePresence, motion, type Variants } from "motion/react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArticleCard } from "./ArticleCard";
 import { ThemeThumbnail } from "./ThemeThumbnail";
 import { THEMES } from "@/lib/themes";
@@ -17,103 +16,189 @@ type Props = {
   counts?: Record<string, number>;
 };
 
-// Variants for the chip-swap animation. AnimatePresence (mode="wait")
-// drives the sequence:
-//   1. Active group's cards run their exit variant (stagger from last
-//      to first, ~50ms apart).
-//   2. New group mounts; its cards run the visible variant (stagger
-//      from first to last, ~100ms apart, larger lift).
-// On first mount the cards also use the visible variant — same
-// cascade effect the site's reveal system provides elsewhere, but driven
-// here so chip-swap exit can share the same vocabulary.
-// Tuned so a full chip-swap (exit-then-enter via mode="wait") lands
-// just under a second. Exit is intentionally tighter than enter —
-// the outgoing cards are leaving, not the focus; the new set is.
-const containerVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.07,
-      delayChildren: 0.02,
-    },
-  },
-  exit: {
-    transition: {
-      staggerChildren: 0.04,
-      staggerDirection: -1,
-    },
-  },
-};
+// Story swap: outgoing cards fade fast, then the new set rises in from
+// the right (sequences move left), staggered in reading order.
+const OUT_MS = 150;
+const IN_MS = 520;
+const IN_STEP_MS = 60;
+const IN_SHIFT = "24px";
+const HOVER_INTENT_MS = 150;
+const EASE_IN = "cubic-bezier(0.7, 0, 0.84, 0)";
+const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
-const cardVariants: Variants = {
-  hidden: { opacity: 1 },
-  visible: { opacity: 1 },
-  exit: {
-    opacity: 0,
-    transition: { duration: 0.2, ease: [0.4, 0, 1, 1] },
-  },
-};
+const PANEL_ID = "theme-panel";
+const tabId = (slug: string) => `theme-tab-${slug}`;
+
+function reducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function Cards({ essays }: { essays: RecentEssay[]; }) {
+  return essays.map((essay) => (
+    <div key={essay.id}>
+      <ArticleCard
+        variant="3up"
+        article={{
+          title: essay.title,
+          date: essay.date,
+          href: `/essay/${essay.slug}`,
+          contentTypeLabel: "Photo Essay",
+        }}
+      />
+    </div>
+  ));
+}
 
 export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
+  // activeSlug drives the tabs; shownSlug drives the panel, and trails
+  // activeSlug by the outgoing fade.
   const [activeSlug, setActiveSlug] = useState(THEMES[0].slug);
-  const cards = groups[activeSlug] ?? [];
-  const activeCount = counts[activeSlug] ?? 0;
+  const [shownSlug, setShownSlug] = useState(THEMES[0].slug);
+
+  const listRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
+  const panelRef = useRef<HTMLDivElement>(null);
+  const shownRef = useRef(shownSlug);
+  const targetRef = useRef(shownSlug);
+  const outTimer = useRef(0);
+  const hoverTimer = useRef(0);
+  const entering = useRef(false);
+  const mounted = useRef(false);
+
+  const cards = groups[shownSlug] ?? [];
+  const activeCount = counts[shownSlug] ?? 0;
   const remaining = activeCount - cards.length;
-  const tileImages = (extras[activeSlug] ?? [])
+  const tileImages = (extras[shownSlug] ?? [])
     .map((e) => (e.featuredImage ? { src: e.featuredImage.src, alt: "" } : null))
     .filter((i): i is { src: string; alt: string } => i !== null)
     .slice(0, 4);
-  const tabRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
 
-  // ARIA APG tablist keyboard pattern: ArrowLeft/Right move focus
-  // between tabs and activate the focused tab (selection follows
-  // focus). Home/End jump to the first/last tab.
-  const handleTabKeyDown = (
-    e: React.KeyboardEvent<HTMLButtonElement>,
-    index: number
-  ) => {
-    if (
-      e.key !== "ArrowRight" &&
-      e.key !== "ArrowLeft" &&
-      e.key !== "Home" &&
-      e.key !== "End"
-    ) {
+  const panelItems = () =>
+    [...(panelRef.current?.children ?? [])] as HTMLElement[];
+
+  const enter = () => {
+    panelItems().forEach((el, i) => {
+      el.getAnimations().forEach((a) => a.cancel());
+      // A freshly mounted slot (e.g. the count tile returning) is new to
+      // the reveal system; mark it shown so its rise never stacks on ours.
+      if (!el.classList.contains("rv-in")) el.classList.add("rv-in", "rv-instant");
+      el.animate(
+        [
+          { opacity: 0, transform: `translateX(${IN_SHIFT})` },
+          { opacity: 1, transform: "none" },
+        ],
+        { duration: IN_MS, delay: i * IN_STEP_MS, easing: EASE_OUT, fill: "backwards" },
+      );
+    });
+  };
+
+  const select = (slug: string) => {
+    setActiveSlug(slug);
+    targetRef.current = slug;
+    if (reducedMotion()) {
+      shownRef.current = slug;
+      setShownSlug(slug);
       return;
     }
-    e.preventDefault();
-    const len = THEMES.length;
-    let nextIndex = index;
-    if (e.key === "ArrowRight") nextIndex = (index + 1) % len;
-    else if (e.key === "ArrowLeft") nextIndex = (index - 1 + len) % len;
-    else if (e.key === "Home") nextIndex = 0;
-    else if (e.key === "End") nextIndex = len - 1;
-    const nextSlug = THEMES[nextIndex].slug;
-    setActiveSlug(nextSlug);
-    tabRefs.current.get(nextSlug)?.focus();
+    // A fade is already running: it lands on whatever is chosen last.
+    if (outTimer.current || slug === shownRef.current) return;
+    panelItems().forEach((el) => {
+      // Single keyframe: fades from wherever a running entrance has got to.
+      el.animate([{ opacity: 0 }], { duration: OUT_MS, easing: EASE_IN, fill: "forwards" });
+    });
+    outTimer.current = window.setTimeout(() => {
+      outTimer.current = 0;
+      const next = targetRef.current;
+      if (next === shownRef.current) {
+        enter();
+        return;
+      }
+      shownRef.current = next;
+      entering.current = true;
+      setShownSlug(next);
+    }, OUT_MS);
   };
+
+  useLayoutEffect(() => {
+    if (!entering.current) return;
+    entering.current = false;
+    enter();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shownSlug]);
+
+  // Phones: keep the active word in view in the scrolling row.
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    const list = listRef.current;
+    const tab = tabRefs.current.get(activeSlug);
+    if (!list || !tab || list.scrollWidth <= list.clientWidth) return;
+    const pad = parseFloat(getComputedStyle(list).scrollPaddingInlineStart) || 0;
+    const left = tab.offsetLeft - pad;
+    const right = tab.offsetLeft + tab.offsetWidth + pad;
+    if (left >= list.scrollLeft && right <= list.scrollLeft + list.clientWidth) return;
+    list.scrollTo({ left, behavior: reducedMotion() ? "auto" : "smooth" });
+  }, [activeSlug]);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(outTimer.current);
+      window.clearTimeout(hoverTimer.current);
+    },
+    [],
+  );
+
+  // ARIA APG tablist: arrows move focus and select (selection follows
+  // focus); Home/End jump to the ends.
+  const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const len = THEMES.length;
+    let next: number;
+    if (e.key === "ArrowRight") next = (index + 1) % len;
+    else if (e.key === "ArrowLeft") next = (index - 1 + len) % len;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = len - 1;
+    else return;
+    e.preventDefault();
+    const slug = THEMES[next].slug;
+    select(slug);
+    tabRefs.current.get(slug)?.focus();
+  };
+
+  // Fine pointers: resting on a word briefly selects it, so a sweep
+  // across the wall previews each theme.
+  const onPointerEnter = (e: React.PointerEvent, slug: string) => {
+    if (e.pointerType !== "mouse") return;
+    window.clearTimeout(hoverTimer.current);
+    hoverTimer.current = window.setTimeout(() => select(slug), HOVER_INTENT_MS);
+  };
+  const onPointerLeave = () => window.clearTimeout(hoverTimer.current);
 
   return (
     <section className={styles.section}>
       <div className={styles.header}>
-        <div className={styles.headerTop}>
-          <h2 className={styles.title} data-reveal="lines">Explore by Theme</h2>
-          <Link href="/themes" className={styles.exploreLink} data-reveal>
-            View all {THEMES.length}
-            <span className={styles.exploreArrow} aria-hidden="true">
-              →
-            </span>
-          </Link>
-        </div>
+        <h2 id="themes-label" className={styles.label} data-reveal>
+          Themes
+        </h2>
+        <Link href="/themes" className={styles.exploreLink} data-reveal>
+          View all {THEMES.length}
+          <span className={styles.exploreArrow} aria-hidden="true">
+            →
+          </span>
+        </Link>
       </div>
 
       <div
-        className={`${styles.chipRow} ${styles.desktopOnly}`}
-        data-reveal-children
+        ref={listRef}
+        className={styles.list}
         role="tablist"
-        aria-label="Themes"
+        aria-labelledby="themes-label"
+        data-reveal-children
       >
         {THEMES.map((theme, index) => {
           const isActive = theme.slug === activeSlug;
+          const count = counts[theme.slug];
           return (
             <button
               key={theme.slug}
@@ -122,68 +207,47 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
               }}
               type="button"
               role="tab"
-              id={`theme-tab-${theme.slug}`}
+              id={tabId(theme.slug)}
               aria-selected={isActive}
-              aria-controls={`theme-panel-${theme.slug}`}
+              aria-controls={PANEL_ID}
               tabIndex={isActive ? 0 : -1}
-              className={`${styles.chip}${isActive ? " " + styles.chipActive : ""}`}
-              onClick={() => setActiveSlug(theme.slug)}
-              onKeyDown={(e) => handleTabKeyDown(e, index)}
+              className={styles.tab}
+              onClick={() => select(theme.slug)}
+              onKeyDown={(e) => onKeyDown(e, index)}
+              onPointerEnter={(e) => onPointerEnter(e, theme.slug)}
+              onPointerLeave={onPointerLeave}
             >
-              {theme.name}
-              {counts[theme.slug] ? (
-                <span className={styles.chipCount}>{counts[theme.slug]}</span>
-              ) : null}
+              <span className={styles.word}>
+                {theme.name}
+                {count ? (
+                  <span className={styles.count}>
+                    <span className={styles.srOnly}>, </span>
+                    {count}
+                    <span className={styles.srOnly}> articles</span>
+                  </span>
+                ) : null}
+              </span>
             </button>
           );
         })}
       </div>
 
-      <span className={`${styles.selectWrap} ${styles.mobileOnly}`}>
-        <select
-          className={styles.select}
-          value={activeSlug}
-          onChange={(e) => setActiveSlug(e.target.value)}
-          aria-label="Choose a theme"
-        >
-          {THEMES.map((theme) => (
-            <option key={theme.slug} value={theme.slug}>
-              {theme.name}
-              {counts[theme.slug] ? ` ${counts[theme.slug]}` : ""}
-            </option>
-          ))}
-        </select>
-        <svg
-          className={styles.selectChevron}
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
-            fill="currentColor"
-          />
-        </svg>
-      </span>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeSlug}
-          id={`theme-panel-${activeSlug}`}
+      {/* The live panel shares one grid cell with an invisible copy of
+          every theme's cards, so the stage is always as tall as the
+          tallest set and swapping never moves the page. */}
+      <div className={styles.stage}>
+        <div
+          ref={panelRef}
+          id={PANEL_ID}
           role="tabpanel"
-          aria-labelledby={`theme-tab-${activeSlug}`}
+          aria-labelledby={tabId(activeSlug)}
           className={styles.cards}
           data-reveal-children
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          exit="exit"
-          viewport={{ once: true, amount: 0.1 }}
         >
-          {cards.map((essay) => (
-            <motion.div key={essay.id} variants={cardVariants}>
+          {cards.map((essay, i) => (
+            // Keyed by slot so the elements persist across swaps and the
+            // reveal system treats them as already shown.
+            <div key={i}>
               <ArticleCard
                 variant="3up"
                 article={{
@@ -194,25 +258,30 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
                   featuredImage: essay.featuredImage ?? undefined,
                 }}
               />
-            </motion.div>
+            </div>
           ))}
           {remaining > 0 && (
-            <motion.div key="more" variants={cardVariants}>
+            <div key="more">
               <Link
-                href={`/theme/${activeSlug}`}
+                href={`/theme/${shownSlug}`}
                 className={styles.moreTile}
                 data-pz
-                aria-label={`${activeCount} articles`}
+                aria-label={`All ${activeCount} articles`}
               >
                 <div className="pz-media" style={{ position: "absolute", inset: 0 }}>
                   <ThemeThumbnail images={tileImages} fillParent />
                 </div>
                 <span className={styles.moreCount}>+{remaining}</span>
               </Link>
-            </motion.div>
+            </div>
           )}
-        </motion.div>
-      </AnimatePresence>
+        </div>
+        {THEMES.map((theme) => (
+          <div key={theme.slug} className={`${styles.cards} ${styles.sizer}`} aria-hidden="true" inert>
+            <Cards essays={groups[theme.slug] ?? []} />
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

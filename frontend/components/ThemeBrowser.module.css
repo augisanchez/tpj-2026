@@ -2,25 +2,28 @@
   padding: 0 var(--gutter);
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  align-items: flex-start;
+  gap: 24px;
   width: 100%;
+  box-sizing: border-box;
 }
 
+/* Small section label on the left, the index link on the right. The
+   theme words below are the headline. */
 .header {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-/* Title row: link sits immediately to the right of the title, sharing
-   the typographic baseline. The display title is large enough that
-   pushing the link to the far edge of the section looked isolated. */
-.headerTop {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 16px;
+.label {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .exploreLink {
@@ -30,7 +33,6 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text);
-  text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -48,124 +50,112 @@
   }
 }
 
-.title {
-  font-family: var(--font-display), Impact, sans-serif;
-  font-weight: 700;
-  font-size: clamp(28px, 1rem + 1.8vw, 80px); /* caps ~3556 */
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  margin: 0;
-}
-
-
-.chipRow {
+/* The directory wall: every theme name as one run of display words.
+   Nothing here clips; the words keep their full glyph boxes. */
+.list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 0;
+  align-items: flex-start;
+  column-gap: 0.18em;
+  row-gap: 0.04em;
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: clamp(40px, 1rem + 5vw, 120px);
+  /* Hang the highlighter padding into the gutter so the caps line up
+     with the label and the cards. */
+  margin-left: -0.1em;
 }
 
-.chip {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.04em;
+.tab {
+  font: inherit;
   color: var(--text);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 8px 16px;
-  text-decoration: none;
-  transition: background-color 150ms ease-out, border-color 150ms ease-out,
-    color 150ms ease-out;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  /* Flex, so the button adds no line box of its own around the word. */
+  display: inline-flex;
+  border-radius: var(--radius);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The word is the visible block: dimmed at rest, full ink on hover or
+   focus, and set on an acid highlighter when active. Uppercase Oswald
+   has no descenders, so the padding balances the space above the caps
+   against the space below the baseline. */
+.word {
+  display: inline-flex;
+  align-items: flex-start;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
   white-space: nowrap;
+  padding: 0 0.1em 0.1em;
+  border-radius: var(--radius);
+  opacity: 0.28;
+  transition: opacity 150ms ease-out;
 }
 
-.chipCount {
-  margin-left: 6px;
-  font-weight: 500;
-  /* --muted on --bg is 4.6:1 (AA); the active chip uses its own text colour. */
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.chipActive .chipCount {
-  color: inherit;
-  opacity: 0.8;
+.tab:focus-visible .word,
+.tab[aria-selected="true"] .word {
+  opacity: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .chip:hover {
-    border-color: var(--text);
-  }
-  .chipActive:hover {
-    border-color: var(--text);
-    background: var(--text);
-    color: var(--bg);
+  .tab:hover .word {
+    opacity: 1;
   }
 }
 
-.chipActive {
-  background: var(--text);
-  color: var(--bg);
-  border-color: var(--text);
+.tab[aria-selected="true"] .word {
+  background: var(--acid);
+  color: var(--acid-ink);
+}
+
+/* Article count as a superscript numeral, top-aligned to the caps. */
+.count {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: clamp(12px, 0.5rem + 0.45vw, 18px);
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  margin: 0.55em 0 0 0.3em;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Live panel and the invisible per-theme sizers share one cell. */
+.stage {
+  display: grid;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.stage > * {
+  grid-area: 1 / 1;
+}
+
+.sizer {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   column-gap: var(--space-element);
   row-gap: 56px;
-  width: 100%;
-  margin-top: 8px;
-}
-
-.selectWrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.select {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 10px 36px 10px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  min-width: 220px;
-}
-
-.select:focus {
-  border-color: var(--text);
-}
-
-.select:focus:not(:focus-visible) {
-  outline: none;
-}
-
-.selectChevron {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: var(--text);
-}
-
-.desktopOnly {
-  display: flex;
-}
-
-.mobileOnly {
-  display: none;
+  align-content: start;
 }
 
 /* Count tile: a 2×2 mosaic of more covers from the theme with the
@@ -213,33 +203,45 @@
 
 @media (max-width: 1024px) {
   .cards {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
-  .section {
-    gap: 24px;
-  }
   .cards {
-    grid-template-columns: 1fr;
-    column-gap: var(--space-element);
+    grid-template-columns: minmax(0, 1fr);
     row-gap: 48px;
   }
 }
 
+/* Phones: one scrolling row of words, bleeding to the screen edges.
+   The vertical padding keeps glyphs and the focus ring inside the
+   scroll container, which clips on both axes once it scrolls. */
 @media (max-width: 640px) {
-  .desktopOnly {
+  .list {
+    flex-wrap: nowrap;
+    column-gap: 0.28em;
+    font-size: 40px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+    margin: -8px calc(-1 * var(--gutter));
+    padding: 8px var(--gutter);
+    position: relative;
+  }
+
+  .list::-webkit-scrollbar {
     display: none;
   }
-  .mobileOnly {
-    display: inline-flex;
-  }
-}
 
-/* iOS zooms the page when a field under 16px is focused (audit M16). */
-@media (max-width: 768px) {
-  .select {
-    font-size: 16px;
+  .tab {
+    flex: none;
+    scroll-snap-align: start;
+  }
+
+  .stage {
+    margin-top: 8px;
   }
 }
