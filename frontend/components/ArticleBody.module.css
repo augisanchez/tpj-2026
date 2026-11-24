@@ -56,6 +56,19 @@
   line-height: 1.55;
 }
 
+/* Model, styling and other credits carried over from the legacy
+   end-of-article block. Small Inter, like the other credit lines. */
+.body p:global(.article-credits) {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-caption);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.body p:global(.article-credits) a {
+  color: inherit;
+}
+
 .body blockquote {
   font-family: var(--font-serif), Georgia, serif;
   font-style: italic;

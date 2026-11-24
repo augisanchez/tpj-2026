@@ -170,12 +170,64 @@ export function resolveArticlePhotographers(input: {
   return names.map(buildPhantomPhotographer);
 }
 
+/** A credit line: "Model:", "Styling:", "Hair & Makeup:", "Assistance & Moral Support:"... */
+const CREDIT_LINE =
+  /^(?:credits?\s*:?\s*)?(?:models?|muses?|styl(?:ing|ist|ists|ed by)|hair|make-?up|mua|wardrobe|assist(?:ant|ants|ance|ed by)?|casting|retouch(?:ing|er)?|(?:art |creative )?direction|creative director|art director|producers?|production|grooming|set design|nails|jewel(?:le)?ry|special thanks|thanks to|featuring|locations?|clothing|shot on)\b[^:]{0,40}:/i;
+
+const BLOCK_BREAK =
+  /<\/?(?:p|div|h[1-6]|li|ul|ol|blockquote|figure|section|span)\b[^>]*>|<br\s*\/?>/gi;
+
+function creditText(segment: string): string {
+  return segment
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Keep only links (href) from a credit segment; drop unbalanced markup. */
+function cleanCreditHtml(segment: string): string {
+  const kept = segment
+    .replace(/<a\b[^>]*?href\s*=\s*("[^"]*"|'[^']*')[^>]*>/gi, '<a href=$1 target="_blank" rel="noopener">')
+    .replace(/<(?!\/?a\b)[^>]+>/gi, "")
+    .replace(/&nbsp;|&#160;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const opens = (kept.match(/<a\b/gi) ?? []).length;
+  const closes = (kept.match(/<\/a>/gi) ?? []).length;
+  return opens === closes ? kept : kept.replace(/<[^>]+>/g, "");
+}
+
+/** Credit lines (model, styling, hair...) found after the legacy bio block. */
+export function extractLegacyCredits(tail: string): string[] {
+  const out: string[] = [];
+  // After a label with nothing beside it ("Models:"), the names follow
+  // on their own short lines.
+  let follow = 0;
+  for (const seg of tail.split(BLOCK_BREAK)) {
+    const text = creditText(seg);
+    if (!text) continue;
+    if (CREDIT_LINE.test(text)) {
+      out.push(cleanCreditHtml(seg));
+      follow = /:$/.test(text) ? 12 : 0;
+    } else if (follow > 0 && text.length <= 100 && !/:$/.test(text)) {
+      out.push(cleanCreditHtml(seg));
+      follow--;
+    } else {
+      follow = 0;
+    }
+  }
+  return out.filter(Boolean);
+}
+
 /**
  * Strip the legacy photographer block (everything from
  * `<div class="circletar"></div>` to end of content) so the structured
  * Photographer card at the bottom of the article isn't visually duplicated
  * by the inline blob. Only stripped when we have a linked photographer
- * to display in its place.
+ * to display in its place. Credit lines in that block (model, styling,
+ * hair...) are kept and re-added as a credits paragraph.
  */
 export function stripPhotographerBlob(html: string): string {
   const idx = html.toLowerCase().indexOf('<div class="circletar"');
@@ -185,5 +237,9 @@ export function stripPhotographerBlob(html: string): string {
     /(?:\s|<p[^>]*>\s*(?:&nbsp;| )?\s*<\/p>)+$/i,
     ""
   );
-  return html.slice(0, trimmed.length);
+  const credits = extractLegacyCredits(html.slice(idx));
+  const block = credits.length
+    ? `\n<p class="article-credits">${credits.join("<br>")}</p>`
+    : "";
+  return html.slice(0, trimmed.length) + block;
 }
