@@ -8,11 +8,10 @@
 }
 
 .heading {
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
+  font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
   font-weight: 400;
   font-size: var(--text-intro);
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--muted);
   max-width: 60ch;
   margin: 0;

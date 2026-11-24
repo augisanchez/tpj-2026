@@ -176,8 +176,8 @@ export default async function Home() {
     });
   }
 
-  // Slide 3: featured photographer. Name, the start of their bio, and a
-  // cover from their latest work, linking to their profile. With nobody
+  // Slide 3: featured photographer. Name, the start of their bio, and
+  // their portrait (or a cover from their work), linking to their profile. With nobody
   // flagged, fall back to the latest article of a different content type
   // than slide 1.
   if (featuredPhotographer) {
@@ -188,6 +188,8 @@ export default async function Home() {
       title: featuredPhotographer.name,
       excerpt: summarize(featuredPhotographer.bio, 220),
       backgroundImage: featuredPhotographer.image ?? undefined,
+      // Portraits are mostly upright head-and-shoulders: keep the face in frame.
+      imageFocus: "50% 22%",
     });
   } else if (heroArticle) {
     const fallback = articles.find((a) => a.contentType !== heroArticle.contentType);

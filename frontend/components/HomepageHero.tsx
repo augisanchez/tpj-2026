@@ -16,6 +16,8 @@ type Props = {
   excerpt?: string;
   photographerName?: string | null;
   backgroundImage?: { src: string; alt: string };
+  /** CSS object-position for the image, e.g. "50% 25%" to keep a face in frame. */
+  imageFocus?: string;
   /** Fill a parent frame (carousel) instead of drawing its own rounded card. */
   fill?: boolean;
   /** Only the first slide's image should load eagerly. */
@@ -30,6 +32,7 @@ export function HomepageHero({
   excerpt,
   photographerName,
   backgroundImage,
+  imageFocus,
   fill = false,
   priority = true,
 }: Props) {
@@ -56,7 +59,10 @@ export function HomepageHero({
         style={{ "--pz-range": "1%" } as React.CSSProperties}
       >
         {backgroundImage && (
-          <div className={`${styles.imageWrap} pz-media`}>
+          <div
+            className={`${styles.imageWrap} pz-media`}
+            style={imageFocus ? ({ "--hero-focus": imageFocus } as React.CSSProperties) : undefined}
+          >
             <TpjImage
               src={backgroundImage.src}
               alt={backgroundImage.alt}

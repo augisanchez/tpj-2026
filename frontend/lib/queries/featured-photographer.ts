@@ -38,7 +38,7 @@ export type FeaturedPhotographer = {
   name: string;
   slug: string;
   bio: string;
-  /** Cover of their most recent work, else their portrait. */
+  /** Their portrait, else the cover of their most recent work. */
   image: { src: string; alt: string } | null;
 };
 
@@ -50,16 +50,20 @@ export async function fetchFeaturedPhotographer(): Promise<FeaturedPhotographer 
   const raw = data.featuredPhotographers?.[0];
   if (!raw) return null;
 
-  const work = await fetchPhotographerArticles(raw.slug).catch(() => null);
-  const cover = work?.articles.find((a) => a.featuredImage)?.featuredImage ?? null;
   const portraitSrc = rewriteMediaUrl(
     raw.featuredImage?.node?.sourceUrl ?? raw.tpjPortraitUrl ?? null
   );
+  // Only look up their work when there's no portrait to show.
+  const cover = portraitSrc
+    ? null
+    : (await fetchPhotographerArticles(raw.slug).catch(() => null))?.articles.find(
+        (a) => a.featuredImage
+      )?.featuredImage ?? null;
 
   return {
     name: raw.title,
     slug: raw.slug,
     bio: raw.content ? htmlToPlainText(raw.content) : "",
-    image: cover ?? (portraitSrc ? { src: portraitSrc, alt: raw.title } : null),
+    image: portraitSrc ? { src: portraitSrc, alt: raw.title } : cover,
   };
 }
