@@ -2,6 +2,23 @@
   padding: 8px 32px 0;
 }
 
+/* Inside the carousel frame: fill it, no own corners or ratio. */
+.fillOuter {
+  position: absolute;
+  inset: 0;
+}
+
+.card.fillCard {
+  height: 100%;
+  aspect-ratio: auto;
+  max-height: none;
+  border-radius: 0;
+}
+
+.card.fillCard::after {
+  border-radius: 0;
+}
+
 .card {
   position: relative;
   display: block;
@@ -85,7 +102,7 @@
   font-size: clamp(48px, 1.5rem + 2.8vw, 160px);
   line-height: 0.88;
   letter-spacing: -0.025em;
-  margin: 0;
+  margin: 0 0 12px;
   max-width: 14ch;
   text-wrap: balance;
 }
@@ -130,6 +147,7 @@
   }
   .title {
     font-size: 48px;
+    margin-bottom: 8px;
   }
   .subtitle {
     display: none;

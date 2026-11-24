@@ -20,6 +20,10 @@ type Props = {
   excerpt?: string;
   photographerName?: string | null;
   backgroundImage?: { src: string; alt: string };
+  /** Fill a parent frame (carousel) instead of drawing its own rounded card. */
+  fill?: boolean;
+  /** Only the first slide's image should load eagerly. */
+  priority?: boolean;
 };
 
 export function HomepageHero({
@@ -30,6 +34,8 @@ export function HomepageHero({
   excerpt,
   photographerName,
   backgroundImage,
+  fill = false,
+  priority = true,
 }: Props) {
   const formattedDate = date
     ? new Date(date).toLocaleDateString(undefined, {
@@ -46,10 +52,10 @@ export function HomepageHero({
         : formattedDate;
 
   return (
-    <div className={styles.outer}>
+    <div className={fill ? styles.fillOuter : styles.outer}>
       <MotionLink
         href={href}
-        className={styles.card}
+        className={`${styles.card}${fill ? " " + styles.fillCard : ""}`}
         initial="rest"
         animate="rest"
         whileHover="hover"
@@ -64,7 +70,7 @@ export function HomepageHero({
               src={backgroundImage.src}
               alt={backgroundImage.alt}
               sizes="100vw"
-              priority
+              priority={priority}
               className={styles.image}
             />
           </motion.div>

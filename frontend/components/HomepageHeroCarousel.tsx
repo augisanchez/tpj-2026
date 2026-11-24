@@ -33,25 +33,41 @@ const DEFAULT_INTERVAL = 7000;
 const SWIPE_DISTANCE = 60;
 const SWIPE_VELOCITY = 0.3;
 
-// Direction-aware slide variants: incoming slide flies in from the
-// side matching the navigation direction, outgoing slide flies away
-// to the opposite side. 1 = next, -1 = prev. Subtle 36px translate
-// keeps the motion editorial rather than aggressive.
+// Reveal transition inside a fixed frame. The current slide slides
+// fully out over the next one (with a soft shadow on its trailing
+// edge); the next slide waits underneath, slightly zoomed and offset,
+// and settles forward into place. No opacity, so the page background
+// never shows through. 1 = next, -1 = prev.
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const EASE_IN_OUT: [number, number, number, number] = [0.65, 0, 0.35, 1];
+
 const slideVariants: Variants = {
   enter: (direction: number) => ({
-    opacity: 0,
-    x: direction > 0 ? 36 : -36,
+    x: direction > 0 ? "6%" : "-6%",
+    scale: 1.06,
+    zIndex: 1,
+    boxShadow: "0 0 0 rgba(0,0,0,0)",
   }),
   active: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.55, ease: [0.2, 0.6, 0.2, 1] },
+    x: "0%",
+    scale: 1,
+    zIndex: 1,
+    boxShadow: "0 0 0 rgba(0,0,0,0)",
+    transition: { duration: 1.1, ease: EASE_OUT },
   },
   exit: (direction: number) => ({
-    opacity: 0,
-    x: direction > 0 ? -36 : 36,
-    transition: { duration: 0.35, ease: [0.4, 0, 1, 1] },
+    x: direction > 0 ? "-100%" : "100%",
+    scale: 1,
+    zIndex: 2,
+    boxShadow: direction > 0 ? "40px 0 80px rgba(0,0,0,0.45)" : "-40px 0 80px rgba(0,0,0,0.45)",
+    transition: { duration: 0.85, ease: EASE_IN_OUT },
   }),
+};
+
+const instant: Variants = {
+  enter: { x: 0, scale: 1, zIndex: 1 },
+  active: { x: 0, scale: 1, zIndex: 1, transition: { duration: 0 } },
+  exit: { x: 0, zIndex: 0, transition: { duration: 0 } },
 };
 
 /**
@@ -60,8 +76,9 @@ const slideVariants: Variants = {
  *   2. From the archive (a piece >2 years old)
  *   3. Staff pick (editor-flagged)
  *
- * Each slide is a full HomepageHero swap; the chip label tells the
- * visitor why this slide is here. Auto-advances on a timer, pauses
+ * The carousel owns the rounded frame; each slide is a HomepageHero in
+ * fill mode that moves inside it. The chip label tells the visitor why
+ * this slide is here. Auto-advances on a timer, pauses
  * on hover/focus, and respects prefers-reduced-motion (renders the
  * first slide statically — no rotation).
  *
@@ -97,6 +114,18 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
     }, intervalMs);
     return () => window.clearInterval(id);
   }, [slides.length, intervalMs, paused, reducedMotion]);
+
+  // Preload every slide's image so the one underneath is ready before
+  // it's revealed.
+  useEffect(() => {
+    for (const s of slides) {
+      if (s.backgroundImage?.src) {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = s.backgroundImage.src;
+      }
+    }
+  }, [slides]);
 
   // Swipe gestures for touch + pointer drag. Crossing 60px of drag
   // distance OR 0.3 velocity in either direction advances. Vertical
@@ -137,17 +166,18 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
       {...bindDrag()}
       style={{ touchAction: "pan-y" }}
     >
-      <AnimatePresence mode="wait" initial={false} custom={direction}>
+      <div className={styles.frame}>
+      <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={activeKey}
           custom={direction}
-          variants={slideVariants}
+          variants={reducedMotion ? instant : slideVariants}
           initial="enter"
           animate="active"
           exit="exit"
           className={styles.slide}
         >
-          <HomepageHero {...activeHeroProps} />
+          <HomepageHero {...activeHeroProps} fill priority={index === 0} />
         </motion.div>
       </AnimatePresence>
 
@@ -171,6 +201,7 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
             />
           );
         })}
+      </div>
       </div>
     </div>
   );

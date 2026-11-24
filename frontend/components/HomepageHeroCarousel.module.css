@@ -1,9 +1,24 @@
+/* The carousel owns the rounded frame; slides move inside it. Same
+   insets, ratio and corners as a standalone HomepageHero. */
 .carousel {
+  padding: 8px 32px 0;
+}
+
+.frame {
   position: relative;
+  width: 100%;
+  aspect-ratio: 1376 / 720;
+  max-height: calc(100svh - 96px);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--hero-bg);
+  isolation: isolate;
 }
 
 .slide {
-  width: 100%;
+  position: absolute;
+  inset: 0;
+  will-change: transform;
 }
 
 .dots {
@@ -11,7 +26,7 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 4;
+  z-index: 10;
   display: flex;
   gap: 8px;
   padding: 6px 12px;
@@ -42,6 +57,13 @@
 }
 
 @media (max-width: 640px) {
+  .carousel {
+    padding: 4px 16px 0;
+  }
+  .frame {
+    aspect-ratio: 4 / 5;
+    border-radius: 16px;
+  }
   .dots {
     bottom: 16px;
   }
