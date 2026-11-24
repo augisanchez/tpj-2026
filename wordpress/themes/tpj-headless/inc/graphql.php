@@ -422,15 +422,6 @@ add_action( 'graphql_register_types', function () {
 			'description' => 'Image shown at the top of the article. Falls back through `_tpj_hero_image_id` → v1 `header_image` → `_thumbnail_id` (WP featured). Use this on detail pages instead of `featuredImage` so v1 archive renders the correct hero crop.',
 			'resolve'     => $hero_image_resolver,
 		] );
-		register_graphql_field( $type, 'staffPick', [
-			'type'        => 'Boolean',
-			'description' => 'Editorial flag set by the team to highlight a piece on the homepage hero carousel and weight it in Dive Deeper selection.',
-			'resolve'     => function ( $post ) {
-				$id = is_object( $post ) ? ( $post->ID ?? 0 ) : 0;
-				if ( $id === 0 ) return false;
-				return (bool) get_post_meta( $id, 'tpj_staff_pick', true );
-			},
-		] );
 		register_graphql_field( $type, 'photographerName', [
 			'type'        => 'String',
 			'description' => 'Display name credit, prose-formatted: "A", "A and B", or "A, B, and C" (Oxford comma). Use photographerNames for an ordered list.',
@@ -548,32 +539,28 @@ add_action( 'graphql_register_types', function () {
 		},
 	] );
 
-	// Staff-picked articles across essay/interview/feature, in
-	// random order per ISR cache. Powers the homepage hero
-	// carousel's "Staff Pick" slide and Dive Deeper's weighted
-	// featured-essay slots. The `ContentNode` return type is
-	// WPGraphQL's polymorphic interface implemented by every CPT,
-	// so the frontend uses inline fragments to read post-type-
-	// specific fields.
-	register_graphql_field( 'RootQuery', 'staffPicks', [
-		'type'        => [ 'list_of' => 'ContentNode' ],
-		'description' => 'Articles flagged as staff picks (`tpj_staff_pick` meta), random order. Returns an empty list when nothing is flagged.',
+	// Photographers flagged "Feature on homepage" (tpj_featured_photographer
+	// meta, set in the Photographer Details box), in random order. Powers
+	// the homepage hero's Featured Photographer slide.
+	register_graphql_field( 'RootQuery', 'featuredPhotographers', [
+		'type'        => [ 'list_of' => 'Photographer' ],
+		'description' => 'Published photographers flagged to feature on the homepage, random order. Empty when none are flagged.',
 		'args'        => [
 			'first' => [
 				'type'        => 'Int',
-				'description' => 'Maximum number to return. Defaults to 6.',
+				'description' => 'Maximum number to return. Defaults to 1.',
 			],
 		],
 		'resolve'     => function ( $root, $args ) {
-			$first = isset( $args['first'] ) ? max( 1, min( 50, (int) $args['first'] ) ) : 6;
+			$first = isset( $args['first'] ) ? max( 1, min( 20, (int) $args['first'] ) ) : 1;
 			$ids = get_posts( [
-				'post_type'      => [ 'essay', 'interview', 'feature' ],
+				'post_type'      => 'photographer',
 				'post_status'    => 'publish',
 				'posts_per_page' => $first,
 				'orderby'        => 'rand',
 				'fields'         => 'ids',
 				'meta_query'     => [ [
-					'key'     => 'tpj_staff_pick',
+					'key'     => 'tpj_featured_photographer',
 					'value'   => '1',
 					'compare' => '=',
 				] ],

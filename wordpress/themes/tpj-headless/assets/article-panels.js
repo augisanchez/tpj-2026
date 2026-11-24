@@ -40,7 +40,6 @@
 	var BYLINE_KEY = 'tpj_byline_author';
 	var HERO_KEY = '_tpj_hero_image_id';
 	var INTRO_KEY = 'intro';
-	var STAFF_PICK_KEY = 'tpj_staff_pick';
 
 	// Author-field labels per CPT. Essays don't credit a separate
 	// prose author — photographs by X is the byline.
@@ -86,13 +85,10 @@
 
 		var introState = useMeta( INTRO_KEY, '' );
 		var authorState = useMeta( BYLINE_KEY, '' );
-		var staffPickState = useMeta( STAFF_PICK_KEY, false );
 		var intro = introState[ 0 ];
 		var setIntro = introState[ 1 ];
 		var author = authorState[ 0 ];
 		var setAuthor = authorState[ 1 ];
-		var staffPick = Boolean( staffPickState[ 0 ] );
-		var setStaffPick = staffPickState[ 1 ];
 
 		var authorMeta = AUTHOR_LABELS[ postType ];
 
@@ -124,20 +120,7 @@
 							__nextHasNoMarginBottom: true,
 						} )
 				  )
-				: null,
-			createElement(
-				'div',
-				{ style: { marginTop: '16px' } },
-				createElement( ToggleControl, {
-					label: 'Featured photographer',
-					help: 'Feature this photographer on the homepage hero. The slide uses this article\'s cover and links to their profile.',
-					checked: staffPick,
-					onChange: function ( next ) {
-						setStaffPick( next ? true : false );
-					},
-					__nextHasNoMarginBottom: true,
-				} )
-			)
+				: null
 		);
 	}
 

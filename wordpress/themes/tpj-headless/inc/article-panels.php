@@ -42,14 +42,6 @@ const TPJ_BYLINE_AUTHOR_META_KEY = 'tpj_byline_author';
  */
 const TPJ_HERO_IMAGE_META_KEY = '_tpj_hero_image_id';
 
-/**
- * Postmeta key for the editorial staff-pick flag. Boolean.
- * Influences both the homepage hero carousel (one of three slides
- * is a staff-picked article) and the Dive Deeper section's weighted
- * selection.
- */
-const TPJ_STAFF_PICK_META_KEY = 'tpj_staff_pick';
-
 add_action( 'init', 'tpj_register_article_panel_meta' );
 
 function tpj_register_article_panel_meta() {
@@ -82,15 +74,6 @@ function tpj_register_article_panel_meta() {
 			'auth_callback'     => $auth_callback,
 		] );
 
-		register_post_meta( $type, TPJ_STAFF_PICK_META_KEY, [
-			'type'              => 'boolean',
-			'single'            => true,
-			'show_in_rest'      => true,
-			'sanitize_callback' => function ( $v ) {
-				return $v ? 1 : 0;
-			},
-			'auth_callback'     => $auth_callback,
-		] );
 	}
 }
 

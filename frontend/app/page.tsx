@@ -11,7 +11,7 @@ import { fetchArchivalArticles } from "@/lib/queries/archival-articles";
 import { fetchArchiveCounts } from "@/lib/queries/archive-counts";
 import { fetchThemeCounts } from "@/lib/queries/theme-counts";
 import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
-import { fetchStaffPicks } from "@/lib/queries/staff-pick";
+import { fetchFeaturedPhotographer } from "@/lib/queries/featured-photographer";
 import { fetchHomepageQuotes } from "@/lib/queries/homepage-quotes";
 import { fetchRecentEssays } from "@/lib/queries/recent-essays";
 import {
@@ -97,7 +97,7 @@ export default async function Home() {
     essays,
     articles,
     archivalArticles,
-    staffPicks,
+    featuredPhotographer,
     interviewQuotes,
     taggedThemeGroups,
     themeCounts,
@@ -110,10 +110,8 @@ export default async function Home() {
     fetchRecentArticles(15),
     // Older essays + interviews: the Revisit grid and hero slide 2.
     fetchArchivalArticles(80, 2),
-    // Articles flagged as Featured photographer (tpj_staff_pick=1),
-    // random order. The first powers hero slide 3. Empty list when
-    // nothing is flagged.
-    fetchStaffPicks(6),
+    // Photographer flagged "Feature on homepage" in wp-admin, or null.
+    fetchFeaturedPhotographer().catch(() => null),
     fetchHomepageQuotes(),
     // Real per-theme groupings from the tpj-theme taxonomy. Empty
     // arrays per slug before `wp tpj tag-themes` has run; the
@@ -142,7 +140,7 @@ export default async function Home() {
   // Build the hero carousel slides. Three positions:
   //   1. Latest piece (whatever was just published — essay/interview/feature)
   //   2. From the archive (random pick >2 years old)
-  //   3. Featured photographer (editor-flagged article)
+  //   3. Featured photographer (flagged on the photographer record)
   // Each slide degrades independently: missing latest → drop slide 1,
   // missing archival → drop slide 2, nothing flagged → fallback slide 3.
   // A single slide renders as a static hero (no carousel chrome).
@@ -178,26 +176,18 @@ export default async function Home() {
     });
   }
 
-  // Slide 3: featured photographer. Editors flag an article (the
-  // tpj_staff_pick meta, labelled "Featured photographer" in wp-admin);
-  // the slide features that article's photographer and links to their
-  // profile, using the article's cover. Without a linked profile it
-  // links to the article instead. With nothing flagged, fall back to
-  // the latest article of a different content type than slide 1.
-  const featured = staffPicks[0] ?? null;
-  if (featured) {
-    const name = featured.photographerName;
-    const toProfile = Boolean(featured.photographerSlug && name);
+  // Slide 3: featured photographer. Name, the start of their bio, and a
+  // cover from their latest work, linking to their profile. With nobody
+  // flagged, fall back to the latest article of a different content type
+  // than slide 1.
+  if (featuredPhotographer) {
     heroSlides.push({
-      key: `featured-photographer-${featured.contentType}-${featured.id}`,
-      href: toProfile
-        ? `/photographer/${featured.photographerSlug}`
-        : articleHref(featured),
+      key: `featured-photographer-${featuredPhotographer.slug}`,
+      href: `/photographer/${featuredPhotographer.slug}`,
       contentTypeLabel: "Featured Photographer",
-      title: toProfile ? name! : featured.title,
-      excerpt: toProfile ? undefined : summarize(featured.excerpt, 220),
-      photographerName: toProfile ? null : name,
-      backgroundImage: featured.featuredImage ?? undefined,
+      title: featuredPhotographer.name,
+      excerpt: summarize(featuredPhotographer.bio, 220),
+      backgroundImage: featuredPhotographer.image ?? undefined,
     });
   } else if (heroArticle) {
     const fallback = articles.find((a) => a.contentType !== heroArticle.contentType);

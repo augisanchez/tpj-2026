@@ -44,6 +44,7 @@ function tpj_render_photographer_details_meta_box( $post ) {
 
 	$portrait_url  = get_post_meta( $post->ID, 'tpj_portrait_url', true );
 	$atomic_combo  = (bool) get_post_meta( $post->ID, 'tpj_atomic_combo', true );
+	$featured      = (bool) get_post_meta( $post->ID, 'tpj_featured_photographer', true );
 
 	$fields = [
 		'tpj_location'        => [ 'label' => 'Location',       'type' => 'text',  'placeholder' => 'Los Angeles, California' ],
@@ -121,6 +122,14 @@ function tpj_render_photographer_details_meta_box( $post ) {
 			<p>For brand-name pairs like "Anais &amp; Dax" or collectives, where the credit should resolve to this one record instead of two separate photographers.</p>
 		</div>',
 		$atomic_combo ? ' checked="checked"' : ''
+	);
+
+	printf(
+		'<div class="tpj-meta-flag">
+			<label><input type="checkbox" name="tpj_featured_photographer" value="1"%1$s /> Feature on homepage</label>
+			<p>Shows this photographer in the homepage hero with their name, the start of their bio, and a cover from their work, linking to their profile. If several are ticked, one is picked at random.</p>
+		</div>',
+		$featured ? ' checked="checked"' : ''
 	);
 
 	echo '<div class="tpj-meta-grid">';
@@ -246,5 +255,34 @@ add_action( 'save_post_photographer', function ( $post_id, $post ) {
 		update_post_meta( $post_id, 'tpj_atomic_combo', 1 );
 	} else {
 		delete_post_meta( $post_id, 'tpj_atomic_combo' );
+	}
+
+	if ( ! empty( $_POST['tpj_featured_photographer'] ) ) {
+		update_post_meta( $post_id, 'tpj_featured_photographer', 1 );
+	} else {
+		delete_post_meta( $post_id, 'tpj_featured_photographer' );
+	}
+}, 10, 2 );
+
+// Photographers list: show who is featured on the homepage.
+add_filter( 'manage_photographer_posts_columns', function ( $columns ) {
+	$out = [];
+	foreach ( $columns as $key => $label ) {
+		$out[ $key ] = $label;
+		if ( $key === 'title' ) {
+			$out['tpj_featured_photographer'] = 'Homepage';
+		}
+	}
+	return $out;
+} );
+
+add_action( 'manage_photographer_posts_custom_column', function ( $column, $post_id ) {
+	if ( $column !== 'tpj_featured_photographer' ) {
+		return;
+	}
+	if ( get_post_meta( $post_id, 'tpj_featured_photographer', true ) ) {
+		echo '<span style="display:inline-flex;padding:3px 10px;border-radius:999px;background:#e4ffb1;color:#1a1814;font-weight:700;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">Featured</span>';
+	} else {
+		echo '<span aria-hidden="true" style="color:#999;">—</span>';
 	}
 }, 10, 2 );
