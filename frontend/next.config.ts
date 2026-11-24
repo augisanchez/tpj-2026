@@ -1,4 +1,15 @@
 import type { NextConfig } from "next";
+import legacyTags from "./lib/legacy-tag-redirects.json";
+
+// Old WordPress archive URLs (from the live site's sitemap) and where
+// each lands on the new site. Tags were mapped one by one: photographer,
+// theme or article when the slug matches one, otherwise a search.
+const LEGACY_CATEGORY: Record<string, string> = {
+  reviews: "/explore?type=feature",
+  "tpj-spotlight": "/explore?type=interview",
+  celebrity: "/explore?type=interview",
+  "sally-reynolds": "/photographer/sally-reynolds",
+};
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -16,6 +27,23 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      ...(legacyTags as [string, string][]).map(([tag, to]) => ({
+        source: `/tag/${tag}`,
+        destination: to,
+        permanent: true,
+      })),
+      ...Object.entries(LEGACY_CATEGORY).map(([cat, to]) => ({
+        source: `/category/${cat}`,
+        destination: to,
+        permanent: true,
+      })),
+      { source: "/category/:slug", destination: "/explore", permanent: true },
+      { source: "/tag/:slug", destination: "/explore", permanent: true },
+      { source: "/author/:slug", destination: "/about", permanent: true },
+      { source: "/submissions", destination: "/submit", permanent: true },
+      { source: "/articles-essays", destination: "/explore?type=essay", permanent: true },
+      { source: "/articles-interviews", destination: "/explore?type=interview", permanent: true },
+      { source: "/articles-features", destination: "/explore?type=feature", permanent: true },
       // v1 / WordPress permalinks are plural; v2 routes are singular.
       // Keeps old links, search results and wp-admin "View" links alive.
       // Two archive slugs were non-ASCII, which Vercel's page cache can't
