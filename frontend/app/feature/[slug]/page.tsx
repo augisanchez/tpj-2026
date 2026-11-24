@@ -10,6 +10,16 @@ import { fetchFeatureBySlug } from "@/lib/queries/feature-by-slug";
 import { previewTarget } from "@/lib/preview";
 import { fetchRecentFeatures } from "@/lib/queries/recent-features";
 
+// Render each page on its first visit, then serve it from Vercel's
+// cache (refreshed hourly, or immediately when WordPress saves). Without
+// this the route renders on every request and every view hits the CMS.
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  return [];
+}
+
+
 type Props = {
   params: Promise<{ slug: string }>;
 };

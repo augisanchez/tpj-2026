@@ -67,6 +67,13 @@ type Props = {
 
 export function ExploreGrid({ items, initialType }: Props) {
   const [type, setType] = useState<ExploreType>(initialType ?? "all");
+  // Starting filter from the URL (/explore?type=interview). Read here,
+  // not on the server, so the Explore page can stay cached.
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("type");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time restore from the URL
+    if (t === "essay" || t === "interview" || t === "feature") setType(t);
+  }, []);
   const [theme, setTheme] = useState<ExploreTheme>("all");
   const [sort, setSort] = useState<ExploreSort>("newest");
   const [shuffleSeed, setShuffleSeed] = useState(0);

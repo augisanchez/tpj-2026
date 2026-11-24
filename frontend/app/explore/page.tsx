@@ -8,18 +8,10 @@ export const metadata = {
     "Browse the full archive of photo essays, interviews, and features.",
 };
 
-const TYPES = ["essay", "interview", "feature"] as const;
-type UrlType = (typeof TYPES)[number];
-
-export default async function ExplorePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ type?: string }>;
-}) {
-  const [items, params] = await Promise.all([fetchExplore(1000), searchParams]);
-  const initialType = TYPES.includes(params.type as UrlType)
-    ? (params.type as UrlType)
-    : undefined;
+// Static (cached) page: the ?type= filter is read in the browser by
+// ExploreGrid, so the server never renders per request.
+export default async function ExplorePage() {
+  const items = await fetchExplore(1000);
 
   return (
     <main className={styles.page}>
@@ -31,7 +23,7 @@ export default async function ExplorePage({
         </p>
       </header>
 
-      <ExploreGrid items={items} initialType={initialType} />
+      <ExploreGrid items={items} />
     </main>
   );
 }
