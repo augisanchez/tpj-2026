@@ -131,6 +131,10 @@
   color: var(--text);
   font-weight: 600;
   text-decoration: none;
+  /* 24px tap area (WCAG 2.5.8) without moving the line. */
+  display: inline-block;
+  padding-block: 4px;
+  margin-block: -4px;
 }
 
 .caption a:hover {
