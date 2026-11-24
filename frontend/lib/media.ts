@@ -163,8 +163,26 @@ export function rewriteArticleBodyImages(html: string): string {
  * before it reaches the client. URL canonicalisation runs first
  * (dev origins → prod), then the CDN srcset injection.
  */
-export function prepareArticleBodyHtml(html: string): string {
-  const withImages = rewriteArticleBodyImages(rewriteMediaUrlsInHtml(html));
+/**
+ * Empty alt text on body photos (most of the archive) means screen
+ * readers skip the photographs entirely. Fill it from the order and the
+ * credit: "Photograph 3 of 11 by Etienne Perrone". Real alt text wins.
+ */
+function fillEmptyAlt(html: string, credit?: string | null): string {
+  const total = (html.match(IMG_TAG_RE) ?? []).length;
+  let n = 0;
+  return html.replace(IMG_TAG_RE, (tag) => {
+    n += 1;
+    const alt = /\salt\s*=\s*(["'])(.*?)\1/i.exec(tag);
+    if (alt && alt[2].trim()) return tag;
+    const label = `Photograph ${n} of ${total}${credit ? ` by ${credit}` : ""}`.replace(/"/g, "&quot;");
+    const withoutAlt = alt ? tag.replace(alt[0], "") : tag;
+    return withoutAlt.replace(/^<img\b/i, `<img alt="${label}"`);
+  });
+}
+
+export function prepareArticleBodyHtml(html: string, opts: { credit?: string | null } = {}): string {
+  const withImages = rewriteArticleBodyImages(fillEmptyAlt(rewriteMediaUrlsInHtml(html), opts.credit));
   if (!isCdnEnabled()) return withImages;
   // Everything else that links into uploads (full-size links, video
   // sources, posters) goes to the original file on the CDN.

@@ -43,7 +43,7 @@ export default function AboutPage() {
         </p>
       </SupportingPageBanner>
 
-      <main className={styles.page}>
+      <div className={styles.page}>
         <section className={styles.mission}>
           <h2 className={styles.missionHeading}>
             Entranced by photography since 2012.
@@ -90,7 +90,7 @@ export default function AboutPage() {
             ))}
           </div>
         </section>
-      </main>
+      </div>
     </>
   );
 }

@@ -56,7 +56,7 @@ export default function SubmitPage() {
         </p>
       </SupportingPageBanner>
 
-      <main className={styles.page}>
+      <div className={styles.page}>
         <section className={styles.pitch}>
           <h2 className={styles.pitchHeading}>
             Would you like to be published in TPJ? Send us pix, let us
@@ -95,7 +95,7 @@ export default function SubmitPage() {
         </ol>
 
         <SubmissionForm />
-      </main>
+      </div>
     </>
   );
 }

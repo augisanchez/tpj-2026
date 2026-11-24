@@ -3,7 +3,7 @@
   --bg: #f2f2f2;
   --surface: #ffffff;
   --text: #1a1814;
-  --muted: #6e6e6e;
+  --muted: #6a6a6a; /* 4.8:1 on --bg (audit L4: #6e6e6e was 4.48:1) */
   --border: #ddd;
   --placeholder: #d1d1d1;
   --chip-bg: #e4ffb1;

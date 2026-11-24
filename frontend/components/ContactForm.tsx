@@ -35,6 +35,14 @@ function validate(state: FormState): Record<string, string> {
   return errors;
 }
 
+
+/** Autofill hints so phones offer saved contact details. */
+const AUTOCOMPLETE: Record<string, string> = {
+  name: "name",
+  email: "email",
+  instagram: "off",
+  downloadLink: "url",
+};
 export function ContactForm() {
   const [state, setState] = useState<FormState>(INITIAL_STATE);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -57,6 +65,11 @@ export function ContactForm() {
     const nextErrors = validate(state);
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
+      // Take keyboard and screen-reader users to the first problem.
+      const form = event.currentTarget;
+      requestAnimationFrame(() => {
+        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      });
       return;
     }
 
@@ -247,7 +260,10 @@ function Field({
       </label>
       <input
         id={name}
+        name={name}
         type={type}
+        autoComplete={AUTOCOMPLETE[name] ?? undefined}
+        inputMode={type === "email" ? "email" : undefined}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={styles.input}

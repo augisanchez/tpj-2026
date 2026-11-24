@@ -15,7 +15,7 @@ export default async function ExplorePage() {
   const items = await fetchExplore(1000);
 
   return (
-    <main className={styles.page}>
+    <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.title} data-reveal="lines">Explore</h1>
         <p className={styles.lede} data-reveal>
@@ -25,6 +25,6 @@ export default async function ExplorePage() {
       </header>
 
       <ExploreGrid items={items} />
-    </main>
+    </div>
   );
 }

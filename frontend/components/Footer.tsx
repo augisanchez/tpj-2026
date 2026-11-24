@@ -8,7 +8,7 @@ const FOOTER_LINKS = [
   { label: "About", href: "/about" },
   { label: "Submit", href: "/submit" },
   { label: "Contact", href: "/contact" },
-  { label: "Shop", href: "/shop", external: true },
+  { label: "Shop", href: "/shop" },
 ];
 
 export function Footer() {
@@ -31,9 +31,6 @@ export function Footer() {
             key={link.href}
             href={link.href}
             className={styles.link}
-            {...(link.external
-              ? { target: "_blank", rel: "noopener noreferrer" }
-              : {})}
           >
             {link.label}
           </Link>

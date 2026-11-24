@@ -56,9 +56,9 @@ export function SearchPage({ initialTerm, results, photographers = [] }: Props) 
     showResults && results.length === 0 && photographers.length === 0 && !isPending;
 
   return (
-    <main className={styles.page}>
+    <div className={styles.page}>
       <header className={styles.header}>
-        <p className={styles.eyebrow}>Search</p>
+        <h1 className={styles.eyebrow}>Search</h1>
         <div className={styles.inputWrap}>
           <input
             ref={inputRef}
@@ -137,6 +137,6 @@ export function SearchPage({ initialTerm, results, photographers = [] }: Props) 
           ))}
         </div>
       )}
-    </main>
+    </div>
   );
 }

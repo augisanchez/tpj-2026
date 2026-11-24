@@ -245,11 +245,11 @@ export function ExploreGrid({ items, initialType }: Props) {
         />
       </div>
 
-      <p className={styles.count} aria-live="polite">
+      <h2 className={styles.count} aria-live="polite">
         {displayCount === items.length
           ? `${items.length} pieces in the archive`
           : `${displayCount} of ${items.length} pieces`}
-      </p>
+      </h2>
 
       {ordered.length === 0 ? (
         <EmptyState heading="Nothing matches those filters yet." />

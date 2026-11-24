@@ -8,10 +8,10 @@ type Props = {
 
 export function ThinPage({ eyebrow, title, children }: Props) {
   return (
-    <main className={styles.page}>
+    <div className={styles.page}>
       {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
       <h1 className={styles.title}>{title}</h1>
       <div className={styles.body}>{children}</div>
-    </main>
+    </div>
   );
 }

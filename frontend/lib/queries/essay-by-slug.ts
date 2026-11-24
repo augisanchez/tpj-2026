@@ -118,7 +118,11 @@ export async function fetchEssayBySlug(
     photographerName: photographerNameTrimmed,
   });
 
-  const rawBody = raw.content ? prepareArticleBodyHtml(raw.content) : "";
+  const rawBody = raw.content
+    ? prepareArticleBodyHtml(raw.content, {
+        credit: photographers.map((p) => p.name).filter(Boolean).join(" and ") || photographerNameTrimmed,
+      })
+    : "";
   const body = photographers.length > 0 ? stripPhotographerBlob(rawBody) : rawBody;
 
   const intro = raw.articleIntro ? raw.articleIntro.trim() : null;

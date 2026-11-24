@@ -19,7 +19,7 @@
 }
 
 .small {
-  font-size: clamp(10px, 0.55rem + 0.1vw, 14px);  /* caps ~3360 */
+  font-size: clamp(12px, 0.6rem + 0.15vw, 14px); /* 12px floor on phones (audit L21) */
   letter-spacing: 0.14em;
 }
 

@@ -17,7 +17,7 @@ export default function ContactPage() {
         <p>Collaborators and co-conspirators wanted.</p>
       </SupportingPageBanner>
 
-      <main className={styles.page}>
+      <div className={styles.page}>
         <section className={styles.pitch}>
           <h2 className={styles.pitchHeading}>Drop us a line.</h2>
           <p className={styles.lede}>
@@ -35,7 +35,7 @@ export default function ContactPage() {
         </section>
 
         <ContactForm />
-      </main>
+      </div>
     </>
   );
 }

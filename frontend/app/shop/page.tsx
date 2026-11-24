@@ -95,7 +95,7 @@ export default function ShopPage() {
         </p>
       </SupportingPageBanner>
 
-      <main className={styles.page}>
+      <div className={styles.page}>
         <div className={styles.grid}>
           {PRODUCTS.map((product) => (
             <ShopProductCard
@@ -104,7 +104,7 @@ export default function ShopPage() {
             />
           ))}
         </div>
-      </main>
+      </div>
     </>
   );
 }

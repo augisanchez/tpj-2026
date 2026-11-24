@@ -236,3 +236,10 @@
     display: inline-flex;
   }
 }
+
+/* iOS zooms the page when a field under 16px is focused (audit M16). */
+@media (max-width: 768px) {
+  .select {
+    font-size: 16px;
+  }
+}

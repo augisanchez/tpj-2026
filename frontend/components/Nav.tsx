@@ -14,7 +14,8 @@ const NAV_LINKS = [
   { label: "Submit", href: "/submit" },
 ];
 
-const DRAWER_LINKS = NAV_LINKS;
+// The menu also carries Contact (the desktop header has no room for it).
+const DRAWER_LINKS = [...NAV_LINKS, { label: "Contact", href: "/contact" }];
 
 const DEAD_ZONE = 16;
 const REVEAL_DELTA = 8;
