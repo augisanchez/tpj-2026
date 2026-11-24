@@ -1,5 +1,6 @@
 import { gql } from "graphql-request";
-import { wpClient } from "../api";
+import { wpClient, wpPreviewClient } from "../api";
+import type { PreviewTarget } from "../preview";
 import { prepareArticleBodyHtml, rewriteMediaUrl } from "../media";
 import type { Essay } from "./essay-by-slug";
 import type { Photographer } from "@/lib/photographer-types";
@@ -12,8 +13,8 @@ import {
 } from "./linked-photographer";
 
 const FeatureBySlugQuery = gql`
-  query FeatureBySlug($slug: ID!) {
-    feature(id: $slug, idType: SLUG) {
+  query FeatureBySlug($slug: ID!, $idType: FeatureIdType = SLUG, $asPreview: Boolean = false) {
+    feature(id: $slug, idType: $idType, asPreview: $asPreview) {
       id
       title
       slug
@@ -87,9 +88,19 @@ type RawFeature = {
 
 type Response = { feature: RawFeature | null };
 
-export async function fetchFeatureBySlug(slug: string): Promise<Feature | null> {
-  const data = await wpClient.request<Response>(FeatureBySlugQuery, { slug });
-  const raw = data.feature;
+export async function fetchFeatureBySlug(
+  slug: string,
+  preview?: PreviewTarget
+): Promise<Feature | null> {
+  let raw: RawFeature | null;
+  if (preview) {
+    const vars = { slug: String(preview.id), idType: "DATABASE_ID" };
+    raw = (await wpPreviewClient.request<Response>(FeatureBySlugQuery, { ...vars, asPreview: preview.asPreview })).feature;
+    // No autosave yet: fall back to the saved post.
+    if (!raw && preview.asPreview) raw = (await wpPreviewClient.request<Response>(FeatureBySlugQuery, vars)).feature;
+  } else {
+    raw = (await wpClient.request<Response>(FeatureBySlugQuery, { slug })).feature;
+  }
   if (!raw) return null;
 
   const fi = raw.featuredImage?.node;

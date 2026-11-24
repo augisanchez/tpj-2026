@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "wordpress/themes/tpj-headless/assets/editor-experience.js"
+        ],
+        "createdAt": "2026-11-24T00:32:01.074Z",
+        "reason": "Claude: L161 is a regex literal that finds img src values in post content, not an img element"
+      }
+    ]
+  }
+}

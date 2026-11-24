@@ -188,21 +188,21 @@
 							variant: heroId ? 'secondary' : 'primary',
 							onClick: renderProps.open,
 						},
-						heroId ? 'Replace hero image' : 'Set hero image'
+						heroId ? 'Replace hero image' : 'Use a different image'
 					);
 				},
 			} )
 		);
 
 		var helpText = postType
-			? 'Large image shown at the top of the article. Falls back to the Featured Image when empty.'
+			? 'Optional. A different image for the top of the article. Leave empty to use the cover image.'
 			: '';
 
 		return createElement(
 			PluginDocumentSettingPanel,
 			{
 				name: 'tpj-hero-image',
-				title: 'Hero image',
+				title: 'Hero image (optional)',
 				className: 'tpj-hero-image-panel',
 			},
 			previewUrl
@@ -226,7 +226,7 @@
 								fontStyle: 'italic',
 							},
 						},
-						'No hero set. Article will use the Featured Image.'
+						'Using the cover image.'
 				  ),
 			createElement(
 				'div',

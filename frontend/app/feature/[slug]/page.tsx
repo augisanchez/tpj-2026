@@ -7,6 +7,7 @@ import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchFeatureBySlug } from "@/lib/queries/feature-by-slug";
+import { previewTarget } from "@/lib/preview";
 import { fetchRecentFeatures } from "@/lib/queries/recent-features";
 
 type Props = {
@@ -37,7 +38,7 @@ function buildFeatureByline(
 export default async function FeaturePage({ params }: Props) {
   const { slug } = await params;
   const [feature, recent] = await Promise.all([
-    fetchFeatureBySlug(slug),
+    fetchFeatureBySlug(slug, await previewTarget(slug)),
     fetchRecentFeatures(8),
   ]);
 

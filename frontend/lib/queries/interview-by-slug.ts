@@ -1,5 +1,6 @@
 import { gql } from "graphql-request";
-import { wpClient } from "../api";
+import { wpClient, wpPreviewClient } from "../api";
+import type { PreviewTarget } from "../preview";
 import { prepareArticleBodyHtml, rewriteMediaUrl } from "../media";
 import type { Photographer } from "@/lib/photographer-types";
 import type { FeaturedImage } from "./recent-essays";
@@ -12,8 +13,8 @@ import {
 } from "./linked-photographer";
 
 const InterviewBySlugQuery = gql`
-  query InterviewBySlug($slug: ID!) {
-    interview(id: $slug, idType: SLUG) {
+  query InterviewBySlug($slug: ID!, $idType: InterviewIdType = SLUG, $asPreview: Boolean = false) {
+    interview(id: $slug, idType: $idType, asPreview: $asPreview) {
       id
       title
       slug
@@ -94,10 +95,18 @@ type RawInterview = {
 type Response = { interview: RawInterview | null };
 
 export async function fetchInterviewBySlug(
-  slug: string
+  slug: string,
+  preview?: PreviewTarget
 ): Promise<Interview | null> {
-  const data = await wpClient.request<Response>(InterviewBySlugQuery, { slug });
-  const raw = data.interview;
+  let raw: RawInterview | null;
+  if (preview) {
+    const vars = { slug: String(preview.id), idType: "DATABASE_ID" };
+    raw = (await wpPreviewClient.request<Response>(InterviewBySlugQuery, { ...vars, asPreview: preview.asPreview })).interview;
+    // No autosave yet: fall back to the saved post.
+    if (!raw && preview.asPreview) raw = (await wpPreviewClient.request<Response>(InterviewBySlugQuery, vars)).interview;
+  } else {
+    raw = (await wpClient.request<Response>(InterviewBySlugQuery, { slug })).interview;
+  }
   if (!raw) return null;
 
   const fi = raw.featuredImage?.node;

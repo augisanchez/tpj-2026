@@ -1,5 +1,6 @@
 import { gql } from "graphql-request";
-import { wpClient } from "../api";
+import { wpClient, wpPreviewClient } from "../api";
+import type { PreviewTarget } from "../preview";
 import { prepareArticleBodyHtml, rewriteMediaUrl } from "../media";
 import type { Photographer } from "@/lib/photographer-types";
 import type { FeaturedImage } from "./recent-essays";
@@ -12,8 +13,8 @@ import {
 } from "./linked-photographer";
 
 const EssayBySlugQuery = gql`
-  query EssayBySlug($slug: ID!) {
-    essay(id: $slug, idType: SLUG) {
+  query EssayBySlug($slug: ID!, $idType: EssayIdType = SLUG, $asPreview: Boolean = false) {
+    essay(id: $slug, idType: $idType, asPreview: $asPreview) {
       id
       title
       slug
@@ -90,9 +91,19 @@ type RawEssay = {
 
 type Response = { essay: RawEssay | null };
 
-export async function fetchEssayBySlug(slug: string): Promise<Essay | null> {
-  const data = await wpClient.request<Response>(EssayBySlugQuery, { slug });
-  const raw = data.essay;
+export async function fetchEssayBySlug(
+  slug: string,
+  preview?: PreviewTarget
+): Promise<Essay | null> {
+  let raw: RawEssay | null;
+  if (preview) {
+    const vars = { slug: String(preview.id), idType: "DATABASE_ID" };
+    raw = (await wpPreviewClient.request<Response>(EssayBySlugQuery, { ...vars, asPreview: preview.asPreview })).essay;
+    // No autosave yet: fall back to the saved post.
+    if (!raw && preview.asPreview) raw = (await wpPreviewClient.request<Response>(EssayBySlugQuery, vars)).essay;
+  } else {
+    raw = (await wpClient.request<Response>(EssayBySlugQuery, { slug })).essay;
+  }
   if (!raw) return null;
 
   const fi = raw.featuredImage?.node;

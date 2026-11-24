@@ -7,6 +7,7 @@ import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchInterviewBySlug } from "@/lib/queries/interview-by-slug";
+import { previewTarget } from "@/lib/preview";
 import { fetchRecentInterviews } from "@/lib/queries/recent-interviews";
 
 type Props = {
@@ -16,7 +17,7 @@ type Props = {
 export default async function InterviewPage({ params }: Props) {
   const { slug } = await params;
   const [interview, recent] = await Promise.all([
-    fetchInterviewBySlug(slug),
+    fetchInterviewBySlug(slug, await previewTarget(slug)),
     fetchRecentInterviews(8),
   ]);
 

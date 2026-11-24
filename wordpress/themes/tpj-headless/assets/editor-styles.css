@@ -1,0 +1,10 @@
+/* Block-editor previews of TPJ layout styles (inc/editor-experience.php).
+   Approximations of the frontend so editors see the layout they picked. */
+.editor-styles-wrapper .wp-block-image.is-style-fig-fullbleed { max-width: none !important; width: 100%; }
+.editor-styles-wrapper .wp-block-image.is-style-fig-two-thirds { max-width: 66% !important; }
+.editor-styles-wrapper .wp-block-image.is-style-fig-margin { max-width: 40% !important; margin-left: 0 !important; }
+.editor-styles-wrapper .wp-block-gallery.is-style-fig-two-up { display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px; }
+.editor-styles-wrapper .wp-block-gallery.is-style-fig-three-up { display: grid !important; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.editor-styles-wrapper .wp-block-gallery.is-style-fig-two-up > .wp-block-image,
+.editor-styles-wrapper .wp-block-gallery.is-style-fig-three-up > .wp-block-image { width: auto !important; margin: 0 !important; }
+.editor-styles-wrapper p.is-style-question { font-weight: 700; font-size: 1.15em; }
