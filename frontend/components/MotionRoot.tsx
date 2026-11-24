@@ -25,8 +25,9 @@ import { LogoStage } from "./LogoStage";
  * exit, no logo hold, reveals become quick fades, no pointer drift.
  */
 
-const STEP_MS = 50;
+const STEP_MS = 70;
 const STAGGER_CAP = 8;
+const IMG_WAIT_MS = 1200;
 const EXIT_STEP_MS = 30;
 const EXIT_CAP = 6;
 const EXIT_MS = 320;
@@ -95,9 +96,7 @@ export function MotionRoot() {
 
   /* ---------------- reveals ---------------- */
 
-  const flush = () => {
-    if (phase.current !== "idle" || !queue.current.length) return;
-    const batch = queue.current.splice(0);
+  const play = (batch: HTMLElement[]) => {
     const rects = new Map(batch.map((el) => [el, el.getBoundingClientRect()]));
     batch.sort((a, b) => {
       const ra = rects.get(a)!;
@@ -109,6 +108,42 @@ export function MotionRoot() {
       el.style.setProperty("--rv-d", `${Math.min(i, STAGGER_CAP) * STEP_MS}ms`);
       // next frame so the hidden state paints first
       requestAnimationFrame(() => el.classList.add("rv-in"));
+    });
+  };
+
+  // Blocks rise with their photos already in place: wait until the
+  // batch's images have loaded (capped), so a grey frame never rises
+  // with the photo popping in after.
+  const flush = () => {
+    if (phase.current !== "idle" || !queue.current.length) return;
+    const batch = queue.current.splice(0);
+    const imgs = batch.flatMap((el) =>
+      el instanceof HTMLImageElement
+        ? [el]
+        : [...el.querySelectorAll<HTMLImageElement>("img")],
+    );
+    const pending = imgs.filter((img) => !img.complete);
+    if (!pending.length) {
+      play(batch);
+      return;
+    }
+    let left = pending.length;
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(timer);
+      play(batch);
+    };
+    const timer = window.setTimeout(go, IMG_WAIT_MS);
+    pending.forEach((img) => {
+      img.loading = "eager";
+      const one = () => {
+        left -= 1;
+        if (left <= 0) go();
+      };
+      img.addEventListener("load", one, { once: true });
+      img.addEventListener("error", one, { once: true });
     });
   };
 

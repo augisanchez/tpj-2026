@@ -26,9 +26,9 @@
 
 .copyright {
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 12px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   margin: 0;
 }
@@ -52,9 +52,9 @@
 
 .link {
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 11px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--footer-text);
   text-decoration: none;
