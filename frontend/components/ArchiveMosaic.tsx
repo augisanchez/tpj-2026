@@ -42,13 +42,13 @@ export function ArchiveMosaic({ tiles, total }: Props) {
               <TpjImage
                 src={t.src}
                 alt={t.title}
-                sizes={i === 0 ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 768px) 17vw, 50vw"}
+                sizes={i === 0 || i === 14 ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 768px) 17vw, 50vw"}
                 className={styles.image}
               />
               <span className={styles.caption}>
                 <span className={styles.type}>{TYPE_LABEL[t.contentType]}</span>
                 {t.contentType !== "interview" && t.photographer && (
-                  <ContentTypeChip label={t.photographer} size={i === 0 ? "medium" : "small"} />
+                  <ContentTypeChip label={t.photographer} size={i === 0 || i === 14 ? "medium" : "small"} />
                 )}
                 <span className={styles.piece}>
                   {t.contentType === "interview" ? t.photographer || t.title : t.title}

@@ -229,11 +229,12 @@ export default async function Home() {
       photographer: a.photographerName,
       contentType: a.contentType,
     }));
-  const mosaicTiles = pickRandom(mosaicPool, 14);
-  // Lead tile is large: give it the full image, the rest the 600px square.
-  if (mosaicTiles[0]) {
-    const lead = archivalArticles.find((x) => articleHref(x) === mosaicTiles[0].href);
-    if (lead?.featuredImage) mosaicTiles[0] = { ...mosaicTiles[0], src: lead.featuredImage.src };
+  const mosaicTiles = pickRandom(mosaicPool, 20);
+  // Lead tiles (0 and 14) are large: full image; the rest get the 600px square.
+  for (const i of [0, 14]) {
+    if (!mosaicTiles[i]) continue;
+    const lead = archivalArticles.find((x) => articleHref(x) === mosaicTiles[i].href);
+    if (lead?.featuredImage) mosaicTiles[i] = { ...mosaicTiles[i], src: lead.featuredImage.src };
   }
 
   return (

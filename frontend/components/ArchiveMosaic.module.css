@@ -46,15 +46,17 @@
   }
 }
 
-/* 6-column mixed grid, 4 rows: one lead tile (3×2), two tall (1×2),
-   three wide (2×1), the rest square. Dense flow closes any gaps. */
+/* 6-column mixed grid in two bands. Band one (4 rows): lead tile 3×2 on
+   the left, two tall, three wide, the rest square. Band two (2 rows):
+   a second lead tile 3×2 on the right, one tall, four square. Dense flow
+   closes any gaps. */
 .grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  grid-auto-rows: clamp(120px, 11vw, 260px);
+  grid-auto-rows: clamp(170px, 16vw, 340px);
   grid-auto-flow: dense;
   gap: 8px;
 }
@@ -64,8 +66,9 @@
 }
 
 .s0 { grid-column: span 3; grid-row: span 2; }
-.s1, .s6 { grid-row: span 2; }
+.s1, .s6, .s15 { grid-row: span 2; }
 .s3, .s8, .s11 { grid-column: span 2; }
+.s14 { grid-column: 4 / span 3; grid-row: span 2; }
 
 .tile {
   position: relative;
@@ -131,13 +134,15 @@
   color: rgba(255, 255, 255, 0.72);
 }
 
-.s0 .caption {
+.s0 .caption,
+.s14 .caption {
   left: 24px;
   bottom: 20px;
   gap: 6px;
 }
 
-.s0 .piece {
+.s0 .piece,
+.s14 .piece {
   font-size: clamp(30px, 1rem + 2vw, 64px);
 }
 
@@ -155,8 +160,9 @@
     gap: 6px;
   }
   .s0 { grid-column: span 2; grid-row: span 2; }
-  .s1, .s6 { grid-row: span 1; }
+  .s1, .s6, .s15 { grid-row: span 1; }
   .s3, .s8, .s11 { grid-column: span 1; }
+  .s14 { grid-column: span 1; grid-row: span 1; }
   .cell:nth-child(n + 8) { display: none; }
   .piece { font-size: 18px; }
 }
