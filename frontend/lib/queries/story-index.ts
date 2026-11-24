@@ -16,6 +16,8 @@ export type IndexStory = {
   type: StoryType;
   year: number;
   photographer: string | null;
+  /** Profile slug when the credit is a linked Photographer record. */
+  photographerSlug: string | null;
   image: string | null;
 };
 
@@ -38,8 +40,8 @@ function pagedQuery(field: string) {
           slug
           date
           photographerName
-          linkedPhotographer { title }
-          linkedPhotographers { title }
+          linkedPhotographer { title slug }
+          linkedPhotographers { title slug }
           featuredImage { node { sourceUrl } }
         }
       }
@@ -52,8 +54,8 @@ type RawNode = {
   slug: string;
   date: string;
   photographerName: string | null;
-  linkedPhotographer: { title: string | null } | null;
-  linkedPhotographers: { title: string | null }[] | null;
+  linkedPhotographer: { title: string | null; slug: string | null } | null;
+  linkedPhotographers: { title: string | null; slug: string | null }[] | null;
   featuredImage: { node: { sourceUrl: string | null } | null } | null;
 };
 
@@ -61,6 +63,14 @@ type PageResponse = Record<
   string,
   { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: RawNode[] }
 >;
+
+/** Slug of the record the credit names (same precedence as
+ *  resolvePhotographerCredit), or null for a plain-text credit. */
+function creditSlug(n: RawNode): string | null {
+  if (n.linkedPhotographers?.[0]?.title) return n.linkedPhotographers[0].slug ?? null;
+  if (n.linkedPhotographer?.title) return n.linkedPhotographer.slug ?? null;
+  return null;
+}
 
 async function fetchType(type: StoryType) {
   const field = LIST_FIELD[type];
@@ -78,6 +88,7 @@ async function fetchType(type: StoryType) {
         date: n.date,
         year: new Date(n.date).getFullYear(),
         photographer: resolvePhotographerCredit(n),
+        photographerSlug: creditSlug(n),
         image: rewriteMediaUrl(n.featuredImage?.node?.sourceUrl),
       });
     }
@@ -104,6 +115,7 @@ async function loadStoryIndex(): Promise<IndexStory[]> {
       type: s.type,
       year: s.year,
       photographer: s.photographer,
+      photographerSlug: s.photographerSlug,
       image: s.image,
     }))
     .reverse();
@@ -115,7 +127,7 @@ async function loadStoryIndex(): Promise<IndexStory[]> {
  * /random and the 404 photo share it and the CMS sees at most one
  * rebuild per hour.
  */
-export const fetchStoryIndex = unstable_cache(loadStoryIndex, ["story-index-v1"], {
+export const fetchStoryIndex = unstable_cache(loadStoryIndex, ["story-index-v2"], {
   revalidate: 3600,
   tags: ["story-index"],
 });

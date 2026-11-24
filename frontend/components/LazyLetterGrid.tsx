@@ -8,6 +8,8 @@ type Props = {
   /** Render straight away (first letters, or while searching). */
   eager: boolean;
   people: { id: string; name: string; slug: string }[];
+  /** Which layout the placeholder should approximate. */
+  variant?: "grid" | "list";
   children: ReactNode;
 };
 
@@ -19,7 +21,7 @@ type Props = {
  * jumps and scrollbar stay honest) and a plain list of links, so every
  * profile is still one link away for crawlers and screen readers.
  */
-export function LazyLetterGrid({ eager, people, children }: Props) {
+export function LazyLetterGrid({ eager, people, variant = "grid", children }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [shown, setShown] = useState(eager);
 
@@ -41,7 +43,7 @@ export function LazyLetterGrid({ eager, people, children }: Props) {
   return (
     <div
       ref={ref}
-      className={styles.gridPlaceholder}
+      className={`${styles.gridPlaceholder}${variant === "list" ? " " + styles.listPlaceholder : ""}`}
       style={{ ["--n" as string]: people.length }}
     >
       <ul className={styles.srList}>

@@ -1,0 +1,122 @@
+/* Photographers list view: full-width rows, giant condensed names.
+   No overflow clipping anywhere on the row: Oswald's descenders and
+   accents run outside a 0.95 line box. */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--gutter);
+}
+
+.list > li {
+  border-bottom: 1px solid var(--border);
+}
+
+.list > li:first-child {
+  border-top: 2px solid var(--text);
+}
+
+.row {
+  --name-size: clamp(32px, 1rem + 4vw, 96px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 24px;
+  /* The fill bleeds 12px past the text column on both sides. */
+  margin: 0 -12px;
+  padding: 0.14em 12px 0.1em;
+  font-size: var(--name-size);
+  color: var(--text);
+  text-decoration: none;
+  border-radius: var(--radius);
+}
+
+.name {
+  font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
+  font-weight: 700;
+  font-size: 1em;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+/* Reserved on fine pointers only, sized off the name so it reads as a
+   glyph-height inline portrait. */
+.slot {
+  display: none;
+}
+
+.count {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  white-space: nowrap;
+  text-align: right;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .slot {
+    display: block;
+    width: 0.8em;
+    height: 0.8em;
+  }
+
+  .slot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: var(--radius-img);
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 140ms ease-out,
+      transform 220ms var(--ease-out);
+  }
+
+  .row:hover .slot img,
+  .row:focus-visible .slot img {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.row:hover,
+.row:focus-visible {
+  background: var(--acid);
+  color: var(--acid-ink);
+}
+
+.row:hover .count,
+.row:focus-visible .count {
+  color: var(--acid-ink);
+}
+
+@media (max-width: 768px) {
+  .list {
+    padding: 0 16px;
+  }
+  .row {
+    column-gap: 12px;
+  }
+  .count {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot img {
+    transform: none !important;
+    transition: none !important;
+  }
+}

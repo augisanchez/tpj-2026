@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PhotographerListCard } from "./PhotographerListCard";
+import { PhotographersIndexList } from "./PhotographersIndexList";
 import { LazyLetterGrid } from "./LazyLetterGrid";
 import type { PhotographerIndexItem } from "@/lib/queries/photographers-index";
 import indexStyles from "./PhotographersIndex.module.css";
@@ -23,8 +24,40 @@ function firstLetter(name: string): string {
   return "#";
 }
 
+type View = "grid" | "list";
+
+const VIEWS: { value: View; label: string }[] = [
+  { value: "grid", label: "Grid" },
+  { value: "list", label: "List" },
+];
+
 export function PhotographersFilters({ photographers }: Props) {
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<View>("grid");
+
+  // The URL holds the view (?view=list), read in the browser like
+  // Explore does so the page itself stays static and cached.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("view") === "list") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time restore
+      setView("list");
+    }
+  }, []);
+
+  const chooseView = (next: View) => {
+    setView(next);
+    const q = new URLSearchParams(window.location.search);
+    if (next === "list") q.set("view", "list");
+    else q.delete("view");
+    const qs = q.toString() ? `?${q}` : "";
+    if (qs !== window.location.search) {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${qs}${window.location.hash}`,
+      );
+    }
+  };
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -77,6 +110,31 @@ export function PhotographersFilters({ photographers }: Props) {
           )}
         </div>
 
+        <div className={styles.group} role="group" aria-label="View">
+          <p className={styles.label} aria-hidden="true">
+            View
+          </p>
+          <div className={styles.views}>
+            {VIEWS.map((v, i) => (
+              <span key={v.value} className={styles.viewItem}>
+                {i > 0 && (
+                  <span className={styles.viewSep} aria-hidden="true">
+                    /
+                  </span>
+                )}
+                <button
+                  type="button"
+                  className={styles.viewButton}
+                  aria-pressed={view === v.value}
+                  onClick={() => chooseView(v.value)}
+                >
+                  {v.label}
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+
         {grouped.length > 0 && (
           <div className={`${styles.group} ${styles.alphabetGroup}`}>
             <p className={styles.label}>Jump to</p>
@@ -110,20 +168,29 @@ export function PhotographersFilters({ photographers }: Props) {
               <h2 className={styles.letterHeading}>
                 <span className={styles.letterMark}>{letter}</span>
               </h2>
-              <LazyLetterGrid eager={isFiltering || i < 2} people={list}>
-              <div className={indexStyles.grid} data-reveal-children>
-                {list.map((p) => (
-                  <PhotographerListCard
-                    key={p.id}
-                    name={p.name}
-                    slug={p.slug}
-                    articleCount={p.articleCount}
-                    appearsInCount={p.appearsInCount}
-                    bio={p.bioPreview}
-                    portrait={p.portrait}
-                  />
-                ))}
-              </div>
+              <LazyLetterGrid
+                key={view}
+                eager={isFiltering || i < 2}
+                people={list}
+                variant={view}
+              >
+                {view === "list" ? (
+                  <PhotographersIndexList people={list} />
+                ) : (
+                  <div className={indexStyles.grid} data-reveal-children>
+                    {list.map((p) => (
+                      <PhotographerListCard
+                        key={p.id}
+                        name={p.name}
+                        slug={p.slug}
+                        articleCount={p.articleCount}
+                        appearsInCount={p.appearsInCount}
+                        bio={p.bioPreview}
+                        portrait={p.portrait}
+                      />
+                    ))}
+                  </div>
+                )}
               </LazyLetterGrid>
             </section>
           ))}

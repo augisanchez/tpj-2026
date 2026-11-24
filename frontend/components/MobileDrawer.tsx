@@ -7,11 +7,16 @@ import styles from "./MobileDrawer.module.css";
 
 type NavLink = { label: string; href: string };
 
+/** A photographer behind one of the newest stories. */
+export type DrawerPhotographer = { name: string; slug: string };
+
 export function MobileDrawer({
   links,
+  recent = [],
   trigger,
 }: {
   links: NavLink[];
+  recent?: DrawerPhotographer[];
   trigger: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -44,6 +49,27 @@ export function MobileDrawer({
               Search
             </Link>
           </nav>
+          {recent.length > 0 && (
+            <section className={styles.recent} aria-labelledby="drawer-recent">
+              <h2 id="drawer-recent" className={styles.recentLabel}>
+                Recently published
+              </h2>
+              <ul className={styles.recentList}>
+                {recent.map((p) => (
+                  <li key={p.slug}>
+                    <Link
+                      href={`/photographer/${p.slug}`}
+                      prefetch={false}
+                      className={styles.recentLink}
+                      onClick={() => setOpen(false)}
+                    >
+                      {p.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

@@ -21,8 +21,9 @@ const OFFSET = 24;
  */
 export function IndexThumbs({ listId, prefix, tails }: Props) {
   const box = useRef<HTMLDivElement>(null);
-  const img = useRef<HTMLImageElement>(null);
   const [enabled, setEnabled] = useState(false);
+  // No <img> until there is a real source to show.
+  const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
@@ -35,8 +36,7 @@ export function IndexThumbs({ listId, prefix, tails }: Props) {
   useEffect(() => {
     const list = document.getElementById(listId);
     const el = box.current;
-    const pic = img.current;
-    if (!enabled || !list || !el || !pic) return;
+    if (!enabled || !list || !el) return;
 
     const rows = new Map<Element, number>();
     [...list.children].forEach((li, i) => rows.set(li, i));
@@ -66,11 +66,7 @@ export function IndexThumbs({ listId, prefix, tails }: Props) {
         el.dataset.on = "";
         return;
       }
-      const src = prefix + tail;
-      if (pic.getAttribute("src") !== src) {
-        pic.dataset.ready = "";
-        pic.src = src;
-      }
+      setSrc(prefix + tail);
       el.dataset.on = "1";
     };
     const hide = () => {
@@ -83,14 +79,20 @@ export function IndexThumbs({ listId, prefix, tails }: Props) {
       return li ? (rows.get(li) ?? -1) : -1;
     };
 
+    // A photographer's name has its own card (IndexPhotographerCard).
+    const onCredit = (t: EventTarget | null) =>
+      !!(t as Element | null)?.closest?.("li > a:nth-child(2)");
+
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
+      if (onCredit(e.target)) return hide();
       const i = rowOf(e.target);
       if (i < 0) return hide();
       moveTo(e.clientX, e.clientY);
       show(i);
     };
     const onFocus = (e: FocusEvent) => {
+      if (onCredit(e.target)) return hide();
       const i = rowOf(e.target);
       if (i < 0) return;
       // Over the right end of the row (type and year), level with it,
@@ -99,16 +101,12 @@ export function IndexThumbs({ listId, prefix, tails }: Props) {
       moveTo(r.right - el.offsetWidth - 2 * OFFSET, r.top + r.height / 2);
       show(i);
     };
-    const onLoad = () => {
-      pic.dataset.ready = "1";
-    };
 
     list.addEventListener("pointermove", onMove, { passive: true });
     list.addEventListener("pointerleave", hide);
     list.addEventListener("focusin", onFocus);
     list.addEventListener("focusout", hide);
     window.addEventListener("scroll", hide, { passive: true });
-    pic.addEventListener("load", onLoad);
     return () => {
       cancelAnimationFrame(raf);
       list.removeEventListener("pointermove", onMove);
@@ -116,15 +114,25 @@ export function IndexThumbs({ listId, prefix, tails }: Props) {
       list.removeEventListener("focusin", onFocus);
       list.removeEventListener("focusout", hide);
       window.removeEventListener("scroll", hide);
-      pic.removeEventListener("load", onLoad);
     };
   }, [enabled, listId, prefix, tails]);
 
   if (!enabled) return null;
   return (
     <div ref={box} className={styles.thumb} aria-hidden="true" data-on="">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img ref={img} alt="" decoding="async" />
+      {src && (
+        // One element per source, so each starts hidden until loaded.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={src}
+          src={src}
+          alt=""
+          decoding="async"
+          onLoad={(e) => {
+            e.currentTarget.dataset.ready = "1";
+          }}
+        />
+      )}
     </div>
   );
 }

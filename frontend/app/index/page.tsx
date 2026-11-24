@@ -1,7 +1,13 @@
 import { cdnImageUrl } from "@/lib/cdn";
 import { fetchStoryIndex, type StoryType } from "@/lib/queries/story-index";
+import { fetchPhotographersIndex } from "@/lib/queries/photographers-index";
+import { slugifyName } from "@/lib/text-utils";
 import { pageMetadata } from "@/lib/seo";
-import { StoryIndexList, type IndexRow } from "@/components/StoryIndexList";
+import {
+  StoryIndexList,
+  type IndexPerson,
+  type IndexRow,
+} from "@/components/StoryIndexList";
 import styles from "@/components/StoryIndex.module.css";
 
 export const metadata = pageMetadata({
@@ -31,15 +37,53 @@ function compactUrls(urls: (string | null)[]) {
 }
 
 export default async function IndexPage() {
-  const stories = await fetchStoryIndex();
+  const [stories, directory] = await Promise.all([
+    fetchStoryIndex(),
+    // Same cached request as /photographers; only portrait and count are kept.
+    fetchPhotographersIndex().catch(() => []),
+  ]);
   const oldest = stories[stories.length - 1];
   const { prefix, tails } = compactUrls(
-    stories.map((s) => cdnImageUrl(s.image, { width: 480, quality: 80 })),
+    stories.map((s) => cdnImageUrl(s.image, { width: 800, quality: 80 })),
   );
+
+  // Linked credits become one entry per photographer (rows point at it
+  // by number), so a name repeated across stories ships once.
+  const bySlug = new Map(directory.map((p) => [p.slug, p]));
+  const personIndex = new Map<string, number>();
+  const people: { name: string; slug: string; portrait: string | null; count: number }[] = [];
+  const credit = stories.map((s): string | number => {
+    if (!s.photographer) return "";
+    if (!s.photographerSlug) return s.photographer;
+    let i = personIndex.get(s.photographerSlug);
+    if (i === undefined) {
+      const entry = bySlug.get(s.photographerSlug);
+      i = people.length;
+      personIndex.set(s.photographerSlug, i);
+      people.push({
+        name: s.photographer,
+        slug: s.photographerSlug,
+        portrait: entry?.portrait
+          ? cdnImageUrl(entry.portrait.src, { width: 160, quality: 80 })
+          : null,
+        count: entry?.articleCount ?? 0,
+      });
+    }
+    return i;
+  });
+  const portraits = compactUrls(people.map((p) => p.portrait));
+  const persons: IndexPerson[] = people.map((p, i) => [
+    p.name,
+    // Most slugs are the name, slugified; only the exceptions ship.
+    slugifyName(p.name) === p.slug ? "" : p.slug,
+    portraits.tails[i],
+    p.count,
+  ]);
+
   const rows: IndexRow[] = stories.map((s, i) => [
     s.no,
     s.title,
-    s.photographer ?? "",
+    credit[i],
     TYPE_CODE[s.type],
     s.year,
     s.slug,
@@ -66,7 +110,12 @@ export default async function IndexPage() {
         <span>Year</span>
       </div>
 
-      <StoryIndexList rows={rows} prefix={prefix} />
+      <StoryIndexList
+        rows={rows}
+        prefix={prefix}
+        persons={persons}
+        portraitPrefix={portraits.prefix}
+      />
     </div>
   );
 }

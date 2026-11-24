@@ -137,6 +137,14 @@
   .gridPlaceholder { --cols: 7; }
 }
 
+/* List view: one row per person, a name line plus the row padding
+   and border (PhotographersIndexList.module.css). Last so it wins over
+   every breakpoint above. */
+.gridPlaceholder.listPlaceholder {
+  --cols: 1;
+  --row: calc(clamp(32px, 1rem + 4vw, 96px) * 1.19 + 1px);
+}
+
 /* Links for crawlers and screen readers until the cards render. */
 .srList {
   position: absolute;

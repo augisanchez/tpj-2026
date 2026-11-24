@@ -75,6 +75,48 @@
   opacity: 0.5;
 }
 
+/* Recently published: the photographers behind the newest stories,
+   a quieter second tier under the main links. */
+.recent {
+  margin-top: 32px;
+  padding: 24px 8px 0;
+  border-top: 2px solid var(--text);
+}
+
+.recentLabel {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+
+.recentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.recentLink {
+  font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--text);
+  text-decoration: none;
+  /* 44px tap target from the line plus padding. */
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 0;
+}
+
+.recentLink:active {
+  opacity: 0.5;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .content,
   .content[data-state="closed"] {

@@ -55,8 +55,13 @@
 
 .input:hover,
 .input:focus {
-  outline: none;
   border-color: var(--text);
+}
+
+/* Keyboard and click focus both land here for a text field. */
+.input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 /* Live "X of Y" annotation, shown only when search is active. Same
@@ -71,6 +76,51 @@
   color: var(--muted);
   margin: 0;
   flex-shrink: 0;
+}
+
+/* Grid / List: a plain text toggle, the current view in full ink. */
+.views {
+  display: flex;
+  align-items: center;
+}
+
+.viewItem {
+  display: inline-flex;
+  align-items: center;
+}
+
+.viewSep {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 0 2px;
+}
+
+.viewButton {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  min-height: 44px;
+  padding: 0 8px;
+  cursor: pointer;
+  transition: color 150ms ease-out;
+}
+
+.viewButton:hover {
+  color: var(--text);
+}
+
+.viewButton[aria-pressed="true"] {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
 }
 
 .alphabetGroup {
