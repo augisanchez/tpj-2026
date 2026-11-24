@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ContentTypeChip } from "./ContentTypeChip";
 import { TpjImage } from "./TpjImage";
 import styles from "./ArchiveMosaic.module.css";
 
@@ -15,15 +16,15 @@ type Props = {
 };
 
 /**
- * From the Archive: pieces older than two years in a mixed-size grid.
- * The photographer's name sits on every tile; the title shows on hover
- * (and always on the lead tile).
+ * Revisit: pieces older than two years in a mixed-size grid. The
+ * photographer's name sits on every tile in the lime chip; the title
+ * shows on hover (and always on the lead tile).
  */
 export function ArchiveMosaic({ tiles, total }: Props) {
   return (
     <section className={styles.section}>
       <div className={styles.header}>
-        <h2 className={styles.title}>From the Archive</h2>
+        <h2 className={styles.title}>Revisit</h2>
         <Link href="/explore" className={styles.viewAll}>
           View all{total ? ` ${total}` : ""}
           <span className={styles.arrow} aria-hidden="true">→</span>
@@ -41,7 +42,9 @@ export function ArchiveMosaic({ tiles, total }: Props) {
                 className={styles.image}
               />
               <span className={styles.caption}>
-                {t.photographer && <span className={styles.artist}>{t.photographer}</span>}
+                {t.photographer && (
+                  <ContentTypeChip label={t.photographer} size={i === 0 ? "medium" : "small"} />
+                )}
                 {t.title.trim().toLowerCase() !== (t.photographer ?? "").trim().toLowerCase() && (
                   <span className={styles.piece}>{t.title}</span>
                 )}

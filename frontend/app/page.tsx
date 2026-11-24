@@ -8,11 +8,9 @@ import { PurposeStatement } from "@/components/PurposeStatement";
 import { ScrollCue } from "@/components/ScrollCue";
 import { StaggerReveal } from "@/components/StaggerReveal";
 import { ThemeBrowser } from "@/components/ThemeBrowser";
-import { FALLBACK_PHOTOGRAPHER } from "@/lib/photographer-fallback";
 import { fetchArchivalArticles } from "@/lib/queries/archival-articles";
 import { fetchArchiveCounts } from "@/lib/queries/archive-counts";
 import { fetchThemeCounts } from "@/lib/queries/theme-counts";
-import { fetchArchiveFeature } from "@/lib/queries/archive-feature";
 import { fetchEssaysByThemes } from "@/lib/queries/essays-by-theme";
 import { fetchStaffPicks } from "@/lib/queries/staff-pick";
 import { fetchHomepageQuotes } from "@/lib/queries/homepage-quotes";
@@ -22,16 +20,9 @@ import {
   articleLabel,
   fetchRecentArticles,
 } from "@/lib/queries/recent-articles";
-import { fetchSpotlightPhotographer } from "@/lib/queries/spotlight-photographer";
 import { THEMES } from "@/lib/themes";
 import type { RecentEssay } from "@/lib/queries/recent-essays";
 import styles from "./page.module.css";
-
-const ARCHIVE_TYPE_LABEL = {
-  essay: "Photo Essay",
-  interview: "Interview",
-  feature: "Feature",
-} as const;
 
 function summarize(
   text: string | null | undefined,
@@ -107,8 +98,6 @@ export default async function Home() {
     articles,
     archivalArticles,
     staffPicks,
-    spotlightFromDb,
-    archiveFeature,
     interviewQuotes,
     taggedThemeGroups,
     themeCounts,
@@ -119,18 +108,13 @@ export default async function Home() {
     // enough variety that the 11 theme groups don't visibly overlap.
     fetchRecentEssays(50),
     fetchRecentArticles(15),
-    // Older essays + interviews for the Dive Deeper featured-card
-    // slots. Pulls from outside the recent-feed window so the same
-    // visual doesn't surface in Keep Exploring or the ThemeBrowser
-    // groups adjacent on the homepage.
+    // Older essays + interviews: the Revisit grid and hero slide 2.
     fetchArchivalArticles(80, 2),
     // Articles flagged tpj_staff_pick=1, random order. First entry
     // powers slide 3 of the homepage hero carousel; remaining entries
-    // weight Dive Deeper's featured-essay selection. Empty list when
+    // fall back to another content type. Empty list when
     // no articles are flagged.
     fetchStaffPicks(6),
-    fetchSpotlightPhotographer(),
-    fetchArchiveFeature(),
     fetchHomepageQuotes(),
     // Real per-theme groupings from the tpj-theme taxonomy. Empty
     // arrays per slug before `wp tpj tag-themes` has run; the
@@ -143,7 +127,6 @@ export default async function Home() {
     fetchThemeCounts().catch(() => ({} as Record<string, number>)),
     fetchArchiveCounts(),
   ]);
-  const spotlight = spotlightFromDb ?? FALLBACK_PHOTOGRAPHER;
   const heroArticle = articles[0];
   const exploreArticles = articles.slice(1, 4);
   const themePool = essays;
@@ -187,7 +170,7 @@ export default async function Home() {
     heroSlides.push({
       key: `archival-${archivalForHero.contentType}-${archivalForHero.id}`,
       href: articleHref(archivalForHero),
-      contentTypeLabel: "From the Archive",
+      contentTypeLabel: "Revisit",
       title: archivalForHero.title,
       date: archivalForHero.date,
       excerpt: summarize(archivalForHero.excerpt, 220),
@@ -229,142 +212,13 @@ export default async function Home() {
     }
   }
 
-  // Dive Deeper: 6 cards in two rows. Mix of curated entry points
-  // (photographer spotlight, archive feature) and discovery prompts
-  // (themes, recent essays) so the section spans the archive instead
-  // of repeating Keep Exploring.
-  const featuredCards: Array<{
-    key: string;
-    title: string;
-    date: string;
-    href: string;
-    contentTypeLabel: string;
-    description?: string;
-    showDate: boolean;
-    featuredImage?: { src: string; alt: string };
-    compositeImages?: { src: string; alt: string }[];
-  }> = [];
-
-  featuredCards.push({
-    key: "photographer",
-    title: spotlight.name,
-    date: new Date().toISOString(),
-    href: `/photographer/${spotlight.slug}`,
-    contentTypeLabel: "Photographer",
-    description: summarize(spotlight.bio, 160),
-    showDate: false,
-    featuredImage: spotlight.portrait ?? undefined,
-  });
-
-  if (archiveFeature) {
-    featuredCards.push({
-      key: "archive",
-      title: archiveFeature.title,
-      date: archiveFeature.date,
-      href: archiveFeature.href,
-      contentTypeLabel: ARCHIVE_TYPE_LABEL[archiveFeature.type],
-      description: summarize(archiveFeature.excerpt, 160),
-      showDate: true,
-      featuredImage: archiveFeature.featuredImage ?? undefined,
-    });
-  }
-
-  // Two random themes, each with a Spotify-playlist-style 2×2
-  // composite of its top tagged articles. The composite reads as a
-  // collection at a glance, so we don't need the prior fake stacked-
-  // paper effect or the count badge.
-  const featuredThemes = pickRandom(THEMES, 2);
-  for (const theme of featuredThemes) {
-    const groupImages = (themeGroups[theme.slug] ?? [])
-      .map((e) =>
-        e.featuredImage
-          ? { src: e.featuredImage.src, alt: e.featuredImage.alt }
-          : null
-      )
-      .filter((i): i is { src: string; alt: string } => i !== null)
-      .slice(0, 4);
-    featuredCards.push({
-      key: `theme-${theme.slug}`,
-      title: theme.name,
-      date: new Date().toISOString(),
-      href: `/theme/${theme.slug}`,
-      contentTypeLabel: "Theme",
-      description: theme.prompt,
-      showDate: false,
-      compositeImages: groupImages,
-    });
-  }
-
-  // Two articles for the Dive Deeper featured-essay slots. Staff
-  // picks are preferred when available — the editorial flag is the
-  // strongest signal we have for "this is worth resurfacing." Fall
-  // back to the >2-year-old archival pool when no fresh staff picks
-  // remain. Dedup by href since the recent-articles, recent-essays,
-  // archival, and staff-picks queries return different GraphQL
-  // global-id shapes for the same post; href is the only stable join.
-  const shownHrefs = new Set<string>([
-    heroArticle ? articleHref(heroArticle) : null,
-    ...exploreArticles.map(articleHref),
-    ...featuredCards.map((c) => c.href),
-  ].filter((x): x is string => Boolean(x)));
-
-  const staffPickHrefBuilder = (a: typeof staffPicks[number]) =>
-    `/${a.contentType}/${a.slug}`;
-  const staffPickCandidates = staffPicks.filter(
-    (a) => !shownHrefs.has(staffPickHrefBuilder(a))
-  );
-  const archivalCandidates = archivalArticles.filter(
-    (a) => !shownHrefs.has(articleHref(a))
+  // Anything already on the page (hero slides, Recent Posts) stays out
+  // of the Revisit grid.
+  const seenHrefs = new Set<string>(
+    [...heroSlides.map((h) => h.href), ...exploreArticles.map(articleHref)]
   );
 
-  // Pull from staff picks first, then top up from the archival pool
-  // if we don't have enough staff picks to fill both slots.
-  const FEATURED_SLOTS = 2;
-  const fromStaff = staffPickCandidates.slice(0, FEATURED_SLOTS);
-  const remainingSlots = FEATURED_SLOTS - fromStaff.length;
-  const fromArchival = remainingSlots > 0
-    ? pickRandom(archivalCandidates, remainingSlots)
-    : [];
-
-  for (const article of fromStaff) {
-    featuredCards.push({
-      key: `staff-${article.contentType}-${article.id}`,
-      title: article.title,
-      date: article.date,
-      href: staffPickHrefBuilder(article),
-      contentTypeLabel: articleLabel(article),
-      description: summarize(article.excerpt, 160),
-      showDate: true,
-      featuredImage: article.featuredImage ?? undefined,
-    });
-  }
-  for (const article of fromArchival) {
-    featuredCards.push({
-      key: `archival-${article.contentType}-${article.id}`,
-      title: article.title,
-      date: article.date,
-      href: articleHref(article),
-      contentTypeLabel: articleLabel(article),
-      description: summarize(article.excerpt, 160),
-      showDate: true,
-      featuredImage: article.featuredImage ?? undefined,
-    });
-  }
-
-  // Final safety net: drop any featuredCards that duplicate the hero
-  // or Keep Exploring rows. Keeps Dive Deeper feeling like a distinct
-  // surface rather than a continuation of the recent feed.
-  const seenHrefs = new Set<string>([
-    heroArticle ? articleHref(heroArticle) : null,
-    ...exploreArticles.map(articleHref),
-  ].filter((x): x is string => Boolean(x)));
-  const dedupedFeaturedCards = featuredCards.filter((c) => {
-    if (seenHrefs.has(c.href)) return false;
-    seenHrefs.add(c.href);
-    return true;
-  });
-
-  // From the Archive: pieces older than two years (the archival pool),
+  // Revisit: pieces older than two years (the archival pool),
   // none repeated from the cards above.
   const mosaicPool = archivalArticles
     .filter((a) => a.featuredImage && !seenHrefs.has(articleHref(a)))
@@ -423,39 +277,13 @@ export default async function Home() {
         counts={themeCounts}
       />
 
+
+      <InterviewQuoteRotator quotes={interviewQuotes} />
+
       {mosaicTiles.length >= 8 && (
         <ArchiveMosaic tiles={mosaicTiles} total={archiveCounts?.articles ?? null} />
       )}
 
-      <InterviewQuoteRotator quotes={interviewQuotes} />
-
-      <section className={styles.wideSection}>
-        <div className={styles.featuredHeader}>
-          <h2 className={styles.featuredTitle}>Dive Deeper</h2>
-        </div>
-
-        <StaggerReveal
-          className={styles.featuredGrid}
-          step={120}
-        >
-          {dedupedFeaturedCards.map((card) => (
-            <ArticleCard
-              key={card.key}
-              variant="3up"
-              showDate={card.showDate}
-              compositeImages={card.compositeImages}
-              article={{
-                title: card.title,
-                date: card.date,
-                href: card.href,
-                contentTypeLabel: card.contentTypeLabel,
-                description: card.description,
-                featuredImage: card.featuredImage,
-              }}
-            />
-          ))}
-        </StaggerReveal>
-      </section>
     </div>
   );
 }
