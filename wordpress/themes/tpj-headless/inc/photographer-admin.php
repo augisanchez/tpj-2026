@@ -80,6 +80,7 @@ function tpj_render_photographer_backlinks_meta_box( $post ) {
 	if ( empty( $rows ) ) {
 		echo '<p class="tpj-backlinks-empty">No articles credit this photographer yet.</p>';
 		echo '<p class="tpj-backlinks-empty">Linked when an article\'s text-credit field resolves to this slug (via <code>wp tpj relink-photographers</code>) or when an editor picks this photographer in the article meta box.</p>';
+		tpj_render_photographer_appears_in_list( $post );
 		return;
 	}
 
@@ -106,6 +107,39 @@ function tpj_render_photographer_backlinks_meta_box( $post ) {
 			esc_html( ucfirst( $r->post_type ) ),
 			esc_html( mysql2date( 'M j, Y', $r->post_date ) ),
 			esc_html( $status_label )
+		);
+	}
+	echo '</ul>';
+	tpj_render_photographer_appears_in_list( $post );
+}
+
+/**
+ * Second list in the Linked Articles box: pieces this photographer
+ * appears in (tpj_subject), shot by someone else.
+ */
+function tpj_render_photographer_appears_in_list( $post ) {
+	global $wpdb;
+	$rows = $wpdb->get_results( $wpdb->prepare(
+		"SELECT p.ID, p.post_title, p.post_type, p.post_date
+		 FROM {$wpdb->postmeta} pm
+		 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+		 WHERE pm.meta_key = 'tpj_subject' AND pm.meta_value = %s
+		   AND p.post_type IN ('essay','interview','feature')
+		   AND p.post_status IN ('publish','draft','pending','private')
+		 ORDER BY p.post_date DESC",
+		(string) $post->ID
+	) );
+	if ( empty( $rows ) ) {
+		return;
+	}
+	echo '<p class="tpj-backlinks-empty" style="margin-top:16px;font-weight:600;color:#1e1e1e;">Appears in</p><ul class="tpj-backlinks-list">';
+	foreach ( $rows as $r ) {
+		printf(
+			'<li><a href="%1$s">%2$s</a><span class="tpj-backlinks-meta">%3$s · %4$s</span></li>',
+			esc_url( get_edit_post_link( $r->ID ) ),
+			esc_html( $r->post_title ),
+			esc_html( ucfirst( $r->post_type ) ),
+			esc_html( mysql2date( 'M j, Y', $r->post_date ) )
 		);
 	}
 	echo '</ul>';
@@ -170,6 +204,14 @@ add_action( 'add_meta_boxes', function () {
 			'side',
 			'high'
 		);
+		add_meta_box(
+			'tpj_subject_picker',
+			'Appears in this piece',
+			'tpj_render_subject_picker_meta_box',
+			$type,
+			'side',
+			'high'
+		);
 	}
 } );
 
@@ -197,7 +239,7 @@ add_action( 'admin_enqueue_scripts', function ( $hook ) {
 		'tpj-photographer-picker',
 		$theme_uri . '/assets/article-photographer-picker.js',
 		[],
-		'1.0.0',
+		'1.1.0',
 		true
 	);
 } );
@@ -208,8 +250,37 @@ add_action( 'admin_enqueue_scripts', function ( $hook ) {
  */
 function tpj_render_photographer_picker_meta_box( $post ) {
 	wp_nonce_field( 'tpj_photographer_picker', 'tpj_photographer_picker_nonce' );
+	tpj_render_people_picker( $post, [
+		'linked_ids'   => tpj_get_photographer_links( $post->ID ),
+		'input_name'   => 'tpj_photographer_ids',
+		'empty'        => 'No photographer assigned. Search below to add one.',
+		'allow_create' => true,
+		'note'         => 'Photographer credit only. List crew (MUA, stylist, models) in the article body.',
+	] );
+}
 
-	$linked_ids = tpj_get_photographer_links( $post->ID );
+/**
+ * "Appears in this piece": photographers who are in front of the camera
+ * here (model, subject, muse). Existing photographers only, so the
+ * Photographers index never fills up with people who only modeled.
+ */
+function tpj_render_subject_picker_meta_box( $post ) {
+	wp_nonce_field( 'tpj_subject_picker', 'tpj_subject_picker_nonce' );
+	tpj_render_people_picker( $post, [
+		'linked_ids'   => tpj_get_subject_links( $post->ID ),
+		'input_name'   => 'tpj_subject_ids',
+		'empty'        => 'Nobody linked. If a TPJ photographer modeled or sat for this piece, search for them below.',
+		'allow_create' => false,
+		'note'         => 'Shows this piece on their profile under "Appears in". Stylists and assistants stay as text credits.',
+	] );
+}
+
+/**
+ * Shared picker shell. The JS (article-photographer-picker.js) hydrates
+ * every .tpj-picker on the page independently.
+ */
+function tpj_render_people_picker( $post, array $args ) {
+	$linked_ids = $args['linked_ids'];
 
 	// Hydrate each linked photographer's metadata server-side so the
 	// chips render with full info on first paint (no spinner-then-fill
@@ -250,13 +321,13 @@ function tpj_render_photographer_picker_meta_box( $post ) {
 	     data-rest-nonce="<?php echo esc_attr( $rest_nonce ); ?>">
 		<input
 			type="hidden"
-			name="tpj_photographer_ids"
+			name="<?php echo esc_attr( $args['input_name'] ); ?>"
 			value="<?php echo esc_attr( wp_json_encode( array_map( 'intval', array_column( $initial, 'id' ) ) ) ); ?>"
 		/>
 
 		<div class="tpj-picker-chips"></div>
 		<p class="tpj-picker-empty" <?php echo empty( $initial ) ? '' : 'hidden'; ?>>
-			No photographer assigned. Search below to add one.
+			<?php echo esc_html( $args['empty'] ); ?>
 		</p>
 
 		<div class="tpj-picker-search">
@@ -269,6 +340,7 @@ function tpj_render_photographer_picker_meta_box( $post ) {
 			<div class="tpj-picker-results" hidden></div>
 		</div>
 
+		<?php if ( $args['allow_create'] ) : ?>
 		<button type="button" class="button button-link tpj-picker-add-new-toggle">
 			+ Add new photographer
 		</button>
@@ -297,10 +369,9 @@ function tpj_render_photographer_picker_meta_box( $post ) {
 				<button type="button" class="button-link tpj-picker-form-cancel">Cancel</button>
 			</div>
 		</div>
+		<?php endif; ?>
 
-		<p class="tpj-picker-note">
-			Photographer credit only. List crew (MUA, stylist, models) in the article body.
-		</p>
+		<p class="tpj-picker-note"><?php echo esc_html( $args['note'] ); ?></p>
 	</div>
 	<?php
 }
@@ -364,5 +435,45 @@ add_action( 'save_post', function ( $post_id ) {
 		update_post_meta( $post_id, 'photographer', implode( ' & ', $names ) );
 	} else {
 		delete_post_meta( $post_id, 'photographer' );
+	}
+} );
+
+/**
+ * Save handler for the "Appears in this piece" picker (tpj_subject).
+ */
+add_action( 'save_post', function ( $post_id ) {
+	$post = get_post( $post_id );
+	if ( ! $post || ! in_array( $post->post_type, TPJ_PICKER_POST_TYPES, true ) ) {
+		return;
+	}
+	if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || wp_is_post_revision( $post_id ) ) {
+		return;
+	}
+	if ( ! current_user_can( 'edit_post', $post_id ) || ! isset( $_POST['tpj_subject_picker_nonce'] ) ) {
+		return;
+	}
+	if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tpj_subject_picker_nonce'] ) ), 'tpj_subject_picker' ) ) {
+		return;
+	}
+	$ids = json_decode( isset( $_POST['tpj_subject_ids'] ) ? wp_unslash( $_POST['tpj_subject_ids'] ) : '[]', true );
+	if ( ! is_array( $ids ) ) {
+		return;
+	}
+	$valid = [];
+	foreach ( $ids as $id ) {
+		$p = get_post( (int) $id );
+		if ( $p && $p->post_type === 'photographer' && $p->post_status === 'publish' ) {
+			$valid[] = (int) $id;
+		}
+	}
+	$before = tpj_get_subject_links( $post_id );
+	tpj_set_subject_links( $post_id, $valid );
+	// Refresh the profiles of everyone added or removed.
+	if ( function_exists( 'tpj_request_revalidate' ) && $post->post_status === 'publish' ) {
+		$paths = [ '/photographers' ];
+		foreach ( array_unique( array_merge( $before, $valid ) ) as $pid ) {
+			$paths[] = '/photographer/' . get_post_field( 'post_name', $pid );
+		}
+		tpj_request_revalidate( $paths );
 	}
 } );

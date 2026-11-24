@@ -13,6 +13,7 @@ const PhotographersIndexQuery = gql`
         content
         linkedArticleCount
         interviewCount
+        appearsInCount
         tpjPortraitUrl
         featuredImage {
           node {
@@ -104,6 +105,8 @@ export type PhotographerIndexItem = {
   slug: string;
   bioPreview: string;
   articleCount: number;
+  /** Pieces someone else shot that this photographer appears in. */
+  appearsInCount?: number;
   portrait: { src: string; alt: string } | null;
 };
 
@@ -127,6 +130,7 @@ type Raw = {
   content: string | null;
   linkedArticleCount: number | null;
   interviewCount: number | null;
+  appearsInCount?: number | null;
   tpjPortraitUrl: string | null;
   featuredImage: {
     node: { sourceUrl: string | null; altText: string | null } | null;
@@ -308,6 +312,7 @@ export async function fetchPhotographersIndex(): Promise<
         slug: node.slug,
         bioPreview: bioPreview(node.content),
         articleCount: node.linkedArticleCount ?? node.interviewCount ?? 0,
+        appearsInCount: node.appearsInCount ?? 0,
         portrait: cptPortrait
           ? { src: cptPortrait.src, alt: cptPortrait.alt || name }
           : null,

@@ -8,6 +8,8 @@ type Props = {
   name: string;
   slug: string;
   articleCount: number;
+  /** Pieces they appear in that someone else shot (model, subject). */
+  appearsInCount?: number;
   bio?: string | null;
   portrait?: { src: string; alt: string } | null;
   /**
@@ -34,6 +36,7 @@ export function PhotographerListCard({
   name,
   slug,
   articleCount,
+  appearsInCount = 0,
   bio,
   portrait,
   centered = false,
@@ -59,6 +62,7 @@ export function PhotographerListCard({
       {articleCount > 0 && (
         <p className={styles.cardCount}>
           {articleCount} {articleCount === 1 ? "article" : "articles"}
+          {appearsInCount > 0 && `  ·  appears in ${appearsInCount}`}
           <span className={styles.cardCountArrow} aria-hidden="true">
             →
           </span>

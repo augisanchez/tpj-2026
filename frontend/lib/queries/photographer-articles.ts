@@ -64,6 +64,48 @@ const PhotographerWorkQuery = gql`
           }
         }
       }
+      appearsInEssays {
+        id
+        title
+        slug
+        date
+        photographerName
+        articleAuthor
+        featuredImage {
+          node {
+            sourceUrl(size: LARGE)
+            altText
+          }
+        }
+      }
+      appearsInInterviews {
+        id
+        title
+        slug
+        date
+        photographerName
+        articleAuthor
+        featuredImage {
+          node {
+            sourceUrl(size: LARGE)
+            altText
+          }
+        }
+      }
+      appearsInFeatures {
+        id
+        title
+        slug
+        date
+        photographerName
+        articleAuthor
+        featuredImage {
+          node {
+            sourceUrl(size: LARGE)
+            altText
+          }
+        }
+      }
     }
   }
 `;
@@ -98,6 +140,9 @@ type WorkResponse = {
     interviews: RawNode[] | null;
     features: RawNode[] | null;
     interviewsConducted: RawNode[] | null;
+    appearsInEssays?: RawNode[] | null;
+    appearsInInterviews?: RawNode[] | null;
+    appearsInFeatures?: RawNode[] | null;
   } | null;
 };
 
@@ -133,6 +178,8 @@ export type PhotographerWork = {
   articles: PhotographerArticle[];
   /** Interviews this person conducted (matched on the interviewer byline). */
   interviewsConducted: PhotographerArticle[];
+  /** Pieces someone else shot that this person appears in (model, subject). */
+  appearsIn: PhotographerArticle[];
 };
 
 
@@ -143,7 +190,7 @@ export async function fetchPhotographerArticles(
     slug: photographerSlug,
   });
   const w = data.photographerWork;
-  if (!w) return { articles: [], interviewsConducted: [] };
+  if (!w) return { articles: [], interviewsConducted: [], appearsIn: [] };
 
   const byDateDesc = (a: PhotographerArticle, b: PhotographerArticle) =>
     new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -155,5 +202,10 @@ export async function fetchPhotographerArticles(
   const interviewsConducted = (w.interviewsConducted ?? [])
     .map((n) => toArticle(n, "interview"))
     .sort(byDateDesc);
-  return { articles, interviewsConducted };
+  const appearsIn = [
+    ...(w.appearsInEssays ?? []).map((n) => toArticle(n, "essay")),
+    ...(w.appearsInInterviews ?? []).map((n) => toArticle(n, "interview")),
+    ...(w.appearsInFeatures ?? []).map((n) => toArticle(n, "feature")),
+  ].sort(byDateDesc);
+  return { articles, interviewsConducted, appearsIn };
 }

@@ -595,7 +595,30 @@ add_action( 'graphql_register_types', function () {
 			'interviews'          => [ 'type' => [ 'list_of' => 'Interview' ] ],
 			'features'            => [ 'type' => [ 'list_of' => 'Feature' ] ],
 			'interviewsConducted' => [ 'type' => [ 'list_of' => 'Interview' ] ],
+			// Pieces someone else shot that this photographer appears in
+			// (model, subject, muse), linked via tpj_subject.
+			'appearsInEssays'     => [ 'type' => [ 'list_of' => 'Essay' ] ],
+			'appearsInInterviews' => [ 'type' => [ 'list_of' => 'Interview' ] ],
+			'appearsInFeatures'   => [ 'type' => [ 'list_of' => 'Feature' ] ],
 		],
+	] );
+
+	register_graphql_field( 'Photographer', 'appearsInCount', [
+		'type'        => 'Int',
+		'description' => 'Published articles this photographer appears in (tpj_subject), shot by someone else.',
+		'resolve'     => function ( $post ) {
+			global $wpdb;
+			$id = is_object( $post ) ? (int) ( $post->ID ?? $post->databaseId ?? 0 ) : 0;
+			if ( ! $id ) {
+				return 0;
+			}
+			return (int) $wpdb->get_var( $wpdb->prepare(
+				"SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->postmeta} m JOIN {$wpdb->posts} p ON p.ID = m.post_id
+				 WHERE m.meta_key = 'tpj_subject' AND m.meta_value = %s AND p.post_status = 'publish'
+				   AND p.post_type IN ('essay','interview','feature')",
+				(string) $id
+			) );
+		},
 	] );
 
 	register_graphql_field( 'RootQuery', 'photographerWork', [
@@ -609,14 +632,14 @@ add_action( 'graphql_register_types', function () {
 				return null;
 			}
 			$wrap   = fn( $posts ) => array_map( fn( $p ) => new \WPGraphQL\Model\Post( $p ), $posts );
-			$linked = function ( $type ) use ( $ph ) {
+			$linked = function ( $type, $key = 'tpj_photographer' ) use ( $ph ) {
 				return get_posts( [
 					'post_type'        => $type,
 					'post_status'      => 'publish',
 					'posts_per_page'   => 500,
 					'orderby'          => 'date',
 					'order'            => 'DESC',
-					'meta_query'       => [ [ 'key' => 'tpj_photographer', 'value' => (string) $ph->ID ] ],
+					'meta_query'       => [ [ 'key' => $key, 'value' => (string) $ph->ID ] ],
 					'suppress_filters' => false,
 				] );
 			};
@@ -644,6 +667,9 @@ add_action( 'graphql_register_types', function () {
 				'interviews'          => $wrap( $linked( 'interview' ) ),
 				'features'            => $wrap( $linked( 'feature' ) ),
 				'interviewsConducted' => $wrap( $conducted ),
+				'appearsInEssays'     => $wrap( $linked( 'essay', 'tpj_subject' ) ),
+				'appearsInInterviews' => $wrap( $linked( 'interview', 'tpj_subject' ) ),
+				'appearsInFeatures'   => $wrap( $linked( 'feature', 'tpj_subject' ) ),
 			];
 		},
 	] );

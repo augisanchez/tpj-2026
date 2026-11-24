@@ -116,6 +116,7 @@ export function PhotographersFilters({ photographers }: Props) {
                     name={p.name}
                     slug={p.slug}
                     articleCount={p.articleCount}
+                    appearsInCount={p.appearsInCount}
                     bio={p.bioPreview}
                     portrait={p.portrait}
                   />

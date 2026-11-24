@@ -320,6 +320,14 @@ function tpj_article_related_paths( $post_id ) {
 			}
 		}
 	}
+	if ( function_exists( 'tpj_get_subject_links' ) ) {
+		foreach ( tpj_get_subject_links( $post_id ) as $pid ) {
+			$slug = get_post_field( 'post_name', $pid );
+			if ( $slug ) {
+				$paths[] = '/photographer/' . $slug;
+			}
+		}
+	}
 	$themes = wp_get_object_terms( $post_id, 'tpj-theme', [ 'fields' => 'slugs' ] );
 	if ( ! is_wp_error( $themes ) ) {
 		foreach ( $themes as $slug ) {

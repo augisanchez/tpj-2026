@@ -30,7 +30,7 @@
 			container.dataset.createUrl ||
 			(searchUrl ? searchUrl.replace(/\/search(\?.*)?$/, "/create") : "");
 		var restNonce = container.dataset.restNonce;
-		var hiddenInput = container.querySelector('input[name="tpj_photographer_ids"]');
+		var hiddenInput = container.querySelector('input[type="hidden"]');
 		var chipsEl = container.querySelector(".tpj-picker-chips");
 		var emptyEl = container.querySelector(".tpj-picker-empty");
 		var searchInput = container.querySelector(".tpj-picker-search-input");

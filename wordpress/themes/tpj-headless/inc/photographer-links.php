@@ -182,3 +182,42 @@ function tpj_format_photographer_names_display( array $names ) {
 	$last  = array_pop( $clean );
 	return implode( ', ', $clean ) . ', and ' . $last;
 }
+
+/* -------------------------------------------------------------------- */
+/* "Appears in" links: photographers who appear in (model for, sit for) */
+/* an article someone else shot. Same multi-row shape as                */
+/* tpj_photographer, stored under tpj_subject.                          */
+/* -------------------------------------------------------------------- */
+
+function tpj_get_subject_links( $post_id ) {
+	$post_id = (int) $post_id;
+	if ( $post_id <= 0 ) {
+		return [];
+	}
+	$out = [];
+	foreach ( (array) get_post_meta( $post_id, 'tpj_subject', false ) as $raw ) {
+		$id = (int) $raw;
+		$p  = $id > 0 ? get_post( $id ) : null;
+		if ( $p && $p->post_type === 'photographer' && $p->post_status === 'publish' && ! in_array( $id, $out, true ) ) {
+			$out[] = $id;
+		}
+	}
+	return $out;
+}
+
+function tpj_set_subject_links( $post_id, array $photographer_ids ) {
+	$post_id = (int) $post_id;
+	if ( $post_id <= 0 ) {
+		return;
+	}
+	delete_post_meta( $post_id, 'tpj_subject' );
+	$seen = [];
+	foreach ( $photographer_ids as $raw ) {
+		$id = (int) $raw;
+		if ( $id <= 0 || isset( $seen[ $id ] ) ) {
+			continue;
+		}
+		$seen[ $id ] = true;
+		add_post_meta( $post_id, 'tpj_subject', (string) $id, false );
+	}
+}

@@ -48,6 +48,7 @@ export default async function PhotographerPage({ params }: Props) {
       photographer={photographer}
       articles={work.articles}
       interviewsConducted={work.interviewsConducted}
+      appearsIn={work.appearsIn}
     />
   );
 }

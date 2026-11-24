@@ -20,9 +20,11 @@ type Props = {
   articles: PhotographerArticle[];
   /** Interviews this person conducted. Empty for photographer-only profiles. */
   interviewsConducted?: PhotographerArticle[];
+  /** Pieces someone else shot that this photographer appears in. */
+  appearsIn?: PhotographerArticle[];
 };
 
-type View = "photographs" | "interviews";
+type View = "photographs" | "interviews" | "appears";
 
 // Cascade: cover -> identity -> bio/socials -> articles header ->
 // articles grid. Container drives the stagger orchestration; each
@@ -52,15 +54,25 @@ export function PhotographerProfileBody({
   photographer,
   articles,
   interviewsConducted = [],
+  appearsIn = [],
 }: Props) {
   const totalArticles = articles.length;
   const totalInterviews = interviewsConducted.length;
+  const totalAppears = appearsIn.length;
   const isInterviewer = totalInterviews > 0;
-  // Default to whichever body of work exists; photographs win a tie.
-  const [view, setView] = useState<View>(
-    totalArticles === 0 && isInterviewer ? "interviews" : "photographs"
-  );
-  const shown = view === "interviews" ? interviewsConducted : articles;
+  // Tabs appear only when there's more than one body of work to switch
+  // between. Photographs always lead when they exist.
+  const views = (
+    [
+      ["photographs", "Photographs", totalArticles],
+      ["interviews", "Interviews", totalInterviews],
+      ["appears", "Appears in", totalAppears],
+    ] as const
+  ).filter(([key, , count]) => count > 0 || (key === "photographs" && totalInterviews + totalAppears === 0));
+  const hasTabs = views.length > 1;
+  const [view, setView] = useState<View>(views[0]?.[0] ?? "photographs");
+  const shown =
+    view === "interviews" ? interviewsConducted : view === "appears" ? appearsIn : articles;
 
   // Earliest article year for the "since YYYY" line. Articles are sorted
   // newest first, so the last entry is oldest.
@@ -88,6 +100,9 @@ export function PhotographerProfileBody({
         totalInterviews === 1 ? "interview" : "interviews"
       } conducted`
     );
+  }
+  if (totalAppears > 0) {
+    metaSegments.push(`appears in ${totalAppears}`);
   }
   const metaLine = metaSegments.join("  ·  ");
 
@@ -146,18 +161,13 @@ export function PhotographerProfileBody({
       </section>
 
       <motion.section className={styles.articles} variants={itemVariants}>
-        {isInterviewer && (
+        {hasTabs && (
           <div
             className={styles.viewSwitch}
             role="tablist"
             aria-label={`${photographer.name}'s work`}
           >
-            {(
-              [
-                ["photographs", "Photographs", totalArticles],
-                ["interviews", "Interviews", totalInterviews],
-              ] as const
-            ).map(([key, label, count]) => (
+            {views.map(([key, label, count]) => (
               <button
                 key={key}
                 type="button"
@@ -175,13 +185,13 @@ export function PhotographerProfileBody({
         )}
         <div
           id="photographer-work"
-          role={isInterviewer ? "tabpanel" : undefined}
-          aria-labelledby={isInterviewer ? `view-${view}` : undefined}
+          role={hasTabs ? "tabpanel" : undefined}
+          aria-labelledby={hasTabs ? `view-${view}` : undefined}
           className={styles.workPanel}
         >
           {shown.length > 0 ? (
             <>
-              {!isInterviewer && (
+              {!hasTabs && (
                 <p className={styles.articlesHead}>
                   {totalArticles}{" "}
                   {totalArticles === 1 ? "article" : "articles"}
@@ -211,7 +221,7 @@ export function PhotographerProfileBody({
                   : `No photographs by ${photographer.name} in the archive yet.`
               }
               note={
-                isInterviewer
+                hasTabs
                   ? undefined
                   : "Check back after the next issue ships."
               }

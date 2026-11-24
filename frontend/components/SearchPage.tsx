@@ -4,7 +4,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArticleCard } from "./ArticleCard";
 import { EmptyState } from "./EmptyState";
+import { PhotographerListCard } from "./PhotographerListCard";
 import type { ExploreItem } from "@/lib/queries/explore";
+import type { SearchPhotographer } from "@/lib/queries/search";
 import styles from "./SearchPage.module.css";
 
 const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = {
@@ -18,9 +20,11 @@ const DEBOUNCE_MS = 300;
 type Props = {
   initialTerm: string;
   results: ExploreItem[];
+  /** Photographers whose name matches, shown above the articles. */
+  photographers?: SearchPhotographer[];
 };
 
-export function SearchPage({ initialTerm, results }: Props) {
+export function SearchPage({ initialTerm, results, photographers = [] }: Props) {
   const [term, setTerm] = useState(initialTerm);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -48,7 +52,8 @@ export function SearchPage({ initialTerm, results }: Props) {
 
   const trimmed = term.trim();
   const showResults = trimmed.length > 0;
-  const empty = showResults && results.length === 0 && !isPending;
+  const empty =
+    showResults && results.length === 0 && photographers.length === 0 && !isPending;
 
   return (
     <main className={styles.page}>
@@ -97,6 +102,22 @@ export function SearchPage({ initialTerm, results }: Props) {
           heading="Nothing in the archive matched that search."
           note="Try a photographer name, a place, or a single word from a title."
         />
+      )}
+
+      {showResults && photographers.length > 0 && (
+        <div className={styles.people}>
+          {photographers.map((p) => (
+            <PhotographerListCard
+              key={p.id}
+              name={p.name}
+              slug={p.slug}
+              articleCount={p.articleCount}
+              appearsInCount={p.appearsInCount}
+              bio={p.bioPreview}
+              portrait={p.portrait}
+            />
+          ))}
+        </div>
       )}
 
       {showResults && results.length > 0 && (

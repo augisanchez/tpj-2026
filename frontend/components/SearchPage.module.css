@@ -118,3 +118,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Matching photographers sit above the article results, same card as
+   the Photographers index. */
+.people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-element, 32px);
+  margin-bottom: 64px;
+}

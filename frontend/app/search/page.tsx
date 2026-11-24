@@ -12,7 +12,9 @@ type Props = {
 export default async function SearchRoute({ searchParams }: Props) {
   const { q } = await searchParams;
   const term = (q ?? "").trim();
-  const results = term ? await fetchSearchResults(term) : [];
+  const { photographers, items } = term
+    ? await fetchSearchResults(term)
+    : { photographers: [], items: [] };
 
-  return <SearchPage initialTerm={term} results={results} />;
+  return <SearchPage initialTerm={term} results={items} photographers={photographers} />;
 }
