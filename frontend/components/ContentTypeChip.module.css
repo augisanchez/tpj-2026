@@ -14,21 +14,22 @@
   transition: background-color 150ms ease-out;
 }
 
-.chip:hover {
-  background: #d4ee9b;
-}
-
+/* A label, not a headline: 12px floor (bold caps with wide tracking
+   read larger than their size; ink on acid is 16:1), capped low so the
+   gap to the title stays wide. WCAG sets no minimum size; 12px is the
+   site's floor (audit L21). */
 .small {
-  font-size: clamp(12px, 0.6rem + 0.15vw, 14px); /* 12px floor on phones (audit L21) */
+  font-size: 12px;
   letter-spacing: 0.14em;
 }
 
 .medium {
-  font-size: clamp(12px, 0.65rem + 0.15vw, 18px); /* caps ~3120 */
+  font-size: 12px;
   letter-spacing: 0.14em;
 }
 
 .large {
-  font-size: clamp(16px, 0.85rem + 0.2vw, 26px);  /* caps ~3960 */
+  font-size: clamp(12px, 0.7rem + 0.12vw, 14px);
   letter-spacing: 0.14em;
+  padding: 4px 6px;
 }

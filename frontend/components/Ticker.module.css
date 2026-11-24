@@ -84,14 +84,15 @@
 }
 
 /* Hover/focus: a 4px inset line in the accent. No zoom, no tint. */
-.link:hover .image,
-.link:focus-visible .image {
+.link:hover .image {
   outline: 4px solid var(--accent);
   outline-offset: -4px;
 }
 
+/* Keyboard focus uses the site focus color, like every other link. */
 .link:focus-visible {
-  outline: none;
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
 }
 
 .title {

@@ -243,6 +243,7 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
                   href: `/essay/${essay.slug}`,
                   contentTypeLabel: "Photo Essay",
                   featuredImage: essay.featuredImage ?? undefined,
+                  photographer: essay.photographerName,
                 }}
               />
             </div>

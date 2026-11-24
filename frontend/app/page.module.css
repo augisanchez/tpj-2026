@@ -44,6 +44,9 @@
 }
 
 .exploreLink {
+  /* 36px tall hit area (WCAG 2.5.8) without moving the layout. */
+  padding-block: 8px;
+  margin-block: -8px;
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 700;
   font-size: 13px;

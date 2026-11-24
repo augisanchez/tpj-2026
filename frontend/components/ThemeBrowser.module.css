@@ -27,6 +27,9 @@
 }
 
 .exploreLink {
+  /* 36px tall hit area (WCAG 2.5.8) without moving the layout. */
+  padding-block: 8px;
+  margin-block: -8px;
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 700;
   font-size: 13px;
@@ -125,6 +128,12 @@
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
   margin: 0.55em 0 0 0.3em;
+  /* Small type needs 4.5:1: --muted, not the large words' grey. */
+  color: var(--muted);
+}
+
+.tab[aria-selected="true"] .count {
+  color: var(--acid-ink);
 }
 
 .srOnly {
