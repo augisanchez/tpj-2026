@@ -7,8 +7,8 @@
   gap: clamp(12px, 0.5rem + 0.8vw, 32px);
   width: 100%;
   padding: clamp(40px, 1.5rem + 4vw, 160px) var(--gutter);
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--acid);
+  color: var(--acid-ink);
   text-decoration: none;
 }
 

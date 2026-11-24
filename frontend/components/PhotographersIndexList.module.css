@@ -93,7 +93,7 @@
 
 .row:hover,
 .row:focus-visible {
-  background: var(--acid);
+  background: var(--acid-signal);
   color: var(--acid-ink);
 }
 

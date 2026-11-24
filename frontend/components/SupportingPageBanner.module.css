@@ -1,5 +1,5 @@
 .banner {
-  background: var(--chip-bg);
+  background: var(--acid);
   color: var(--chip-text);
   padding: clamp(64px, 3rem + 4vw, 200px) 0; /* caps ~3200 */
 }

@@ -17,14 +17,21 @@
      Cobalt is for interaction only: focus rings and primary buttons.
      Acid on the light grey has almost no edge (1.03:1), so it is never
      used for text, outlines or anything that must be seen on --bg. */
-  --acid: #cff26d; /* Volt from the Air Force 1 reference: dye hue ~76deg, sat ~55%, at lit-panel brightness */
+  /* Two greens, one hue (76deg), fixed jobs:
+     --acid is the surface green (the Air Force 1 Volt reference): big
+     fields only, the footer, bands and page banners.
+     --acid-signal is the same hue at full saturation: small marks that
+     must pop at small sizes and against photographs, the type tags,
+     photo hover frames, the active theme, row hovers. */
+  --acid: #cff26d;
+  --acid-signal: #b8fa00;
   --acid-ink: #111111;
   --cobalt: #2b4dff;
   --cobalt-ink: #ffffff;
-  --accent: var(--acid);
+  --accent: var(--acid-signal);
   --accent-ink: var(--acid-ink);
   --focus: var(--cobalt);
-  --chip-bg: var(--acid);
+  --chip-bg: var(--acid-signal);
   --chip-text: #1a1814;
   --chip-active: #1a1814;
   --chip-active-text: #e8e4df;

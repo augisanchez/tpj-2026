@@ -115,7 +115,7 @@
 }
 
 .tab[aria-selected="true"] .word {
-  background: var(--acid);
+  background: var(--acid-signal);
   color: var(--acid-ink);
 }
 
