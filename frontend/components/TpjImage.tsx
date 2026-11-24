@@ -62,6 +62,22 @@ type Props = {
  * same call sites automatically pick up responsive srcsets and edge
  * format conversion.
  */
+/**
+ * Swap a failed /cdn-cgi/image/ resize for the original file, once. The
+ * head script in layout.tsx does the same for images that fail before
+ * hydration; this covers the ones React sees. Returns true when a retry
+ * is in flight (or already was), false when there is nothing left to try.
+ */
+function tryOriginal(img: HTMLImageElement): boolean {
+  if (img.dataset.cdnFb) return !img.complete;
+  const current = img.currentSrc || img.src || "";
+  if (current.indexOf("/cdn-cgi/image/") < 0) return false;
+  img.dataset.cdnFb = "1";
+  img.removeAttribute("srcset");
+  img.src = current.replace(/\/cdn-cgi\/image\/[^/]+/, "");
+  return true;
+}
+
 export function TpjImage({
   src,
   alt,
@@ -84,6 +100,7 @@ export function TpjImage({
   useEffect(() => {
     const img = ref.current;
     if (img && img.complete && img.naturalWidth === 0 && img.currentSrc) {
+      if (tryOriginal(img)) return;
       setFailed(true);
       onError?.();
     }
@@ -114,7 +131,11 @@ export function TpjImage({
       className={className}
       data-fade=""
       onLoad={onLoad}
-      onError={() => {
+      onError={(e) => {
+        // A failed edge resize (e.g. Cloudflare's transformation quota,
+        // error 9422) falls back to the original file. Only give up when
+        // the original fails too.
+        if (tryOriginal(e.currentTarget)) return;
         setFailed(true);
         onError?.();
       }}
