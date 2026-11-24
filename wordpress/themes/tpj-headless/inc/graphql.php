@@ -589,3 +589,72 @@ add_action( 'graphql_register_types', function () {
 		},
 	] );
 } );
+
+/*
+ * photographerWork(slug): one photographer's articles, looked up by the
+ * tpj_photographer link (indexed meta) instead of the frontend pulling
+ * the whole archive and filtering it. Interviews they conducted match
+ * on the interviewer byline (tpj_byline_author), split on the same
+ * conjunctions the name resolver uses.
+ */
+add_action( 'graphql_register_types', function () {
+	register_graphql_object_type( 'PhotographerWork', [
+		'description' => 'Articles credited to one photographer, newest first.',
+		'fields'      => [
+			'essays'              => [ 'type' => [ 'list_of' => 'Essay' ] ],
+			'interviews'          => [ 'type' => [ 'list_of' => 'Interview' ] ],
+			'features'            => [ 'type' => [ 'list_of' => 'Feature' ] ],
+			'interviewsConducted' => [ 'type' => [ 'list_of' => 'Interview' ] ],
+		],
+	] );
+
+	register_graphql_field( 'RootQuery', 'photographerWork', [
+		'type'        => 'PhotographerWork',
+		'description' => 'Articles credited to the photographer with this slug, plus interviews they conducted. Null when no published photographer has the slug.',
+		'args'        => [ 'slug' => [ 'type' => [ 'non_null' => 'String' ] ] ],
+		'resolve'     => function ( $root, $args ) {
+			$slug = sanitize_title( (string) $args['slug'] );
+			$ph   = $slug ? get_page_by_path( $slug, OBJECT, 'photographer' ) : null;
+			if ( ! $ph || 'publish' !== $ph->post_status ) {
+				return null;
+			}
+			$wrap   = fn( $posts ) => array_map( fn( $p ) => new \WPGraphQL\Model\Post( $p ), $posts );
+			$linked = function ( $type ) use ( $ph ) {
+				return get_posts( [
+					'post_type'        => $type,
+					'post_status'      => 'publish',
+					'posts_per_page'   => 500,
+					'orderby'          => 'date',
+					'order'            => 'DESC',
+					'meta_query'       => [ [ 'key' => 'tpj_photographer', 'value' => (string) $ph->ID ] ],
+					'suppress_filters' => false,
+				] );
+			};
+			$conducted = array_values( array_filter(
+				get_posts( [
+					'post_type'      => 'interview',
+					'post_status'    => 'publish',
+					'posts_per_page' => 500,
+					'orderby'        => 'date',
+					'order'          => 'DESC',
+					'meta_query'     => [ [ 'key' => 'tpj_byline_author', 'value' => '', 'compare' => '!=' ] ],
+				] ),
+				function ( $p ) use ( $slug ) {
+					$names = preg_split( '/\s*(?:&|,|;|\s+and\s+)\s*/i', (string) get_post_meta( $p->ID, 'tpj_byline_author', true ) );
+					foreach ( $names as $n ) {
+						if ( $n !== '' && sanitize_title( $n ) === $slug ) {
+							return true;
+						}
+					}
+					return false;
+				}
+			) );
+			return [
+				'essays'              => $wrap( $linked( 'essay' ) ),
+				'interviews'          => $wrap( $linked( 'interview' ) ),
+				'features'            => $wrap( $linked( 'feature' ) ),
+				'interviewsConducted' => $wrap( $conducted ),
+			];
+		},
+	] );
+} );

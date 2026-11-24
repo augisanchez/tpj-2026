@@ -1,36 +1,14 @@
 import { gql } from "graphql-request";
 import { wpClient } from "../api";
 import { rewriteMediaUrl } from "../media";
-import { slugifyName } from "../text-utils";
 
-const PhotographerArticlesQuery = gql`
-  query PhotographerArticles($first: Int = 1000) {
-    essays(
-      first: $first
-      where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }
-    ) {
-      nodes {
-        id
-        title
-        slug
-        date
-        photographerName
-        featuredImage {
-          node {
-            sourceUrl(size: LARGE)
-            altText
-          }
-        }
-        linkedPhotographers {
-          slug
-        }
-      }
-    }
-    interviews(
-      first: $first
-      where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }
-    ) {
-      nodes {
+// One photographer's work, resolved in WordPress by the tpj_photographer
+// link (inc/graphql.php → photographerWork). Replaces pulling all ~755
+// articles and filtering here, which took ~5s per cold photographer page.
+const PhotographerWorkQuery = gql`
+  query PhotographerWork($slug: String!) {
+    photographerWork(slug: $slug) {
+      essays {
         id
         title
         slug
@@ -43,29 +21,47 @@ const PhotographerArticlesQuery = gql`
             altText
           }
         }
-        linkedPhotographers {
-          slug
-        }
       }
-    }
-    features(
-      first: $first
-      where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }
-    ) {
-      nodes {
+      interviews {
         id
         title
         slug
         date
         photographerName
+        articleAuthor
         featuredImage {
           node {
             sourceUrl(size: LARGE)
             altText
           }
         }
-        linkedPhotographers {
-          slug
+      }
+      features {
+        id
+        title
+        slug
+        date
+        photographerName
+        articleAuthor
+        featuredImage {
+          node {
+            sourceUrl(size: LARGE)
+            altText
+          }
+        }
+      }
+      interviewsConducted {
+        id
+        title
+        slug
+        date
+        photographerName
+        articleAuthor
+        featuredImage {
+          node {
+            sourceUrl(size: LARGE)
+            altText
+          }
         }
       }
     }
@@ -96,11 +92,15 @@ type RawNode = {
   articleAuthor?: string | null;
 };
 
-type Response = {
-  essays: { nodes: RawNode[] };
-  interviews: { nodes: RawNode[] };
-  features: { nodes: RawNode[] };
+type WorkResponse = {
+  photographerWork: {
+    essays: RawNode[] | null;
+    interviews: RawNode[] | null;
+    features: RawNode[] | null;
+    interviewsConducted: RawNode[] | null;
+  } | null;
 };
+
 
 function toArticle(
   node: RawNode,
@@ -135,62 +135,25 @@ export type PhotographerWork = {
   interviewsConducted: PhotographerArticle[];
 };
 
-/** Split a joined credit ("Chris Buck and Dan Gerdes") into names. */
-function splitNames(joined: string): string[] {
-  const parts = joined
-    .split(/\s*(?:&|,|;|\s+and\s+)\s*/i)
-    .map((p) => p.trim())
-    .filter(Boolean);
-  return parts.length > 0 ? parts : [joined];
-}
 
 export async function fetchPhotographerArticles(
   photographerSlug: string
 ): Promise<PhotographerWork> {
-  const data = await wpClient.request<Response>(PhotographerArticlesQuery, {
-    first: 1000,
+  const data = await wpClient.request<WorkResponse>(PhotographerWorkQuery, {
+    slug: photographerSlug,
   });
-
-  const matches = (n: RawNode) => {
-    if (n.linkedPhotographers?.some((lp) => lp.slug === photographerSlug)) {
-      return true;
-    }
-    if (n.photographerName) {
-      // Multi-author phantom path: split the joined display name on the
-      // same conjunctions the WP resolver uses, slugify each, and
-      // match. Lets pre-CPT collaborations still resolve per name.
-      const candidates = splitNames(n.photographerName);
-      if (candidates.some((p) => slugifyName(p) === photographerSlug)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const articles = [
-    ...data.essays.nodes.filter(matches).map((n) => toArticle(n, "essay")),
-    ...data.interviews.nodes
-      .filter(matches)
-      .map((n) => toArticle(n, "interview")),
-    ...data.features.nodes
-      .filter(matches)
-      .map((n) => toArticle(n, "feature")),
-  ];
+  const w = data.photographerWork;
+  if (!w) return { articles: [], interviewsConducted: [] };
 
   const byDateDesc = (a: PhotographerArticle, b: PhotographerArticle) =>
     new Date(b.date).getTime() - new Date(a.date).getTime();
-  articles.sort(byDateDesc);
-
-  const interviewsConducted = data.interviews.nodes
-    .filter(
-      (n) =>
-        !!n.articleAuthor &&
-        splitNames(n.articleAuthor).some(
-          (name) => slugifyName(name) === photographerSlug
-        )
-    )
+  const articles = [
+    ...(w.essays ?? []).map((n) => toArticle(n, "essay")),
+    ...(w.interviews ?? []).map((n) => toArticle(n, "interview")),
+    ...(w.features ?? []).map((n) => toArticle(n, "feature")),
+  ].sort(byDateDesc);
+  const interviewsConducted = (w.interviewsConducted ?? [])
     .map((n) => toArticle(n, "interview"))
     .sort(byDateDesc);
-
   return { articles, interviewsConducted };
 }

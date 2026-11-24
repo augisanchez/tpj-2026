@@ -1,7 +1,7 @@
 import { gql } from "graphql-request";
 import { wpClient } from "../api";
 import { rewriteMediaUrl } from "../media";
-import { htmlToPlainText, slugifyName, titleCaseName } from "../text-utils";
+import { htmlToPlainText, titleCaseName } from "../text-utils";
 
 const PhotographerBySlugQuery = gql`
   query PhotographerBySlug($slug: ID!) {
@@ -36,122 +36,7 @@ const PhotographerBySlugQuery = gql`
   }
 `;
 
-/**
- * Fallback path used when the Photographer CPT is empty (the
- * `wp tpj migrate-photographers` step hasn't run yet). The
- * `linkedPhotographer` field on every article carries the same data we
- * need, so we aggregate the photographer's record from any article
- * linked to them.
- */
-const ArticlesWithFullPhotographerQuery = gql`
-  query ArticlesWithFullPhotographer($first: Int = 500) {
-    essays(first: $first, where: { status: PUBLISH }) {
-      nodes {
-        id
-        photographerName
-        featuredImage {
-          node {
-            sourceUrl
-            altText
-          }
-        }
-        linkedPhotographer {
-          id
-          title
-          slug
-          content
-          tpjPortraitUrl
-          linkedArticleCount
-          website
-          instagram
-          twitter
-          facebook
-          tumblr
-          flickr
-          vscoGrid
-          vimeo
-          blog
-          featuredImage {
-            node {
-              sourceUrl
-              altText
-            }
-          }
-        }
-      }
-    }
-    interviews(first: $first, where: { status: PUBLISH }) {
-      nodes {
-        id
-        photographerName
-        featuredImage {
-          node {
-            sourceUrl
-            altText
-          }
-        }
-        linkedPhotographer {
-          id
-          title
-          slug
-          content
-          tpjPortraitUrl
-          linkedArticleCount
-          website
-          instagram
-          twitter
-          facebook
-          tumblr
-          flickr
-          vscoGrid
-          vimeo
-          blog
-          featuredImage {
-            node {
-              sourceUrl
-              altText
-            }
-          }
-        }
-      }
-    }
-    features(first: $first, where: { status: PUBLISH }) {
-      nodes {
-        id
-        photographerName
-        featuredImage {
-          node {
-            sourceUrl
-            altText
-          }
-        }
-        linkedPhotographer {
-          id
-          title
-          slug
-          content
-          tpjPortraitUrl
-          linkedArticleCount
-          website
-          instagram
-          twitter
-          facebook
-          tumblr
-          flickr
-          vscoGrid
-          vimeo
-          blog
-          featuredImage {
-            node {
-              sourceUrl
-              altText
-            }
-          }
-        }
-      }
-    }
-  }
-`;
+
 
 export type Photographer = {
   id: string;
@@ -193,46 +78,8 @@ type Raw = {
 
 type Response = { photographer: Raw | null };
 
-type LinkedRaw = {
-  id: string;
-  title: string;
-  slug: string;
-  content: string | null;
-  tpjPortraitUrl: string | null;
-  linkedArticleCount: number | null;
-  website: string | null;
-  instagram: string | null;
-  twitter: string | null;
-  facebook: string | null;
-  tumblr: string | null;
-  flickr: string | null;
-  vscoGrid: string | null;
-  vimeo: string | null;
-  blog: string | null;
-  bluesky: string | null;
-  threads: string | null;
-  linkedin: string | null;
-  location: string | null;
-  representedBy: string | null;
-  featuredImage: {
-    node: { sourceUrl: string | null; altText: string | null } | null;
-  } | null;
-};
 
-type FallbackNode = {
-  id: string;
-  photographerName: string | null;
-  featuredImage: {
-    node: { sourceUrl: string | null; altText: string | null } | null;
-  } | null;
-  linkedPhotographer: LinkedRaw | null;
-};
 
-type FallbackResponse = {
-  essays: { nodes: FallbackNode[] };
-  interviews: { nodes: FallbackNode[] };
-  features: { nodes: FallbackNode[] };
-};
 
 // Bio rendering for the photographer detail page goes through the
 // shared `htmlToPlainText` so HTML entities (curly quotes, en/em dashes,
@@ -361,96 +208,6 @@ function resolvePortrait(
   return null;
 }
 
-async function derivePhotographerFromArticles(
-  slug: string
-): Promise<Photographer | null> {
-  const data = await wpClient.request<FallbackResponse>(
-    ArticlesWithFullPhotographerQuery,
-    { first: 500 }
-  );
-
-  let lp: LinkedRaw | null = null;
-  let phantomName: string | null = null;
-  let phantomArticleImage: {
-    sourceUrl: string | null;
-    altText: string | null;
-  } | null = null;
-  let count = 0;
-
-  const collect = (nodes: FallbackNode[]) => {
-    for (const n of nodes) {
-      const linked = n.linkedPhotographer;
-      const matchesLinked = linked && linked.slug === slug;
-      const matchesName =
-        n.photographerName && slugifyName(n.photographerName) === slug;
-
-      if (!matchesLinked && !matchesName) continue;
-
-      if (matchesLinked) {
-        if (!lp) lp = linked;
-      } else if (n.photographerName) {
-        if (!phantomName) phantomName = n.photographerName;
-        if (!phantomArticleImage && n.featuredImage?.node) {
-          phantomArticleImage = n.featuredImage.node;
-        }
-      }
-      count += 1;
-    }
-  };
-
-  collect(data.essays?.nodes ?? []);
-  collect(data.interviews?.nodes ?? []);
-  collect(data.features?.nodes ?? []);
-
-  if (lp) {
-    const found: LinkedRaw = lp;
-    return {
-      id: found.id,
-      name: titleCaseName(found.title),
-      slug: found.slug,
-      bio: found.content ? htmlToPlainText(found.content) : "",
-      interviewCount: count,
-      location: found.location ?? null,
-      representedBy: found.representedBy ?? null,
-      socials: buildSocials({
-        website: found.website,
-        instagram: found.instagram,
-        twitter: found.twitter,
-        facebook: found.facebook,
-        tumblr: found.tumblr,
-        flickr: found.flickr,
-        vsco: found.vscoGrid,
-        vimeo: found.vimeo,
-        blog: found.blog,
-        bluesky: found.bluesky,
-        threads: found.threads,
-        linkedin: found.linkedin,
-      }),
-      portrait: resolvePortrait(
-        found.featuredImage?.node ?? null,
-        found.tpjPortraitUrl,
-        found.title
-      ),
-    };
-  }
-
-  if (phantomName) {
-    const displayName = titleCaseName(phantomName);
-    return {
-      id: `phantom:${slug}`,
-      name: displayName,
-      slug,
-      bio: "",
-      interviewCount: count,
-      location: null,
-      representedBy: null,
-      socials: [],
-      portrait: resolvePortrait(phantomArticleImage, null, displayName),
-    };
-  }
-
-  return null;
-}
 
 export async function fetchPhotographerBySlug(
   slug: string
@@ -459,9 +216,9 @@ export async function fetchPhotographerBySlug(
     slug,
   });
   const raw = data.photographer;
-  if (!raw) {
-    return derivePhotographerFromArticles(slug);
-  }
+  // Every listed photographer has a record (510/510, checked
+  // 2026-11-24). Unknown slugs are a 404, not an archive-wide scan.
+  if (!raw) return null;
 
   return {
     id: raw.id,
