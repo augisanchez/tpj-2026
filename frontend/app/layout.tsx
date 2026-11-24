@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Oswald, Inter, Source_Serif_4 } from "next/font/google";
+import localFont from "next/font/local";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { MotionRoot } from "@/components/MotionRoot";
@@ -7,24 +7,27 @@ import { RouteAnnouncer } from "@/components/RouteAnnouncer";
 import { SkipToContent } from "@/components/SkipToContent";
 import "./globals.css";
 
-const oswald = Oswald({
-  subsets: ["latin"],
-  weight: ["500", "700"],
+// Self-hosted (app/fonts) so builds never depend on Google Fonts being
+// reachable. Oswald and Inter are variable files covering every weight.
+const oswald = localFont({
+  src: "./fonts/Oswald-var.woff2",
+  weight: "500 700",
   display: "swap",
   variable: "--font-display",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const inter = localFont({
+  src: "./fonts/Inter-var.woff2",
+  weight: "400 700",
   display: "swap",
   variable: "--font-ui",
 });
 
-const sourceSerif = Source_Serif_4({
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
+const sourceSerif = localFont({
+  src: [
+    { path: "./fonts/SourceSerif4-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/SourceSerif4-400-italic.woff2", weight: "400", style: "italic" },
+  ],
   display: "swap",
   variable: "--font-serif",
 });
