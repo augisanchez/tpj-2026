@@ -27,7 +27,7 @@ import { LogoStage } from "./LogoStage";
 
 const WAVE_MS = 650;
 const WAVE_CAP_MS = 1100;
-const IMG_WAIT_MS = 1200;
+const IMG_WAIT_MS = 250;
 const EXIT_STEP_MS = 30;
 const EXIT_CAP = 6;
 const EXIT_MS = 320;
@@ -115,9 +115,10 @@ export function MotionRoot() {
     });
   };
 
-  // Blocks rise with their photos already in place: wait until the
-  // batch's images have loaded (capped), so a grey frame never rises
-  // with the photo popping in after.
+  // Give the batch's images a brief head start (250ms) so cached or
+  // fast photos rise already in place. Slower ones don't hold the page
+  // back: the block rises as its grey frame, so the structure is there,
+  // and the photo fades in when it lands.
   const flush = () => {
     if (phase.current !== "idle" || !queue.current.length) return;
     const batch = queue.current.splice(0);
