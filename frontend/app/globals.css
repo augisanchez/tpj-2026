@@ -17,7 +17,7 @@
      Cobalt is for interaction only: focus rings and primary buttons.
      Acid on the light grey has almost no edge (1.03:1), so it is never
      used for text, outlines or anything that must be seen on --bg. */
-  --acid: #ceff00; /* Volt-like: Nike's acid green is the reference */
+  --acid: #a6ff00; /* Volt-like and green, not yellow: Nike Volt is the reference */
   --acid-ink: #111111;
   --cobalt: #2b4dff;
   --cobalt-ink: #ffffff;
