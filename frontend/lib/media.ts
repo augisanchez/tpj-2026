@@ -4,7 +4,6 @@ import {
   CDN_PATH_PREFIX,
   cdnImageUrl,
   cdnSrcSet,
-  DEFAULT_WIDTHS,
   isCdnEnabled,
 } from "./cdn";
 

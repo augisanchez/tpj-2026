@@ -19,7 +19,7 @@ const PRODUCTS: {
   {
     title: "Residence",
     variant: "Photobook by Kate Sweeney",
-    image: "https://thephotographicjournal.com/store/images/residence-thumb.png",
+    image: "/shop/residence-thumb.jpg",
     href: "https://thephotographicjournal.com/store/residence/",
     cta: "View book",
   },
@@ -27,60 +27,60 @@ const PRODUCTS: {
     title: "Light and Grain",
     variant: "Unisex classic crewneck sweatshirt",
     image:
-      "https://thephotographicjournal.com/store/images/LightAndGrain-sweatshirt.jpg",
+      "/shop/LightAndGrain-sweatshirt.jpg",
     href: "https://my-store-f1b979.creator-spring.com/listing/light-and-grain?product=345",
   },
   {
     title: "TPJ Beanie",
     variant: "Black",
-    image: "https://thephotographicjournal.com/store/images/beanie.jpg",
+    image: "/shop/beanie.jpg",
     href: "https://my-store-f1b979.creator-spring.com/listing/tpj-beanie?product=2152",
   },
   {
     title: "Visual Storyteller — Light",
     variant: "Premium ring-spun cotton t-shirt",
     image:
-      "https://thephotographicjournal.com/store/images/visual-tee-light.jpg",
+      "/shop/visual-tee-light.jpg",
     href: "https://my-store-f1b979.creator-spring.com/listing/visual-storyteller-light?product=46",
   },
   {
     title: "Visual Storyteller — Light",
     variant: "Unisex classic crewneck sweatshirt",
     image:
-      "https://thephotographicjournal.com/store/images/visual-sweather-light.jpg",
+      "/shop/visual-sweather-light.jpg",
     href: "https://my-store-f1b979.creator-spring.com/listing/visual-storyteller-light?product=345",
   },
   {
     title: "Visual Storyteller — Dark",
     variant: "Premium ring-spun cotton t-shirt",
-    image: "https://thephotographicjournal.com/store/images/visual-tee-dark.jpg",
+    image: "/shop/visual-tee-dark.jpg",
     href: "https://my-store-f1b979.creator-spring.com/listing/visual-storyteller-dark?product=46",
   },
   {
     title: "Visual Storyteller — Dark",
     variant: "Unisex classic crewneck sweatshirt",
     image:
-      "https://thephotographicjournal.com/store/images/visual-sweater-dark.jpg",
+      "/shop/visual-sweater-dark.jpg",
     href: "https://my-store-f1b979.creator-spring.com/listing/visual-storyteller-dark?product=345",
   },
   {
     title: "TPJ Mug",
     variant: "Camping mug",
-    image: "https://thephotographicjournal.com/store/images/visual-mug.jpg",
+    image: "/shop/visual-mug.jpg",
     href: "https://my-store-f1b979.creator-spring.com/listing/tpj-mug",
   },
   {
     title: "Visual Storyteller Cap — Dark",
     variant: "Dad cap",
     image:
-      "https://thephotographicjournal.com/store/images/visual-cap-dark.jpg",
+      "/shop/visual-cap-dark.jpg",
     href: "https://my-store-f1b979.creator-spring.com/listing/visual-storyteller-black-dad",
   },
   {
     title: "Visual Storyteller Cap — Light",
     variant: "Dad cap",
     image:
-      "https://thephotographicjournal.com/store/images/visual-cap-light.jpg",
+      "/shop/visual-cap-light.jpg",
     href: "https://my-store-f1b979.creator-spring.com/listing/visual-storyteller-light-ca",
   },
 ];

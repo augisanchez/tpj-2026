@@ -21,6 +21,23 @@ type Redirect = { source: string; destination: string; permanent: boolean };
 const slashOptional = (r: Redirect): Redirect =>
   r.source.endsWith("/") || r.source.includes(":path") ? r : { ...r, source: `${r.source}{/}?` };
 
+const MEDIA_HOSTS = "https://cms.thephotographicjournal.com https://media.thephotographicjournal.com";
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://vercel.live",
+  "style-src 'self' 'unsafe-inline' https://vercel.live",
+  `img-src 'self' data: blob: ${MEDIA_HOSTS} https://vercel.live https://vercel.com`,
+  "font-src 'self' https://vercel.live https://assets.vercel.com",
+  `media-src 'self' ${MEDIA_HOSTS}`,
+  "connect-src 'self' https://usebasin.com https://vercel.live wss://ws-us3.pusher.com",
+  "frame-src https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com https://vercel.live",
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self' https://usebasin.com",
+  "object-src 'none'",
+  "report-uri /api/csp-report",
+].join("; ");
+
 const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
   async headers() {
@@ -32,6 +49,11 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+          // Report-only: blocks nothing, logs what it would block to
+          // /api/csp-report. Enforce after launch once the logs are clean
+          // (see docs/CUTOVER.md). Article bodies are WordPress HTML, so
+          // this is the backstop if a CMS account is ever compromised.
+          { key: "Content-Security-Policy-Report-Only", value: CSP },
         ],
       },
       {
@@ -44,7 +66,7 @@ const nextConfig: NextConfig = {
       },
       {
         // Static art in /public: cache a week, serve stale while it refreshes.
-        source: "/:dir(svg|about|photographers)/:path*",
+        source: "/:dir(svg|about|photographers|shop)/:path*",
         headers: [
           { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=2592000" },
         ],
