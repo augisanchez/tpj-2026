@@ -129,7 +129,7 @@
   font-size: clamp(14px, 0.8rem + 0.1vw, 17px); /* caps ~3360 */
   color: var(--muted);
   letter-spacing: 0.02em;
-  margin-top: 12px;
+  margin: 12px 0 0;
 }
 
 /* Card title scale — every variant clamps so cards keep growing at
@@ -174,4 +174,43 @@
   .card:hover .titleText {
     text-decoration-color: currentColor;
   }
+}
+
+/* Type chip plus an optional status label, set as type on one line.
+   Wraps under the chip on narrow cards rather than squeezing it. */
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.status {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Sizes track ContentTypeChip so the two read as one line of type. */
+.statussmall { font-size: clamp(12px, 0.6rem + 0.15vw, 14px); }
+.statusmedium { font-size: clamp(12px, 0.65rem + 0.15vw, 18px); }
+.statuslarge { font-size: clamp(14px, 0.75rem + 0.2vw, 22px); }
+
+/* Recent: a flat pill in the card's accent, ink type. */
+.statusNew {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Older than five years: plain muted caps on the date line, no fill. */
+.statusArchive {
+  font-size: 0.86em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }

@@ -1,0 +1,61 @@
+/* Wall label under the hero frame: small Inter, left-aligned, ink on
+   the page background. Fixed line count so swapping slides never
+   moves the page. */
+.wrap {
+  padding-top: 16px;
+}
+
+.listing {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  max-width: 60ch;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  transition: opacity 300ms var(--ease-out);
+}
+
+.hidden {
+  opacity: 0;
+}
+
+.eyebrow {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* One line; long titles truncate rather than add a line. */
+.work {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist {
+  font-weight: 600;
+}
+
+.title {
+  font-style: italic;
+}
+
+.meta {
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    padding-top: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listing {
+    transition: none;
+  }
+}

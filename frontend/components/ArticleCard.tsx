@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
 import { capWidths, cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
+import { accentFor } from "@/lib/accent";
 import styles from "./ArticleCard.module.css";
 
 // Rendered card widths per layout, so the browser picks the right srcset size.
@@ -52,6 +53,31 @@ type Props = {
   badgeCount?: number;
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const NEW_WITHIN_MS = 30 * DAY_MS;
+const ARCHIVE_AFTER_MS = 5 * 365.2425 * DAY_MS;
+
+/**
+ * Start of today (UTC). Day granularity keeps the server render and the
+ * client's hydration on the same answer except across a UTC midnight.
+ */
+function today(): number {
+  const now = Date.now();
+  return now - (now % DAY_MS);
+}
+
+type Status = { kind: "new" } | { kind: "archive" } | null;
+
+/** "New" inside 30 days of posting, "From the archive" past five years. */
+function statusFor(date: string, now: number): Status {
+  const posted = new Date(date).getTime();
+  if (Number.isNaN(posted)) return null;
+  const age = now - posted;
+  if (age >= 0 && age <= NEW_WITHIN_MS) return { kind: "new" };
+  if (age > ARCHIVE_AFTER_MS) return { kind: "archive" };
+  return null;
+}
+
 const CHIP_SIZE_BY_VARIANT: Record<ArticleCardVariant, ContentTypeChipSize> = {
   "1up": "large",
   "2up": "large",
@@ -77,6 +103,8 @@ export function ArticleCard({
   });
 
   const wrapperClass = styles.imageWrapper;
+  // Collection cards (composite thumbnails) aren't single stories.
+  const status = showDate && !hasComposite ? statusFor(article.date, today()) : null;
 
   return (
     <Link href={article.href} className={styles.card}>
@@ -112,10 +140,20 @@ export function ArticleCard({
         </div>
       </div>
       <div className={styles.textStack}>
-        <ContentTypeChip
-          label={article.contentTypeLabel}
-          size={CHIP_SIZE_BY_VARIANT[variant]}
-        />
+        <div className={styles.metaRow}>
+          <ContentTypeChip
+            label={article.contentTypeLabel}
+            size={CHIP_SIZE_BY_VARIANT[variant]}
+          />
+          {status?.kind === "new" && (
+            <span
+              className={`${styles.status} ${styles.statusNew} ${styles[`status${CHIP_SIZE_BY_VARIANT[variant]}` as const]}`}
+              data-accent={accentFor(article.href)}
+            >
+              New
+            </span>
+          )}
+        </div>
         <h3 className={titleClass}>
           <span className={styles.titleText}>{article.title}</span>
         </h3>
@@ -123,9 +161,17 @@ export function ArticleCard({
           <p className={styles.description}>{article.description}</p>
         )}
         {showDate && (
-          <time className={styles.date} dateTime={article.date}>
-            {formattedDate}
-          </time>
+          // Archive pieces label the date line, so the label costs no
+          // extra line and every card in a row keeps the same height.
+          <p className={styles.date}>
+            {status?.kind === "archive" && (
+              <>
+                <span className={styles.statusArchive}>From the archive</span>
+                {" · "}
+              </>
+            )}
+            <time dateTime={article.date}>{formattedDate}</time>
+          </p>
         )}
       </div>
     </Link>

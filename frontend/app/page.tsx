@@ -1,10 +1,10 @@
-import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ArchiveMosaic, type MosaicTile } from "@/components/ArchiveMosaic";
 import { ArticleCard } from "@/components/ArticleCard";
 import { HomepageHeroCarousel, type HeroSlide } from "@/components/HomepageHeroCarousel";
 import { InterviewQuoteRotator } from "@/components/InterviewQuoteRotator";
 import { PurposeStatement } from "@/components/PurposeStatement";
+import { RandomBand } from "@/components/RandomBand";
 import { ScrollCue } from "@/components/ScrollCue";
 import { ThemeBrowser } from "@/components/ThemeBrowser";
 import { fetchArchivalArticles } from "@/lib/queries/archival-articles";
@@ -172,13 +172,12 @@ export default async function Home() {
       photographerName: heroArticle.photographerName,
       creditPrefix: heroArticle.contentType === "feature" ? "By" : undefined,
       backgroundImage: heroArticle.featuredImage ?? undefined,
+      // "Photo Essay" → "Photo essay" for the wall label.
+      onView: articleLabel(heroArticle).replace(/ \w/g, (m) => m.toLowerCase()),
     });
   }
 
-  const archivalForHero =
-    archivalArticles.length > 0
-      ? archivalArticles[Math.floor(Math.random() * archivalArticles.length)]
-      : null;
+  const archivalForHero = pickRandom(archivalArticles, 1)[0] ?? null;
   if (archivalForHero) {
     heroSlides.push({
       key: `archival-${archivalForHero.contentType}-${archivalForHero.id}`,
@@ -299,6 +298,8 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      <RandomBand />
 
       <ThemeBrowser
         groups={themeGroups}
