@@ -29,6 +29,7 @@ export function InterviewBody({ html, lede }: Props) {
       <div
         ref={bodyRef}
         className={styles.body}
+        data-img-body=""
         data-reveal-scope
         dangerouslySetInnerHTML={{ __html: fullHtml }}
       />

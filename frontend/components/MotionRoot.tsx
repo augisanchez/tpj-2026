@@ -176,6 +176,40 @@ export function MotionRoot() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* ---------------- image loading ---------------- */
+
+  // Marks images as loaded so CSS swaps the placeholder for a fade-in
+  // (globals.css "Image loading"). Runs for reduced motion too.
+  useEffect(() => {
+    const SEL = "img[data-fade], [data-img-body] img";
+    const mark = (img: HTMLImageElement) => {
+      if (!img.dataset.ld) img.dataset.ld = "1";
+    };
+    const scan = () =>
+      document.querySelectorAll<HTMLImageElement>(SEL).forEach((img) => {
+        if (img.complete) mark(img);
+      });
+    const onDone = (e: Event) => {
+      const t = e.target;
+      if (t instanceof HTMLImageElement && t.matches(SEL)) mark(t);
+    };
+    document.addEventListener("load", onDone, true);
+    document.addEventListener("error", onDone, true);
+    scan();
+    let raf = 0;
+    const mo = new MutationObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(scan);
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      document.removeEventListener("load", onDone, true);
+      document.removeEventListener("error", onDone, true);
+      mo.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   /* ---------------- page to page ---------------- */
 
   useEffect(() => {

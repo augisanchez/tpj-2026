@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
 import { cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
@@ -69,9 +68,7 @@ export function ArticleCard({
   compositeImages,
   badgeCount,
 }: Props) {
-  const [imageLoaded, setImageLoaded] = useState(false);
   const hasComposite = Boolean(compositeImages && compositeImages.length > 0);
-  const hasImage = Boolean(article.featuredImage);
   const titleClass = `${styles.title} ${styles[`title${variant}` as const]}`;
   const formattedDate = new Date(article.date).toLocaleDateString(undefined, {
     year: "numeric",
@@ -79,11 +76,7 @@ export function ArticleCard({
     day: "numeric",
   });
 
-  const wrapperClass = `${styles.imageWrapper}${
-    hasImage && !imageLoaded && !hasComposite
-      ? " " + styles.imageWrapperLoading
-      : ""
-  }`;
+  const wrapperClass = styles.imageWrapper;
 
   return (
     <Link href={article.href} className={styles.card}>
@@ -97,15 +90,14 @@ export function ArticleCard({
             article.featuredImage && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                className={`${styles.image} pz-media${imageLoaded ? " " + styles.imageLoaded : ""}`}
+                className={`${styles.image} pz-media`}
+                data-fade=""
                 src={cdnImageUrl(article.featuredImage.src, { width: 1024 }) ?? article.featuredImage.src}
                 srcSet={cdnSrcSet(article.featuredImage.src, [480, 768, 1024, 1440]) ?? undefined}
                 sizes={CARD_SIZES[variant]}
                 alt={article.featuredImage.alt}
                 loading="lazy"
                 decoding="async"
-                onLoad={() => setImageLoaded(true)}
-                onError={() => setImageLoaded(true)}
               />
             )
           )}

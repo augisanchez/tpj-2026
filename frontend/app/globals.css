@@ -172,14 +172,16 @@ img {
 .rv-line {
   display: block;
   overflow: hidden;
-  /* room for descenders inside the mask */
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
+  /* Room for ascenders and descenders inside the mask. Display titles
+     run at line-height 0.88-1.05, so glyphs extend past the line box;
+     the negative margins keep the layout identical. */
+  padding: 0.32em 0;
+  margin: -0.32em 0;
 }
 
 .rv-line-inner {
   display: block;
-  transform: translateY(105%);
+  transform: translateY(calc(105% + 0.7em));
 }
 
 .rv-in .rv-line-inner {
@@ -260,5 +262,60 @@ body.is-arriving footer {
   }
   [data-pz] .pz-media {
     transform: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Image loading. Until an image has loaded, its frame shows the
+   placeholder tone with a soft light sweep (starting after 300ms so
+   fast loads never flash it). On load the image fades in. MotionRoot
+   marks images with data-ld on load/error. html.img-fade is set by
+   the head script and dropped if the app never boots, so images can
+   never stay hidden without JavaScript.
+   Opt in: <img data-fade>, or any image inside [data-img-body].
+   --------------------------------------------------------------- */
+.img-fade img[data-fade]:not([data-ld]),
+.img-fade [data-img-body] img:not([data-ld]) {
+  opacity: 0;
+}
+
+.img-fade img[data-fade][data-ld],
+.img-fade [data-img-body] img[data-ld] {
+  animation: img-in 600ms var(--ease-out) both;
+}
+
+.img-fade :has(> img[data-fade]:not([data-ld])),
+.img-fade [data-img-body] :is(figure, p, a):has(> img:not([data-ld])) {
+  background-color: var(--placeholder);
+  background-image: linear-gradient(
+    100deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.28) 50%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  animation: img-loader 1.6s ease-in-out 300ms infinite both;
+}
+
+@keyframes img-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes img-loader {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .img-fade :has(> img[data-fade]:not([data-ld])),
+  .img-fade [data-img-body] :is(figure, p, a):has(> img:not([data-ld])) {
+    animation: none;
+    background-image: none;
+  }
+  .img-fade img[data-fade][data-ld],
+  .img-fade [data-img-body] img[data-ld] {
+    animation-duration: 200ms;
   }
 }

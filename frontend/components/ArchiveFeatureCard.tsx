@@ -34,6 +34,7 @@ export function ArchiveFeatureCard({ feature }: Props) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             className={`${styles.image} pz-media`}
+            data-fade=""
             src={feature.featuredImage.src}
             alt={feature.featuredImage.alt}
           />

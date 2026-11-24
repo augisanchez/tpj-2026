@@ -84,6 +84,7 @@ export function TpjImage({
       loading={priority ? "eager" : "lazy"}
       fetchPriority={priority ? "high" : "auto"}
       className={className}
+      data-fade=""
       onLoad={onLoad}
       onError={onError}
     />

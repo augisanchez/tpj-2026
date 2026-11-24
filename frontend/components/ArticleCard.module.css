@@ -85,32 +85,10 @@
    The 200% background-size gives the sweep travel distance; the
    animation moves background-position from right (100%) to left
    (-100%) so the band traverses the full card width. */
-.imageWrapperLoading {
-  background: linear-gradient(
-    90deg,
-    #cccccc 0%,
-    #e0e0e0 50%,
-    #cccccc 100%
-  );
-  background-size: 200% 100%;
-  animation: tpj-card-skeleton 1.4s ease-in-out infinite;
-}
-
-@keyframes tpj-card-skeleton {
-  from { background-position: 100% 0; }
-  to { background-position: -100% 0; }
-}
-
 .image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-  transition: opacity 400ms ease-out;
-}
-
-.imageLoaded {
-  opacity: 1;
 }
 
 /* Wraps a non-img image element (e.g. ThemeThumbnail composite) so
@@ -119,15 +97,6 @@
 .motionImageScale {
   width: 100%;
   height: 100%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .image {
-    opacity: 1;
-  }
-  .imageWrapperLoading {
-    animation: none;
-  }
 }
 
 .textStack {

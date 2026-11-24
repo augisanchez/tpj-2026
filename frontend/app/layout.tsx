@@ -59,7 +59,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){var d=document.documentElement;if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('motion-on');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('motion-on')},3000)}})();",
+              "(function(){var d=document.documentElement;d.classList.add('img-fade');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('img-fade')},3000);if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('motion-on');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('motion-on')},3000)}})();",
           }}
         />
       </head>

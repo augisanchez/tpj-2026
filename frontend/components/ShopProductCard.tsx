@@ -28,6 +28,7 @@ export function ShopProductCard({ title, variant, image, href, cta }: Props) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className="pz-media"
+          data-fade=""
           src={image}
           alt={title}
         />
