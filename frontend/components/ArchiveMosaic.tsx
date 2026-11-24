@@ -8,7 +8,10 @@ export type MosaicTile = {
   src: string;
   title: string;
   photographer: string | null;
+  contentType: "essay" | "interview" | "feature";
 };
+
+const TYPE_LABEL = { essay: "Photo Essay", interview: "Interview", feature: "Feature" } as const;
 
 type Props = {
   tiles: MosaicTile[];
@@ -16,9 +19,10 @@ type Props = {
 };
 
 /**
- * Revisit: pieces older than two years in a mixed-size grid. The
- * photographer's name sits on every tile in the lime chip; the title
- * shows on hover (and always on the lead tile).
+ * Revisit: pieces older than two years in a mixed-size grid. Every tile
+ * shows its main title (the photographer for interviews, the article
+ * title otherwise) under a quiet content-type tag; essays and features
+ * also carry the photographer in the lime chip.
  */
 export function ArchiveMosaic({ tiles, total }: Props) {
   return (
@@ -42,12 +46,13 @@ export function ArchiveMosaic({ tiles, total }: Props) {
                 className={styles.image}
               />
               <span className={styles.caption}>
-                {t.photographer && (
+                <span className={styles.type}>{TYPE_LABEL[t.contentType]}</span>
+                {t.contentType !== "interview" && t.photographer && (
                   <ContentTypeChip label={t.photographer} size={i === 0 ? "medium" : "small"} />
                 )}
-                {t.title.trim().toLowerCase() !== (t.photographer ?? "").trim().toLowerCase() && (
-                  <span className={styles.piece}>{t.title}</span>
-                )}
+                <span className={styles.piece}>
+                  {t.contentType === "interview" ? t.photographer || t.title : t.title}
+                </span>
               </span>
             </Link>
           </li>

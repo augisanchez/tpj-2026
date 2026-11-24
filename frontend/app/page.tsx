@@ -227,6 +227,7 @@ export default async function Home() {
       src: a.featuredImage!.thumb ?? a.featuredImage!.src,
       title: a.title,
       photographer: a.photographerName,
+      contentType: a.contentType,
     }));
   const mosaicTiles = pickRandom(mosaicPool, 14);
   // Lead tile is large: give it the full image, the rest the 600px square.
