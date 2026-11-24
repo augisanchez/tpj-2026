@@ -26,6 +26,11 @@ const EssayBySlugQuery = gql`
       photographerName
       ${LinkedPhotographerFields}
       ${LinkedPhotographersFields}
+      themes {
+        nodes {
+          slug
+        }
+      }
       featuredImage {
         node {
           sourceUrl
@@ -62,6 +67,8 @@ export type Essay = {
   photographers: Photographer[];
   featuredImage: FeaturedImage | null;
   heroImage: FeaturedImage | null;
+  /** tpj-theme slugs, for the related-stories strip. */
+  themes?: string[];
 };
 
 type RawHeroImage = {
@@ -82,6 +89,7 @@ type RawEssay = {
   photographerName: string | null;
   linkedPhotographer: RawLinkedPhotographer | null;
   linkedPhotographers: RawLinkedPhotographer[] | null;
+  themes?: { nodes: { slug: string | null }[] | null } | null;
   featuredImage: {
     node: {
       sourceUrl: string | null;
@@ -158,5 +166,9 @@ export async function fetchEssayBySlug(
           height: hero?.mediaDetails?.height ?? undefined,
         }
       : null,
+    themes:
+      raw.themes?.nodes
+        ?.map((n) => n.slug)
+        .filter((s): s is string => Boolean(s)) ?? [],
   };
 }

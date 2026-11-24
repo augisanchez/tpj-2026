@@ -6,13 +6,16 @@ import { ArticleBody } from "@/components/ArticleBody";
 import { EssayIntro } from "@/components/EssayIntro";
 import { ExhibitionChecklist } from "@/components/ExhibitionChecklist";
 import { Hero } from "@/components/Hero";
+import { PlateCounter } from "@/components/PlateCounter";
 import { ReadingProgress } from "@/components/ReadingProgress";
-import { RelatedArticles } from "@/components/RelatedArticles";
+import { RelatedStrip } from "@/components/RelatedStrip";
+import { SubmitBand } from "@/components/SubmitBand";
 import { hangPlates } from "@/lib/exhibition";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchEssayBySlug } from "@/lib/queries/essay-by-slug";
 import { previewTarget } from "@/lib/preview";
 import { fetchRecentEssays } from "@/lib/queries/recent-essays";
+import { fetchRelatedStories } from "@/lib/queries/related-stories";
 import { normalizeSlug } from "@/lib/text-utils";
 import type { Metadata } from "next";
 import { describe, pageMetadata, articleJsonLd, isoDate } from "@/lib/seo";
@@ -63,7 +66,8 @@ export default async function EssayPage({ params }: Props) {
     day: "numeric",
   });
 
-  const related = recent.filter((e) => e.slug !== essay.slug).slice(0, 3);
+  // Same photographer first, then same theme, then recent essays.
+  const related = await fetchRelatedStories(essay, recent);
 
   const photographerDisplayName =
     formatPhotographerNames(essay.photographers.map((p) => p.name)) ??
@@ -103,6 +107,7 @@ export default async function EssayPage({ params }: Props) {
       {essay.intro && <EssayIntro text={essay.intro} />}
 
       <ArticleBody html={bodyHtml} />
+      <PlateCounter total={plates.length} />
 
       <ExhibitionChecklist plates={plates} />
 
@@ -110,11 +115,9 @@ export default async function EssayPage({ params }: Props) {
         <AboutPhotographerSection photographers={essay.photographers} />
       )}
 
-      <RelatedArticles
-        eyebrow="More essays"
-        heading="Continue the thread"
-        essays={related}
-      />
+      <RelatedStrip label="Related stories" stories={related} />
+
+      <SubmitBand />
     </>
   );
 }

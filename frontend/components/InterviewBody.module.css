@@ -79,6 +79,9 @@
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+  /* Bare URLs in legacy copy (book links) break instead of pushing the
+     page sideways on phones. */
+  overflow-wrap: anywhere;
 }
 
 .body a:hover {
@@ -186,5 +189,61 @@
   }
   .body > :global(.fig-margin) {
     max-width: 100%;
+  }
+}
+
+/* Colophon: model, styling and other credits carried over from the
+   legacy end-of-article block (lib/queries/linked-photographer.ts emits
+   <dl class="article-credits"> with one <div><dt><dd> per label). Two
+   columns in Inter: muted caps labels, names at caption size, a hairline
+   above. Phones stack each label over its names. */
+.body > :global(dl.article-credits) {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  column-gap: 32px;
+  row-gap: 12px;
+  align-items: baseline;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-ui), system-ui, sans-serif;
+}
+
+.body > :global(dl.article-credits) > div {
+  display: contents;
+}
+
+.body > :global(dl.article-credits) dt {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.body > :global(dl.article-credits) dd {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: 1.6;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.body > :global(dl.article-credits) a {
+  color: inherit;
+}
+
+@media (max-width: 640px) {
+  .body > :global(dl.article-credits) {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+  }
+  .body > :global(dl.article-credits) dd + dt,
+  .body > :global(dl.article-credits) > div + div dt {
+    margin-top: 16px;
+  }
+  .body > :global(dl.article-credits) dd {
+    margin-top: 2px;
   }
 }

@@ -1,0 +1,48 @@
+.section {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter) clamp(96px, 4rem + 5vw, 320px);
+}
+
+/* Same section label as "About the photographer": muted caps. */
+.label {
+  margin: 0 0 24px;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Native horizontal scroller. The 4px inset keeps focus rings
+   unclipped; the negative margin cancels it so cards line up with
+   the label. */
+.strip {
+  display: flex;
+  gap: 24px;
+  margin: 0 -4px;
+  padding: 4px 4px 16px;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--placeholder) transparent;
+}
+
+.item {
+  flex: 0 0 clamp(220px, 18vw, 360px);
+  scroll-snap-align: start;
+}
+
+@media (max-width: 640px) {
+  .strip {
+    gap: 16px;
+  }
+  .item {
+    flex-basis: 72vw;
+  }
+}

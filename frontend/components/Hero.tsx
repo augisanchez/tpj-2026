@@ -51,33 +51,37 @@ export function Hero({
     .join("  ·  ");
   return (
     <div className={styles.outer}>
-      <div className={styles.card} data-reveal="wipe">
-        {backgroundImage && (
-          <TpjImage
-            className={styles.image}
-            src={backgroundImage.src}
-            alt={backgroundImage.alt}
-            sizes="100vw"
-            width={backgroundImage.width}
-            priority
-          />
-        )}
-        <div className={styles.gradient} aria-hidden="true" />
-        <div className={styles.stack}>
-          <div className={styles.eyebrowRow} data-reveal>
-            <ContentTypeChip label={contentTypeLabel} size="large" />
-            {meta && <p className={styles.byline}>{meta}</p>}
+      {/* The frame carries the scroll widening (Hero.module.css); the card
+          keeps its own entrance wipe, so the two clips never collide. */}
+      <div className={styles.frame}>
+        <div className={styles.card} data-reveal="wipe">
+          {backgroundImage && (
+            <TpjImage
+              className={styles.image}
+              src={backgroundImage.src}
+              alt={backgroundImage.alt}
+              sizes="100vw"
+              width={backgroundImage.width}
+              priority
+            />
+          )}
+          <div className={styles.gradient} aria-hidden="true" />
+          <div className={styles.stack}>
+            <div className={styles.eyebrowRow} data-reveal>
+              <ContentTypeChip label={contentTypeLabel} size="large" />
+              {meta && <p className={styles.byline}>{meta}</p>}
+            </div>
+            <h1
+              className={styles.title}
+              data-scale={titleScale(title)}
+              style={{ ["--lw" as string]: longestWord(title) }}
+              data-reveal="lines"
+            >
+              {title}
+            </h1>
+            {subtitle && <p className={styles.subtitle} data-reveal>{subtitle}</p>}
+            {credit && <p className={`${styles.byline} ${styles.portraitCredit}`} data-reveal>{credit}</p>}
           </div>
-          <h1
-            className={styles.title}
-            data-scale={titleScale(title)}
-            style={{ ["--lw" as string]: longestWord(title) }}
-            data-reveal="lines"
-          >
-            {title}
-          </h1>
-          {subtitle && <p className={styles.subtitle} data-reveal>{subtitle}</p>}
-          {credit && <p className={`${styles.byline} ${styles.portraitCredit}`} data-reveal>{credit}</p>}
         </div>
       </div>
     </div>

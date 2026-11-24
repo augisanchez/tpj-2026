@@ -1,0 +1,34 @@
+/* Fixed frame counter, bottom left, in the page gutter. Rises in while
+   body photographs are on screen and sinks away otherwise. */
+.counter {
+  position: fixed;
+  left: 24px;
+  bottom: 20px;
+  z-index: 50;
+  margin: 0;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 300ms var(--ease-out),
+    transform 300ms var(--ease-out);
+}
+
+.counter[data-visible] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 1024px), (prefers-reduced-motion: reduce) {
+  .counter {
+    display: none;
+  }
+}

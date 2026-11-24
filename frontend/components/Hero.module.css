@@ -183,3 +183,49 @@
     display: none;
   }
 }
+
+/* Opening photo widens on scroll (desktop, scroll-driven animations
+   only). Layout is full-bleed from the start and never changes: the
+   frame clips the card back to the usual inset, and the scroll timeline
+   opens that clip to the edges (and squares the corners) over the first
+   35% of a viewport. Clip-path only, so nothing below moves (no CLS), and
+   the title is placed inside the clipped area so it is never cut. The
+   card keeps its own entrance wipe; the two clips compose.
+   Phones, short landscape screens, reduced motion and browsers without
+   animation-timeline keep the static framed card above. */
+@media (min-width: 641px) and (min-height: 501px) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .outer {
+      padding-inline: 0;
+      container-type: inline-size;
+    }
+    .frame {
+      /* Same inset as the static layout: 32px, or the 1,920px column. */
+      --inset: max(32px, calc((100cqi - 1920px) / 2));
+      clip-path: inset(0 var(--inset) round var(--radius-img));
+      animation: hero-widen linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 35vh;
+    }
+    .card {
+      /* The framed card's height, computed from the inset width, so the
+         page is exactly as tall as before. */
+      aspect-ratio: auto;
+      height: min(
+        calc((100cqi - 2 * var(--inset)) * 720 / 1376),
+        calc(100svh - 96px)
+      );
+      border-radius: 0;
+    }
+    .stack {
+      left: calc(var(--inset) + 64px);
+      right: calc(var(--inset) + 64px);
+    }
+  }
+}
+
+@keyframes hero-widen {
+  to {
+    clip-path: inset(0 0 round 0);
+  }
+}

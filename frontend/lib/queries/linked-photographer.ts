@@ -221,13 +221,80 @@ export function extractLegacyCredits(tail: string): string[] {
   return out.filter(Boolean);
 }
 
+/** Index of the first colon outside markup (an href's "https:" doesn't count). */
+function labelColon(html: string): number {
+  let inTag = false;
+  for (let i = 0; i < html.length; i++) {
+    const c = html[i];
+    if (c === "<") inTag = true;
+    else if (c === ">") inTag = false;
+    else if (c === ":" && !inTag) return i;
+  }
+  return -1;
+}
+
+type CreditEntry = { label: string; values: string[] };
+
+/**
+ * Group credit lines into label/value pairs for the colophon. Each line
+ * splits on its first colon: "Model: Clair Banks" -> Model / Clair Banks.
+ * A line with no label (a name under a bare "Models:" heading) joins the
+ * preceding label's values, one per line. "Clothing by:" reads as
+ * "Clothing"; a leading "Credits:" is dropped.
+ */
+export function groupCredits(lines: string[]): CreditEntry[] {
+  const out: CreditEntry[] = [];
+  for (const raw of lines) {
+    // "Images 1 & 8 –<a>Name</a>": give the dash its space back.
+    let line = raw.replace(/([–—])(?=<a\b)/g, "$1 ").trim();
+    let at = labelColon(line);
+    let label = at === -1 ? "" : creditText(line.slice(0, at));
+    if (/^credits?$/i.test(label)) {
+      line = line.slice(at + 1).trim();
+      at = labelColon(line);
+      label = at === -1 ? "" : creditText(line.slice(0, at));
+    }
+    // A long "label" is a sentence with a colon in it, not a label.
+    if (label && label.length <= 40) {
+      const value = line.slice(at + 1).trim();
+      out.push({
+        label: label.replace(/\s+by$/i, ""),
+        values: value && creditText(value) ? [value] : [],
+      });
+    } else if (out.length > 0) {
+      out[out.length - 1].values.push(line);
+    } else {
+      out.push({ label: "", values: [line] });
+    }
+  }
+  return out.filter((e) => e.values.length > 0);
+}
+
+function escapeText(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** Credit lines as a definition list: <dt>Model</dt><dd>Clair Banks</dd>. */
+export function creditsToDefinitionList(lines: string[]): string {
+  const entries = groupCredits(lines);
+  if (entries.length === 0) return "";
+  const rows = entries
+    .map(
+      (e) =>
+        `<div><dt>${escapeText(e.label)}</dt><dd>${e.values.join("<br>")}</dd></div>`
+    )
+    .join("");
+  return `<dl class="article-credits">${rows}</dl>`;
+}
+
 /**
  * Strip the legacy photographer block (everything from
  * `<div class="circletar"></div>` to end of content) so the structured
  * Photographer card at the bottom of the article isn't visually duplicated
  * by the inline blob. Only stripped when we have a linked photographer
  * to display in its place. Credit lines in that block (model, styling,
- * hair...) are kept and re-added as a credits paragraph.
+ * hair...) are kept and re-added as a colophon: a definition list of
+ * label / name pairs.
  */
 export function stripPhotographerBlob(html: string): string {
   const idx = html.toLowerCase().indexOf('<div class="circletar"');
@@ -237,9 +304,6 @@ export function stripPhotographerBlob(html: string): string {
     /(?:\s|<p[^>]*>\s*(?:&nbsp;| )?\s*<\/p>)+$/i,
     ""
   );
-  const credits = extractLegacyCredits(html.slice(idx));
-  const block = credits.length
-    ? `\n<p class="article-credits">${credits.join("<br>")}</p>`
-    : "";
-  return html.slice(0, trimmed.length) + block;
+  const dl = creditsToDefinitionList(extractLegacyCredits(html.slice(idx)));
+  return html.slice(0, trimmed.length) + (dl ? `\n${dl}` : "");
 }

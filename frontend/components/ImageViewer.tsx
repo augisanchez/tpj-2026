@@ -19,10 +19,13 @@ const SWIPE_NAV_DISTANCE = 80;
 const SWIPE_NAV_VELOCITY = 500;
 
 type ViewerImage = {
+  el: HTMLImageElement;
   src: string;
   alt: string;
   caption?: string;
 };
+
+type Side = "prev" | "next";
 
 type Props = {
   /** A ref to the article body container. The viewer scans it for <img>
@@ -31,15 +34,12 @@ type Props = {
 };
 
 /**
- * Walks the DOM under containerRef and returns an array of viewer-ready
- * images, plus a map from each image element to its index. The map lets
- * click handlers resolve which image to open in O(1).
+ * Walks the DOM under containerRef and returns the viewer-ready images
+ * in reading order. Run when the viewer opens, so late-loading photos
+ * are measured with their real size.
  */
-function collectImages(
-  root: HTMLElement
-): { images: ViewerImage[]; map: Map<HTMLImageElement, number> } {
+function collectImages(root: HTMLElement): ViewerImage[] {
   const images: ViewerImage[] = [];
-  const map = new Map<HTMLImageElement, number>();
   const imgs = root.querySelectorAll<HTMLImageElement>("img");
 
   imgs.forEach((img) => {
@@ -55,23 +55,28 @@ function collectImages(
       }
     }
 
-    map.set(img, images.length);
     images.push({
+      el: img,
       src: img.currentSrc || img.src,
       alt: img.alt || "",
       caption,
     });
   });
 
-  return { images, map };
+  return images;
 }
 
 export function ImageViewer({ containerRef }: Props) {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [fading, setFading] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const imagesRef = useRef<ViewerImage[]>([]);
+  // Collected on open (an event), so render never reads a ref and the
+  // portal only exists on the client once a photo has been opened.
+  const [images, setImages] = useState<ViewerImage[]>([]);
+  // Which half of the image the pointer is over: sets the arrow cursor.
+  const [side, setSide] = useState<Side | null>(null);
+  // Set while a drag gesture runs, so its trailing click doesn't advance.
+  const draggedRef = useRef(false);
   // Trigger element saved when the viewer opens so we can return
   // focus to it on close — WCAG 2.4.3 (focus order) compliance for
   // modal dialogs.
@@ -85,41 +90,33 @@ export function ImageViewer({ containerRef }: Props) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // Bind click handlers to every <img> inside the container.
   useEffect(() => {
     const root = containerRef.current;
     if (!root) return;
 
-    const { images, map } = collectImages(root);
-    imagesRef.current = images;
+    const openAt = (e: Event, img: HTMLImageElement) => {
+      const list = collectImages(root);
+      const idx = list.findIndex((it) => it.el === img);
+      if (idx === -1) return;
+      e.preventDefault();
+      triggerRef.current = img;
+      setImages(list);
+      setIndex(idx);
+      setOpen(true);
+    };
 
     const handler = (e: Event) => {
       const target = e.target as HTMLElement | null;
       if (!target || target.tagName !== "IMG") return;
-      const img = target as HTMLImageElement;
-      const idx = map.get(img);
-      if (idx === undefined) return;
-      e.preventDefault();
-      triggerRef.current = img;
-      setIndex(idx);
-      setOpen(true);
+      openAt(e, target as HTMLImageElement);
     };
 
     const keyHandler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target || target.tagName !== "IMG") return;
       if (e.key !== "Enter" && e.key !== " ") return;
-      const img = target as HTMLImageElement;
-      const idx = map.get(img);
-      if (idx === undefined) return;
-      e.preventDefault();
-      triggerRef.current = img;
-      setIndex(idx);
-      setOpen(true);
+      openAt(e, target as HTMLImageElement);
     };
 
     root.addEventListener("click", handler);
@@ -129,7 +126,7 @@ export function ImageViewer({ containerRef }: Props) {
     // accessible name. WP legacy archive often has empty alt
     // attributes — fall back to a generic label so the role="button"
     // is still operable by screen readers (WCAG 4.1.2).
-    map.forEach((_, img) => {
+    collectImages(root).forEach(({ el: img }) => {
       img.style.cursor = "zoom-in";
       img.setAttribute("role", "button");
       img.setAttribute("tabindex", "0");
@@ -156,7 +153,7 @@ export function ImageViewer({ containerRef }: Props) {
 
   const swap = useCallback(
     (delta: number) => {
-      const len = imagesRef.current.length;
+      const len = images.length;
       if (len === 0) return;
       const next = (index + delta + len) % len;
       setFading(true);
@@ -167,7 +164,27 @@ export function ImageViewer({ containerRef }: Props) {
         y.set(0);
       }, 150);
     },
-    [index, x, y]
+    [index, images.length, x, y]
+  );
+
+  // Click on the image: the left half goes back, the right half on.
+  const onImageClick = useCallback(
+    (e: React.MouseEvent<HTMLImageElement>) => {
+      e.stopPropagation();
+      if (draggedRef.current || images.length < 2) return;
+      const r = e.currentTarget.getBoundingClientRect();
+      swap(e.clientX < r.left + r.width / 2 ? -1 : 1);
+    },
+    [images.length, swap]
+  );
+
+  const onImagePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLImageElement>) => {
+      if (e.pointerType !== "mouse") return;
+      const r = e.currentTarget.getBoundingClientRect();
+      setSide(e.clientX < r.left + r.width / 2 ? "prev" : "next");
+    },
+    []
   );
 
   const onDragEnd = useCallback(
@@ -265,10 +282,8 @@ export function ImageViewer({ containerRef }: Props) {
     };
   }, [open, close, swap]);
 
-  if (!mounted) return null;
-
-  const total = imagesRef.current.length;
-  const current = imagesRef.current[index];
+  const total = images.length;
+  const current = images[index];
   if (!current) return null;
 
   return createPortal(
@@ -335,12 +350,19 @@ export function ImageViewer({ containerRef }: Props) {
         </>
       )}
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <motion.img
         className={`${styles.image}${fading ? " " + styles.fading : ""}`}
+        data-side={total > 1 ? side ?? undefined : undefined}
         src={current.src}
         alt={current.alt}
-        onClick={(e) => e.stopPropagation()}
+        onClick={onImageClick}
+        onPointerMove={onImagePointerMove}
+        onPointerDown={() => {
+          draggedRef.current = false;
+        }}
+        onDragStart={() => {
+          draggedRef.current = true;
+        }}
         draggable={false}
         // Drag both axes — vertical handles close, horizontal handles
         // swipe-nav. dragElastic gives the image a slightly rubbery

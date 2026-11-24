@@ -36,6 +36,17 @@
   opacity: 0;
 }
 
+/* Gallery advance: the left half of the photograph goes back, the right
+   half goes on (ImageViewer.tsx sets data-side from the pointer). Ink
+   arrow with a white edge so it reads on any photograph. */
+.image[data-side="prev"] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M25 16H8m7-7-7 7 7 7' fill='none' stroke='%23fff' stroke-width='5' stroke-linejoin='miter'/%3E%3Cpath d='M25 16H8m7-7-7 7 7 7' fill='none' stroke='%23111' stroke-width='2' stroke-linejoin='miter'/%3E%3C/svg%3E") 8 16, w-resize;
+}
+
+.image[data-side="next"] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M7 16h17m-7-7 7 7-7 7' fill='none' stroke='%23fff' stroke-width='5' stroke-linejoin='miter'/%3E%3Cpath d='M7 16h17m-7-7 7 7-7 7' fill='none' stroke='%23111' stroke-width='2' stroke-linejoin='miter'/%3E%3C/svg%3E") 24 16, e-resize;
+}
+
 .caption {
   margin-top: 24px;
   max-width: 720px;
@@ -47,15 +58,18 @@
   color: var(--hero-muted);
 }
 
+/* "04 / 13": same frame counter as the essay page, on the dark ground. */
 .counter {
   position: absolute;
-  top: 24px;
+  top: 28px;
   left: 24px;
+  margin: 0;
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--hero-muted);
 }
 
@@ -72,7 +86,7 @@
   border: 0;
   cursor: pointer;
   color: #fff;
-  border-radius: 50%;
+  border-radius: var(--radius);
   transition: background-color 150ms ease-out;
 }
 
@@ -93,7 +107,7 @@
   border: 0;
   cursor: pointer;
   color: #fff;
-  border-radius: 50%;
+  border-radius: var(--radius);
   transition: background-color 150ms ease-out, opacity 150ms ease-out;
 }
 
