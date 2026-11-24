@@ -29,12 +29,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(18px, 2.4svh, 32px);
+  gap: clamp(12px, 1.6svh, 21px);
 }
 
 .cameraWrap {
   position: relative;
-  width: clamp(96px, 10vw, 150px);
+  width: clamp(64px, 6.7vw, 100px);
   aspect-ratio: 1;
 }
 
@@ -47,7 +47,7 @@
 }
 
 .wordmark {
-  width: clamp(200px, 22vw, 320px);
+  width: clamp(134px, 14.7vw, 214px);
   height: auto;
 }
 
