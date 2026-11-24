@@ -15,6 +15,8 @@ type Props = {
   date?: string;
   excerpt?: string;
   photographerName?: string | null;
+  /** Credit wording before the name. "Photographs by" by default; features use "By". */
+  creditPrefix?: string;
   backgroundImage?: { src: string; alt: string };
   /** CSS object-position for the image, e.g. "50% 25%" to keep a face in frame. */
   imageFocus?: string;
@@ -31,6 +33,7 @@ export function HomepageHero({
   date,
   excerpt,
   photographerName,
+  creditPrefix = "Photographs by",
   backgroundImage,
   imageFocus,
   fill = false,
@@ -45,9 +48,9 @@ export function HomepageHero({
     : null;
   const byline =
     photographerName && formattedDate
-      ? `Photographs by ${photographerName}  ·  ${formattedDate}`
+      ? `${creditPrefix} ${photographerName}  ·  ${formattedDate}`
       : photographerName
-        ? `Photographs by ${photographerName}`
+        ? `${creditPrefix} ${photographerName}`
         : formattedDate;
 
   return (

@@ -11,12 +11,10 @@ const NAV_LINKS = [
   { label: "Photographers", href: "/photographers" },
   { label: "About", href: "/about" },
   { label: "Shop", href: "/shop" },
-];
-
-const DRAWER_LINKS = [
-  ...NAV_LINKS,
   { label: "Submit", href: "/submit" },
 ];
+
+const DRAWER_LINKS = NAV_LINKS;
 
 const DEAD_ZONE = 16;
 const REVEAL_DELTA = 8;

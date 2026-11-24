@@ -20,6 +20,7 @@ export type HeroSlide = {
   date?: string;
   excerpt?: string;
   photographerName?: string | null;
+  creditPrefix?: string;
   backgroundImage?: { src: string; alt: string };
   /** CSS object-position for the image, e.g. "50% 25%" to keep a face in frame. */
   imageFocus?: string;

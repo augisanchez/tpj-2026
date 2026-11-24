@@ -117,7 +117,11 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(18px, 0.7rem + 0.7vw, 30px);
-  line-height: 1.05;
+  /* 1.12 + a 0.16em pad lets Oswald descenders (y, p, g) clear the
+     clamp's overflow clip without the top of a third line showing. */
+  line-height: 1.12;
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
   letter-spacing: -0.01em;
   text-wrap: balance;
   display: -webkit-box;

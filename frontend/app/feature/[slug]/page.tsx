@@ -28,22 +28,21 @@ type Props = {
 };
 
 /**
- * Compose the Feature byline from up to three pieces:
- *   - Writer: "Words by {name}" — present for written Features.
- *   - Photographer: "Photographs by {name}" — present for photo-led
- *     Features (and most legacy Features).
- *   - Date: always present.
- * Pieces join with " · ". When no writer or photographer credit
- * exists, the byline is just the date.
+ * Feature byline: "By {names}" · date. Features range from reviews to
+ * photo-led pieces, so the credit stays neutral ("By") rather than
+ * claiming words or photographs. Writer and photographer are both
+ * credited when they differ. With no credit, it's just the date.
  */
 function buildFeatureByline(
   writer: string | null,
   photographer: string | null,
   formattedDate: string
 ): string {
+  const names = [writer, photographer].filter(
+    (n, i, all): n is string => Boolean(n) && all.indexOf(n) === i
+  );
   const parts: string[] = [];
-  if (writer) parts.push(`Words by ${writer}`);
-  if (photographer) parts.push(`Photographs by ${photographer}`);
+  if (names.length) parts.push(`By ${names.join(" and ")}`);
   parts.push(formattedDate);
   return parts.join("  ·  ");
 }

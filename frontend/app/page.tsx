@@ -155,6 +155,7 @@ export default async function Home() {
       date: heroArticle.date,
       excerpt: summarize(heroArticle.excerpt, 220),
       photographerName: heroArticle.photographerName,
+      creditPrefix: heroArticle.contentType === "feature" ? "By" : undefined,
       backgroundImage: heroArticle.featuredImage ?? undefined,
     });
   }
@@ -202,6 +203,7 @@ export default async function Home() {
         date: fallback.date,
         excerpt: summarize(fallback.excerpt, 220),
         photographerName: fallback.photographerName,
+        creditPrefix: fallback.contentType === "feature" ? "By" : undefined,
         backgroundImage: fallback.featuredImage ?? undefined,
       });
     }
