@@ -92,6 +92,29 @@
   object-fit: cover;
 }
 
+/* Hover frame: the same inset acid border as every other card
+   (ArticleCard), drawn above the photo and its caption gradient. */
+.tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: var(--radius-img);
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: box-shadow 200ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tile:hover::before {
+    box-shadow: inset 0 0 0 4px var(--accent);
+  }
+}
+
+.tile:focus-visible::before {
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+
 .tile::after {
   content: "";
   position: absolute;
