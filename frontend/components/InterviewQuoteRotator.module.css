@@ -19,7 +19,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center top;
+  object-position: center 25%;
   transition: transform 800ms ease-out;
 }
 
@@ -34,27 +34,33 @@
 .copy {
   position: relative;
   z-index: 2;
-  min-height: 75vh;
+  /* Height follows the screen so the portrait reads whole. */
+  min-height: clamp(560px, 88svh, 1100px);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: clamp(64px, 10vw, 144px) 32px;
+  align-items: flex-start;
+  justify-content: flex-end;
+  text-align: left;
+  padding: clamp(32px, 6svh, 96px) clamp(32px, 5vw, 96px);
   color: #fff;
-  background: rgba(0, 0, 0, 0.7);
+  /* Veil weighted to the bottom-left where the text sits; the face
+     (upper/centre) stays clear. Kept on .copy for contrast tooling. */
+  background:
+    linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.5) 38%, rgba(0, 0, 0, 0) 70%),
+    linear-gradient(to right, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 60%);
 }
 
 .quote {
   font-family: var(--font-serif), Georgia, serif;
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(28px, 3.6vw, 56px);
-  line-height: 1.25;
+  font-size: clamp(26px, min(3.2vw, 5.2svh), 60px);
+  line-height: 1.22;
   letter-spacing: -0.005em;
   color: #fff;
-  max-width: 32ch;
-  margin: 0 0 40px;
+  max-width: 28ch;
+  margin: 0 0 clamp(20px, 3svh, 40px);
+  text-wrap: balance;
   text-shadow: 0 1px 24px rgba(0, 0, 0, 0.25);
 }
 
@@ -102,11 +108,11 @@
     padding: 0 16px;
   }
   .copy {
-    min-height: 420px;
-    padding: 56px 24px;
+    min-height: clamp(480px, 80svh, 760px);
+    padding: 32px 24px;
   }
   .quote {
-    font-size: clamp(22px, 6vw, 32px);
+    font-size: clamp(19px, 5vw, 26px);
     margin-bottom: 28px;
     max-width: none;
   }

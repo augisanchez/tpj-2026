@@ -39,13 +39,13 @@ const SWIPE_VELOCITY = 0.3;
 // and settles forward into place. No opacity, so the page background
 // never shows through. 1 = next, -1 = prev.
 // Expo curves: slow start, fast middle, hard settle.
-const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
+const EASE_OUT: [number, number, number, number] = [0.05, 0.9, 0.1, 1];
 const EASE_IN_OUT: [number, number, number, number] = [0.87, 0, 0.13, 1];
 
 const slideVariants: Variants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? "10%" : "-10%",
-    scale: 1.08,
+    x: direction > 0 ? "28%" : "-28%",
+    scale: 1.14,
     zIndex: 1,
     boxShadow: "0 0 0 rgba(0,0,0,0)",
   }),
@@ -54,7 +54,7 @@ const slideVariants: Variants = {
     scale: 1,
     zIndex: 1,
     boxShadow: "0 0 0 rgba(0,0,0,0)",
-    transition: { duration: 1.2, ease: EASE_OUT, delay: 0.12 },
+    transition: { duration: 1.3, ease: EASE_OUT, delay: 0.06 },
   },
   exit: (direction: number) => ({
     x: direction > 0 ? "-100%" : "100%",
