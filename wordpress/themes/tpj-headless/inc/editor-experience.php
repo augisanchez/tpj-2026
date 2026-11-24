@@ -304,12 +304,37 @@ function tpj_request_revalidate( array $paths ) {
 	] );
 }
 
+/**
+ * Pages that list an article besides its own: the credited
+ * photographers' profiles and its theme pages. The frontend caches
+ * data for an hour, so these must be refreshed on save.
+ */
+function tpj_article_related_paths( $post_id ) {
+	$paths = [];
+	if ( function_exists( 'tpj_get_photographer_links' ) ) {
+		foreach ( (array) tpj_get_photographer_links( $post_id ) as $link ) {
+			$pid  = is_array( $link ) ? (int) ( $link['id'] ?? 0 ) : (int) ( is_object( $link ) ? $link->ID : $link );
+			$slug = $pid ? get_post_field( 'post_name', $pid ) : '';
+			if ( $slug ) {
+				$paths[] = '/photographer/' . $slug;
+			}
+		}
+	}
+	$themes = wp_get_object_terms( $post_id, 'tpj-theme', [ 'fields' => 'slugs' ] );
+	if ( ! is_wp_error( $themes ) ) {
+		foreach ( $themes as $slug ) {
+			$paths[] = '/theme/' . $slug;
+		}
+	}
+	return $paths;
+}
+
 add_action( 'transition_post_status', function ( $new, $old, $post ) {
 	if ( 'publish' !== $new && 'publish' !== $old ) {
 		return;
 	}
 	if ( isset( TPJ_EDITOR_PATH[ $post->post_type ] ) ) {
-		tpj_request_revalidate( [ '/', '/explore', '/themes', '/' . TPJ_EDITOR_PATH[ $post->post_type ] . '/' . $post->post_name ] );
+		tpj_request_revalidate( array_merge( [ '/', '/explore', '/themes', '/' . TPJ_EDITOR_PATH[ $post->post_type ] . '/' . $post->post_name ], tpj_article_related_paths( $post->ID ) ) );
 	} elseif ( 'photographer' === $post->post_type ) {
 		tpj_request_revalidate( [ '/photographers', '/photographer/' . $post->post_name ] );
 	}
@@ -319,7 +344,7 @@ add_action( 'transition_post_status', function ( $new, $old, $post ) {
 // saves meta in a second request) — refresh again on the final save.
 add_action( 'wp_after_insert_post', function ( $post_id, $post ) {
 	if ( 'publish' === $post->post_status && isset( TPJ_EDITOR_PATH[ $post->post_type ] ) && ! wp_is_post_revision( $post_id ) ) {
-		tpj_request_revalidate( [ '/', '/' . TPJ_EDITOR_PATH[ $post->post_type ] . '/' . $post->post_name ] );
+		tpj_request_revalidate( array_merge( [ '/', '/' . TPJ_EDITOR_PATH[ $post->post_type ] . '/' . $post->post_name ], tpj_article_related_paths( $post_id ) ) );
 	}
 }, 10, 2 );
 

@@ -10,7 +10,10 @@ if (!endpoint) {
 
 export const wpClient = new GraphQLClient(endpoint, {
   fetch: (url, init) =>
-    fetch(url, { ...init, next: { revalidate: 60 } }),
+    // One hour: WordPress refreshes the affected pages on every save
+    // (app/api/revalidate), so the timer only bounds staleness for
+    // anything the save hook misses. Shorter windows overload the CMS.
+    fetch(url, { ...init, next: { revalidate: 3600 } }),
 });
 
 /**

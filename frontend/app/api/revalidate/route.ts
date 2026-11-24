@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 /**
  * WordPress calls this after an article or photographer is saved
  * (inc/editor-experience.php → tpj_request_revalidate) so changes show
- * on the site right away instead of within the 60-second window.
+ * on the site right away instead of within the one-hour cache window.
  */
 export async function POST(req: Request) {
   const secret = process.env.TPJ_REVALIDATE_SECRET;
