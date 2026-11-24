@@ -56,10 +56,14 @@ export default function RootLayout({
       <head>
         {/* Turn on reveal hidden-states before first paint; drop them if
             the app never hydrates so content can't stay invisible. */}
+        {/* Head script: motion + image-fade flags (with a no-boot safety
+            timer), and a fallback that swaps any failed edge-resized image
+            (/cdn-cgi/image/...) for its original file, e.g. if Cloudflare's
+            transformation quota is exhausted. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){var d=document.documentElement;d.classList.add('img-fade');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('img-fade')},3000);if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('motion-on');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('motion-on')},3000)}})();",
+              "(function(){var d=document.documentElement;document.addEventListener('error',function(e){var t=e.target;if(!t||t.tagName!=='IMG'||t.dataset.cdnFb)return;var s=t.currentSrc||t.src||'';if(s.indexOf('/cdn-cgi/image/')<0)return;t.dataset.cdnFb='1';t.removeAttribute('srcset');t.src=s.replace(/\\/cdn-cgi\\/image\\/[^\\/]+/,'')},true);d.classList.add('img-fade');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('img-fade')},3000);if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('motion-on');setTimeout(function(){if(!d.classList.contains('motion-ready'))d.classList.remove('motion-on')},3000)}})();",
           }}
         />
       </head>

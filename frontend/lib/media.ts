@@ -1,9 +1,17 @@
 import {
+  CDN_BASE,
+  CDN_PATH_PREFIX,
   cdnImageUrl,
   cdnSrcSet,
   DEFAULT_WIDTHS,
   isCdnEnabled,
 } from "./cdn";
+
+/** Any absolute (or protocol-relative) link into a WordPress uploads
+ *  folder on the old hosts. After cutover the live domain serves this
+ *  site, which has no uploads folder, so these must point at the CDN. */
+const UPLOADS_ORIGIN_RE =
+  /(?:https?:)?\/\/(?:www\.)?(?:thephotographicjournal\.com|tpj\.wpengine\.com|tpj\.local)\/wp-content\/uploads\//gi;
 
 const PROD_ORIGIN = "https://thephotographicjournal.com";
 const LOCAL_UPLOADS = "http://tpj.local/wp-content/uploads/";
@@ -85,7 +93,9 @@ export function rewriteArticleBodyImages(html: string): string {
   return html.replace(IMG_TAG_RE, (match, rawAttrs: string) => {
     const srcMatch = SRC_RE.exec(rawAttrs);
     if (!srcMatch) return match;
-    if (SRCSET_RE.test(rawAttrs)) return match;
+    // WordPress's own srcset points at old-host sub-size files; replace
+    // it with CDN widths so every body image is resized at the edge.
+    rawAttrs = rawAttrs.replace(SRCSET_RE, "").replace(SIZES_RE, "");
 
     const originalSrc = srcMatch[1];
     const maxWidth = DEFAULT_WIDTHS[DEFAULT_WIDTHS.length - 1];
@@ -107,5 +117,12 @@ export function rewriteArticleBodyImages(html: string): string {
  * (dev origins → prod), then the CDN srcset injection.
  */
 export function prepareArticleBodyHtml(html: string): string {
-  return rewriteArticleBodyImages(rewriteMediaUrlsInHtml(html));
+  const withImages = rewriteArticleBodyImages(rewriteMediaUrlsInHtml(html));
+  if (!isCdnEnabled()) return withImages;
+  // Everything else that links into uploads (full-size links, video
+  // sources, posters) goes to the original file on the CDN.
+  return withImages.replace(
+    UPLOADS_ORIGIN_RE,
+    `${CDN_BASE}${CDN_PATH_PREFIX}/wp-content/uploads/`,
+  );
 }

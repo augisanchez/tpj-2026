@@ -20,10 +20,10 @@ export type CdnImageOpts = {
   format?: "auto" | "webp" | "avif" | "jpeg" | "png";
 };
 
-const CDN_BASE = process.env.NEXT_PUBLIC_CDN_BASE;
+export const CDN_BASE = process.env.NEXT_PUBLIC_CDN_BASE;
 /** Key prefix of the WordPress uploads inside the media bucket (R2 keys are
  *  tpj/wp-content/uploads/...). */
-const CDN_PATH_PREFIX = process.env.NEXT_PUBLIC_CDN_PATH_PREFIX ?? "";
+export const CDN_PATH_PREFIX = process.env.NEXT_PUBLIC_CDN_PATH_PREFIX ?? "";
 
 export function isCdnEnabled(): boolean {
   return Boolean(CDN_BASE);
