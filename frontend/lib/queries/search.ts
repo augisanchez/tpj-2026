@@ -18,8 +18,9 @@ const SearchQuery = gql`
         date
         featuredImage {
           node {
-            sourceUrl(size: LARGE)
+            sourceUrl
             altText
+            mediaDetails { width height }
           }
         }
       }
@@ -35,8 +36,9 @@ const SearchQuery = gql`
         date
         featuredImage {
           node {
-            sourceUrl(size: LARGE)
+            sourceUrl
             altText
+            mediaDetails { width height }
           }
         }
       }
@@ -52,8 +54,9 @@ const SearchQuery = gql`
         date
         featuredImage {
           node {
-            sourceUrl(size: LARGE)
+            sourceUrl
             altText
+            mediaDetails { width height }
           }
         }
       }
@@ -67,7 +70,7 @@ type RawNode = {
   slug: string;
   date: string;
   featuredImage: {
-    node: { sourceUrl: string | null; altText: string | null } | null;
+    node: { sourceUrl: string | null; altText: string | null; mediaDetails?: { width: number | null; height: number | null } | null; } | null;
   } | null;
 };
 
@@ -89,7 +92,7 @@ function toItem(
     slug: node.slug,
     date: node.date,
     contentType,
-    featuredImage: src ? { src, alt: fi?.altText || node.title } : null,
+    featuredImage: src ? { src, alt: fi?.altText || node.title, width: fi?.mediaDetails?.width ?? undefined, height: fi?.mediaDetails?.height ?? undefined } : null,
     themes: [],
   };
 }
@@ -124,7 +127,7 @@ type RawPhotographer = {
   linkedArticleCount: number | null;
   appearsInCount: number | null;
   tpjPortraitUrl: string | null;
-  featuredImage: { node: { sourceUrl: string | null; altText: string | null } | null } | null;
+  featuredImage: { node: { sourceUrl: string | null; altText: string | null; mediaDetails?: { width: number | null; height: number | null } | null; } | null } | null;
 };
 
 export type SearchPhotographer = {

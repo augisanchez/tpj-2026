@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
-import { cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
+import { capWidths, cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
 import styles from "./ArticleCard.module.css";
 
 // Rendered card widths per layout, so the browser picks the right srcset size.
@@ -30,7 +30,7 @@ type Article = {
   href: string;
   contentTypeLabel: string;
   description?: string;
-  featuredImage?: { src: string; alt: string };
+  featuredImage?: { src: string; alt: string; width?: number; height?: number };
 };
 
 type Props = {
@@ -92,8 +92,8 @@ export function ArticleCard({
               <img
                 className={`${styles.image} pz-media`}
                 data-fade=""
-                src={cdnImageUrl(article.featuredImage.src, { width: 1024 }) ?? article.featuredImage.src}
-                srcSet={cdnSrcSet(article.featuredImage.src, [480, 768, 1024, 1440]) ?? undefined}
+                src={cdnImageUrl(article.featuredImage.src, { width: Math.min(1024, article.featuredImage.width ?? 1024) }) ?? article.featuredImage.src}
+                srcSet={cdnSrcSet(article.featuredImage.src, capWidths([480, 768, 1024, 1440, 1920, 2560], article.featuredImage.width)) ?? undefined}
                 sizes={CARD_SIZES[variant]}
                 alt={article.featuredImage.alt}
                 loading="lazy"

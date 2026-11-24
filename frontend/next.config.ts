@@ -23,6 +23,13 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
         ],
       },
+      {
+        // Static art in /public: cache a week, serve stale while it refreshes.
+        source: "/:dir(svg|about|photographers)/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=2592000" },
+        ],
+      },
     ];
   },
   async redirects() {

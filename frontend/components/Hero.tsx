@@ -9,7 +9,7 @@ type Props = {
   byline?: string;
   /** Secondary credit under the byline, e.g. the interview portrait credit. */
   credit?: string | null;
-  backgroundImage?: { src: string; alt: string };
+  backgroundImage?: { src: string; alt: string; width?: number; height?: number };
 };
 
 export function Hero({
@@ -29,6 +29,7 @@ export function Hero({
             src={backgroundImage.src}
             alt={backgroundImage.alt}
             sizes="100vw"
+            width={backgroundImage.width}
             priority
           />
         )}

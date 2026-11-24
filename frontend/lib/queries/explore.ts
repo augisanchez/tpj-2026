@@ -8,7 +8,7 @@ export type ExploreItem = {
   slug: string;
   date: string;
   contentType: "essay" | "interview" | "feature";
-  featuredImage: { src: string; alt: string } | null;
+  featuredImage: { src: string; alt: string; width?: number; height?: number } | null;
   themes: string[];
 };
 
@@ -37,8 +37,9 @@ function pagedQuery(field: string) {
         date
         featuredImage {
           node {
-            sourceUrl(size: LARGE)
+            sourceUrl
             altText
+            mediaDetails { width height }
           }
         }
         themes {
@@ -59,7 +60,7 @@ type RawNode = {
   slug: string;
   date: string;
   featuredImage: {
-    node: { sourceUrl: string | null; altText: string | null } | null;
+    node: { sourceUrl: string | null; altText: string | null; mediaDetails?: { width: number | null; height: number | null } | null; } | null;
   } | null;
   themes: { nodes: { slug: string | null }[] | null } | null;
 };
@@ -86,7 +87,7 @@ function toItem(
     date: node.date,
     contentType,
     featuredImage: src
-      ? { src, alt: fi?.altText || node.title }
+      ? { src, alt: fi?.altText || node.title, width: fi?.mediaDetails?.width ?? undefined, height: fi?.mediaDetails?.height ?? undefined }
       : null,
     themes,
   };

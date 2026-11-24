@@ -25,8 +25,9 @@ const RecentFeaturesQuery = gql`
         }
         featuredImage {
           node {
-            sourceUrl(size: LARGE)
+            sourceUrl
             altText
+            mediaDetails { width height }
             mediaDetails {
               width
               height

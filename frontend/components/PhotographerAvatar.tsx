@@ -8,6 +8,11 @@ type Props = {
   name: string;
   portrait?: { src: string; alt: string };
   className?: string;
+  /** Rendered size for srcset selection. Defaults to the list-card circle. */
+  sizes?: string;
+  widths?: number[];
+  /** Above-the-fold use (profile cover): load eagerly. */
+  priority?: boolean;
 };
 
 /**
@@ -31,7 +36,14 @@ function computeInitials(name: string): string {
   return (first + last).toUpperCase();
 }
 
-export function PhotographerAvatar({ name, portrait, className }: Props) {
+export function PhotographerAvatar({
+  name,
+  portrait,
+  className,
+  sizes = "(min-width: 2560px) 480px, (min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw",
+  widths = [200, 400, 600, 800, 1000],
+  priority = false,
+}: Props) {
   const [errored, setErrored] = useState(false);
 
   if (portrait && !errored) {
@@ -40,8 +52,9 @@ export function PhotographerAvatar({ name, portrait, className }: Props) {
         className={className}
         src={portrait.src}
         alt={portrait.alt}
-        sizes="200px"
-        widths={[96, 200, 400]}
+        sizes={sizes}
+        widths={widths}
+        priority={priority}
         onError={() => setErrored(true)}
       />
     );

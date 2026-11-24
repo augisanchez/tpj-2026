@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import {
+  capWidths,
   cdnImageUrl,
   cdnSrcSet,
   DEFAULT_WIDTHS,
@@ -45,6 +49,12 @@ type Props = {
 };
 
 /**
+ * Client component on purpose: React turns a server-rendered high-
+ * priority <img> into an image preload hint inside the RSC payload, so
+ * every prefetched link pre-downloaded that page's hero photo. Rendered
+ * from a client component, the hint is only emitted in the HTML of a
+ * real page load.
+ *
  * The single image-rendering surface across the site. Wraps the
  * Cloudflare Image Resizing transform helpers so call sites don't
  * need to know whether the CDN is live yet — pre-cutover, this
@@ -66,15 +76,33 @@ export function TpjImage({
   onLoad,
   onError,
 }: Props) {
-  const targetWidth = maxWidth ?? widths[widths.length - 1];
-  const finalSrc = cdnImageUrl(src, { width: targetWidth, quality });
-  const srcSet = cdnSrcSet(src, widths, quality ? { quality } : undefined);
+  const ref = useRef<HTMLImageElement>(null);
+  const [failed, setFailed] = useState(false);
 
-  if (!finalSrc) return null;
+  // An image that failed before hydration never reaches onError; catch it
+  // on mount so the caller's fallback (initials, placeholder) still runs.
+  useEffect(() => {
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth === 0 && img.currentSrc) {
+      setFailed(true);
+      onError?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Never ask the CDN for more pixels than the original has (Cloudflare
+  // doesn't upscale, so larger candidates are the same file, stretched).
+  const list = capWidths(widths, width);
+  const targetWidth = Math.min(maxWidth ?? list[list.length - 1], list[list.length - 1]);
+  const finalSrc = cdnImageUrl(src, { width: targetWidth, quality });
+  const srcSet = cdnSrcSet(src, list, quality ? { quality } : undefined);
+
+  if (!finalSrc || failed) return null;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
+      ref={ref}
       src={finalSrc}
       srcSet={srcSet ?? undefined}
       sizes={sizes}
@@ -86,7 +114,10 @@ export function TpjImage({
       className={className}
       data-fade=""
       onLoad={onLoad}
-      onError={onError}
+      onError={() => {
+        setFailed(true);
+        onError?.();
+      }}
     />
   );
 }

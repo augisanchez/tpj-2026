@@ -1,4 +1,5 @@
 import {
+  capWidths,
   CDN_BASE,
   CDN_PATH_PREFIX,
   cdnImageUrl,
@@ -69,7 +70,30 @@ export function rewriteMediaUrlsInHtml(html: string): string {
  * Full-bleed figure variants are slightly under-served; revisit if
  * the editor signals soft images on wide displays.
  */
-const ARTICLE_BODY_SIZES = "(min-width: 1024px) 1024px, 100vw";
+/**
+ * Body figures span the content area: viewport minus two gutters
+ * (--gutter ≈ 0.5rem + 5vw), so about 90vw on desktop. Multi-image
+ * figures split that. Matches ArticleBody/InterviewBody CSS, so the
+ * browser picks a file at least as wide as the photo is drawn.
+ */
+const BODY_SIZES = {
+  full: "(min-width: 640px) calc(90vw - 16px), 100vw",
+  twoThirds: "(min-width: 768px) calc(60vw - 11px), 100vw",
+  twoUp: "(min-width: 640px) calc(45vw - 40px), 50vw",
+  threeUp: "(min-width: 768px) calc(30vw - 48px), 50vw",
+  margin: "(min-width: 1024px) 280px, 100vw",
+} as const;
+const ARTICLE_BODY_SIZES = BODY_SIZES.full;
+const SIZES_TOKEN = "__TPJ_SIZES__";
+const BODY_WIDTHS = [480, 768, 1024, 1440, 1920, 2560, 3200, 3840];
+
+function sizesForFigure(cls: string): string {
+  if (/fig-(two-?up)/.test(cls)) return BODY_SIZES.twoUp;
+  if (/fig-three-up/.test(cls)) return BODY_SIZES.threeUp;
+  if (/fig-two-?thirds/.test(cls)) return BODY_SIZES.twoThirds;
+  if (/fig-margin/.test(cls)) return BODY_SIZES.margin;
+  return BODY_SIZES.full;
+}
 
 const IMG_TAG_RE = /<img\b([^>]*?)\s*\/?\s*>/gi;
 const SRC_RE = /\bsrc\s*=\s*["']([^"']+)["']/i;
@@ -103,7 +127,7 @@ function frameImage(imgTag: string): string {
 
 export function rewriteArticleBodyImages(html: string): string {
   if (!isCdnEnabled()) return html.replace(IMG_TAG_RE, (m) => frameImage(m));
-  return html.replace(IMG_TAG_RE, (match, rawAttrs: string) => {
+  const out = html.replace(IMG_TAG_RE, (match, rawAttrs: string) => {
     const srcMatch = SRC_RE.exec(rawAttrs);
     if (!srcMatch) return frameImage(match);
     // WordPress's own srcset points at old-host sub-size files; replace
@@ -111,17 +135,27 @@ export function rewriteArticleBodyImages(html: string): string {
     rawAttrs = rawAttrs.replace(SRCSET_RE, "").replace(SIZES_RE, "");
 
     const originalSrc = srcMatch[1];
-    const maxWidth = DEFAULT_WIDTHS[DEFAULT_WIDTHS.length - 1];
-    const cdnSrc = cdnImageUrl(originalSrc, { width: maxWidth });
-    const srcSet = cdnSrcSet(originalSrc);
+    // Candidates up to 3840 for full-bleed figures on big screens, never
+    // wider than the file itself (Cloudflare doesn't upscale).
+    const intrinsic = Number(/\swidth=["']?(\d+)/i.exec(rawAttrs)?.[1]) || undefined;
+    const widths = capWidths(BODY_WIDTHS, intrinsic);
+    const cdnSrc = cdnImageUrl(originalSrc, { width: Math.min(2560, widths[widths.length - 1]) });
+    const srcSet = cdnSrcSet(originalSrc, widths);
     if (!cdnSrc || !srcSet) return frameImage(match);
 
     let attrs = rawAttrs.replace(SRC_RE, `src="${cdnSrc}"`);
     attrs += ` srcset="${srcSet}"`;
-    if (!SIZES_RE.test(attrs)) attrs += ` sizes="${ARTICLE_BODY_SIZES}"`;
+    attrs += ` sizes="${SIZES_TOKEN}"`;
     if (!LOADING_RE.test(attrs)) attrs += ` loading="lazy"`;
     return frameImage(`<img${attrs}>`);
   });
+  // Each image's sizes follows the figure it sits in (full, two-up…).
+  return out
+    .replace(/<figure\b[^>]*\bclass=["']([^"']*)["'][^>]*>[\s\S]*?<\/figure>/gi, (fig, cls: string) =>
+      fig.split(SIZES_TOKEN).join(sizesForFigure(cls)),
+    )
+    .split(SIZES_TOKEN)
+    .join(ARTICLE_BODY_SIZES);
 }
 
 /**

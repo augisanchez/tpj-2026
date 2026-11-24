@@ -119,6 +119,9 @@ export function PhotographerProfileBody({
             name={photographer.name}
             portrait={photographer.portrait ?? undefined}
             className={styles.coverImage}
+            sizes="(min-width: 1024px) 480px, 100vw"
+            widths={[480, 768, 960, 1440]}
+            priority
           />
         </motion.div>
 

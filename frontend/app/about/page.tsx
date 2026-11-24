@@ -56,7 +56,7 @@ export default function AboutPage() {
 
         <div className={styles.teamImage}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/about/team.png" alt="The TPJ team" data-fade="" />
+          <img src="/about/team.jpg" alt="The TPJ team" width={1600} height={1211} loading="lazy" decoding="async" data-fade="" />
         </div>
 
         <section className={styles.mission}>

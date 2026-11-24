@@ -83,3 +83,15 @@ export function cdnSrcSet(
   if (entries.length === 0) return null;
   return entries.join(", ");
 }
+
+/**
+ * Drop srcset candidates wider than the original (Cloudflare never
+ * upscales, so they'd all be the same file) and add the original's own
+ * width as the top candidate.
+ */
+export function capWidths(widths: number[], intrinsic?: number | null): number[] {
+  if (!intrinsic || intrinsic <= 0) return widths;
+  const kept = widths.filter((w) => w < intrinsic);
+  if (intrinsic < widths[widths.length - 1]) kept.push(intrinsic);
+  return kept.length ? kept : widths;
+}

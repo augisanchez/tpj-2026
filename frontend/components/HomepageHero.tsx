@@ -17,7 +17,7 @@ type Props = {
   photographerName?: string | null;
   /** Credit wording before the name. "Photographs by" by default; features use "By". */
   creditPrefix?: string;
-  backgroundImage?: { src: string; alt: string };
+  backgroundImage?: { src: string; alt: string; width?: number; height?: number };
   /** CSS object-position for the image, e.g. "50% 25%" to keep a face in frame. */
   imageFocus?: string;
   /** Fill a parent frame (carousel) instead of drawing its own rounded card. */
@@ -70,6 +70,7 @@ export function HomepageHero({
               src={backgroundImage.src}
               alt={backgroundImage.alt}
               sizes="100vw"
+              width={backgroundImage.width}
               priority={priority}
               className={styles.image}
             />

@@ -48,13 +48,17 @@ export function LogoStage({ variant = "inline", visible = true }: Props) {
               key={src}
               src={src}
               alt=""
+              // Lazy so React doesn't emit a preload for the overlay art on
+              // every page; it's tiny and loads in the background.
+              loading="lazy"
+              decoding="async"
               className={styles.camera}
               style={{ opacity: i === frame ? 1 : 0 }}
             />
           ))}
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/svg/wordmark.svg" alt="" className={styles.wordmark} />
+        <img src="/svg/wordmark.svg" alt="" loading="lazy" decoding="async" className={styles.wordmark} />
       </div>
     </div>
   );
