@@ -1,0 +1,53 @@
+/* A small label in the signal green: the same mark as the type tags,
+   so a tooltip reads as part of the system, not a browser default. */
+.tip {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  max-width: min(260px, calc(100vw - 16px));
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  background: var(--acid-signal);
+  color: var(--acid-ink);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 120ms ease-out, transform 160ms var(--ease-out), visibility 0s linear 160ms;
+}
+
+.tip[data-above] {
+  transform: translateY(calc(-100% + 4px));
+}
+
+.tip[data-on] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition: opacity 120ms ease-out, transform 160ms var(--ease-out), visibility 0s;
+}
+
+.tip[data-on][data-above] {
+  transform: translateY(-100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tip,
+  .tip[data-on] {
+    transform: none;
+    transition: opacity 80ms linear, visibility 0s;
+  }
+  .tip[data-above],
+  .tip[data-on][data-above] {
+    transform: translateY(-100%);
+  }
+}
