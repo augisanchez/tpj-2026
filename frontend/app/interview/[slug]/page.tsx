@@ -1,3 +1,4 @@
+import { NOT_FOUND_META } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { notFound } from "next/navigation";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const slug = normalizeSlug((await params).slug);
   if (slug.startsWith("preview-")) return { robots: { index: false } };
   const a = await fetchInterviewBySlug(slug);
-  if (!a) return {};
+  if (!a) return NOT_FOUND_META;
   const names = a.photographers.map((p) => p.name).filter(Boolean);
   return pageMetadata({
     title: `${a.title} — The Photographic Journal`,

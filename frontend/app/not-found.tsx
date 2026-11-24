@@ -7,6 +7,9 @@ import styles from "@/components/NotFoundPage.module.css";
 // visit instead of caching one image into the static 404 page.
 export const dynamic = "force-dynamic";
 
+// Next adds the noindex robots tag itself; no canonical is inherited.
+export const metadata = { title: "Page not found — The Photographic Journal" };
+
 const QUIPS = [
   "Oops. You lost your way.",
   "There's nothing here. But there's plenty here →",
@@ -26,8 +29,6 @@ export default async function NotFound() {
 
   return (
     <Link href="/" className={styles.cover}>
-      {/* React hoists these into <head>. Next adds the noindex robots tag. */}
-      <title>Page not found — The Photographic Journal</title>
       {choice?.featuredImage && (
         <TpjImage
           className={styles.bg}

@@ -1,3 +1,4 @@
+import { NOT_FOUND_META } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/ArticleCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -20,7 +21,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const theme = THEMES.find((t) => t.slug === slug);
-  if (!theme) return {};
+  if (!theme) return NOT_FOUND_META;
   // Share image: the newest piece in the theme with a cover.
   const cover = (await fetchExplore(1000).catch(() => []))
     .find((i) => i.themes.includes(theme.slug) && i.featuredImage)?.featuredImage;

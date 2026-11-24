@@ -1,3 +1,4 @@
+import { NOT_FOUND_META } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { notFound } from "next/navigation";
 import { PhotographerProfileBody } from "@/components/PhotographerProfileBody";
@@ -24,7 +25,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const slug = normalizeSlug((await params).slug);
   const p = await fetchPhotographerBySlug(slug);
-  if (!p) return {};
+  if (!p) return NOT_FOUND_META;
   return pageMetadata({
     title: `${p.name} — The Photographic Journal`,
     description: describe(p.bio) ?? `Photographs and interviews by ${p.name} in The Photographic Journal.`,

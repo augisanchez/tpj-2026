@@ -114,3 +114,6 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]): objec
     })),
   };
 }
+
+/** Missing records: a clear title for the 404 page (Next adds noindex). */
+export const NOT_FOUND_META: Metadata = { title: "Page not found — The Photographic Journal" };
