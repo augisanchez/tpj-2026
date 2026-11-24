@@ -100,11 +100,14 @@
   pointer-events: none;
 }
 
+/* Same inset on the side and the bottom, like every other card and
+   hero on the site, so titles never sit tight to the bottom edge. */
 .caption {
+  --inset: clamp(16px, 0.75rem + 0.6vw, 28px);
   position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 12px;
+  left: var(--inset);
+  right: var(--inset);
+  bottom: var(--inset);
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -142,8 +145,7 @@
 
 .s0 .caption,
 .s14 .caption {
-  left: 24px;
-  bottom: 20px;
+  --inset: clamp(24px, 1rem + 1.4vw, 48px);
   gap: 6px;
 }
 

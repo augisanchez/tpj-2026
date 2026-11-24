@@ -1,4 +1,3 @@
-import { accentFor } from "@/lib/accent";
 import { cdnImageUrl } from "@/lib/cdn";
 import { fetchStoryIndex, type StoryType } from "@/lib/queries/story-index";
 import { pageMetadata } from "@/lib/seo";
@@ -44,7 +43,6 @@ export default async function IndexPage() {
     TYPE_CODE[s.type],
     s.year,
     s.slug,
-    accentFor(s.slug),
     tails[i],
   ]);
 

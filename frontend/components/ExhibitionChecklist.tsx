@@ -6,8 +6,6 @@ import styles from "./ExhibitionChecklist.module.css";
 
 type Props = {
   plates: Plate[];
-  /** data-accent value from lib/accent, for the section label. */
-  accent: string;
 };
 
 /**
@@ -17,7 +15,7 @@ type Props = {
  * and focused. The strip is a native horizontal scroller, so trackpad
  * momentum, touch and keyboard all work as the platform expects.
  */
-export function ExhibitionChecklist({ plates, accent }: Props) {
+export function ExhibitionChecklist({ plates }: Props) {
   if (plates.length === 0) return null;
 
   const onClick = (e: MouseEvent<HTMLOListElement>) => {
@@ -35,12 +33,9 @@ export function ExhibitionChecklist({ plates, accent }: Props) {
   };
 
   return (
-    <section className={styles.section} data-accent={accent} aria-labelledby="checklist-heading" data-checklist>
+    <section className={styles.section} aria-labelledby="checklist-heading" data-checklist>
       <div className={styles.head} data-reveal>
         <h2 id="checklist-heading" className={styles.label}>Exhibition checklist</h2>
-        <span className={styles.total}>
-          {plates.length} {plates.length === 1 ? "plate" : "plates"}
-        </span>
       </div>
       <ol className={styles.strip} data-reveal-children onClick={onClick}>
         {plates.map((p) => {

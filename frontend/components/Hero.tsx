@@ -1,6 +1,5 @@
 import { ContentTypeChip } from "./ContentTypeChip";
 import { TpjImage } from "./TpjImage";
-import { WallLabel } from "./WallLabel";
 import styles from "./Hero.module.css";
 
 type Props = {
@@ -12,7 +11,7 @@ type Props = {
   /** Secondary credit under the title, e.g. the interview portrait credit. */
   credit?: string | null;
   backgroundImage?: { src: string; alt: string; width?: number; height?: number };
-  /** Museum wall label under the lead image. */
+  /** Photographs in the piece; appended to the byline ("· 13 photographs"). */
   wallLabel?: { photographer?: string | null; year?: number | null; count: number };
 };
 
@@ -46,6 +45,10 @@ export function Hero({
   backgroundImage,
   wallLabel,
 }: Props) {
+  const count = wallLabel?.count ?? 0;
+  const meta = [byline, count > 0 ? `${count} ${count === 1 ? "photograph" : "photographs"}` : null]
+    .filter(Boolean)
+    .join("  ·  ");
   return (
     <div className={styles.outer}>
       <div className={styles.card} data-reveal="wipe">
@@ -63,7 +66,7 @@ export function Hero({
         <div className={styles.stack}>
           <div className={styles.eyebrowRow} data-reveal>
             <ContentTypeChip label={contentTypeLabel} size="large" />
-            {byline && <p className={styles.byline}>{byline}</p>}
+            {meta && <p className={styles.byline}>{meta}</p>}
           </div>
           <h1
             className={styles.title}
@@ -77,14 +80,6 @@ export function Hero({
           {credit && <p className={`${styles.byline} ${styles.portraitCredit}`} data-reveal>{credit}</p>}
         </div>
       </div>
-      {wallLabel && (
-        <WallLabel
-          photographer={wallLabel.photographer}
-          title={title}
-          year={wallLabel.year}
-          count={wallLabel.count}
-        />
-      )}
     </div>
   );
 }

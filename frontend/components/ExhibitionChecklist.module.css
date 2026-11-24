@@ -14,13 +14,10 @@
   margin: 0 0 20px;
 }
 
-/* Flat accent label: a fill behind type, never near a photograph. */
+/* Same section label as "About the photographer": muted caps, no fill. */
 .label {
   margin: 0;
-  padding: 3px 6px;
-  border-radius: 2px;
-  background: var(--accent);
-  color: var(--accent-ink);
+  color: var(--muted);
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 700;
   font-size: 12px;
@@ -29,12 +26,6 @@
   text-transform: uppercase;
 }
 
-.total {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--muted);
-}
 
 /* Native horizontal scroller: momentum on trackpads and touch, arrow
    keys once a plate has focus, snap is a gentle suggestion only. */

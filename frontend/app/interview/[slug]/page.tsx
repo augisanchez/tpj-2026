@@ -9,7 +9,6 @@ import { InterviewBody } from "@/components/InterviewBody";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
 import { hangPlates } from "@/lib/exhibition";
-import { accentFor } from "@/lib/accent";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchInterviewBySlug } from "@/lib/queries/interview-by-slug";
 import { previewTarget } from "@/lib/preview";
@@ -112,7 +111,7 @@ export default async function InterviewPage({ params }: Props) {
 
       <InterviewBody html={bodyHtml} />
 
-      <ExhibitionChecklist plates={plates} accent={accentFor(interview.slug)} />
+      <ExhibitionChecklist plates={plates} />
 
       {interview.photographers.length > 0 && (
         <AboutPhotographerSection photographers={interview.photographers} />

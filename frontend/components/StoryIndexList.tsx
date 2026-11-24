@@ -3,8 +3,8 @@
 import { IndexThumbs } from "./IndexThumbs";
 import styles from "./StoryIndex.module.css";
 
-/** [no, title, photographer, type, year, slug, accent, image tail] */
-export type IndexRow = [number, string, string, 0 | 1 | 2, number, string, string, string];
+/** [no, title, photographer, type, year, slug, image tail] */
+export type IndexRow = [number, string, string, 0 | 1 | 2, number, string, string];
 
 const TYPES = [
   ["essay", "Essay"],
@@ -25,10 +25,10 @@ export function StoryIndexList({ rows, prefix }: { rows: IndexRow[]; prefix: str
   return (
     <>
       <ol className={styles.list} id={LIST_ID} aria-label={`${rows.length} stories, newest first`}>
-        {rows.map(([no, title, photographer, type, year, slug, accent]) => (
+        {rows.map(([no, title, photographer, type, year, slug]) => (
           <li key={no}>
             {/* Plain <a>: MotionRoot routes in-site clicks already. */}
-            <a href={`/${TYPES[type][0]}/${slug}`} data-accent={accent}>
+            <a href={`/${TYPES[type][0]}/${slug}`}>
               <span>{`No. ${no}`}</span>
               <span>{title}</span>
               <span>{photographer}</span>
@@ -38,7 +38,7 @@ export function StoryIndexList({ rows, prefix }: { rows: IndexRow[]; prefix: str
           </li>
         ))}
       </ol>
-      <IndexThumbs listId={LIST_ID} prefix={prefix} tails={rows.map((r) => r[7])} />
+      <IndexThumbs listId={LIST_ID} prefix={prefix} tails={rows.map((r) => r[6])} />
     </>
   );
 }

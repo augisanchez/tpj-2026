@@ -9,7 +9,6 @@ import { Hero } from "@/components/Hero";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
 import { hangPlates } from "@/lib/exhibition";
-import { accentFor } from "@/lib/accent";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchEssayBySlug } from "@/lib/queries/essay-by-slug";
 import { previewTarget } from "@/lib/preview";
@@ -105,7 +104,7 @@ export default async function EssayPage({ params }: Props) {
 
       <ArticleBody html={bodyHtml} />
 
-      <ExhibitionChecklist plates={plates} accent={accentFor(essay.slug)} />
+      <ExhibitionChecklist plates={plates} />
 
       {essay.photographers.length > 0 && (
         <AboutPhotographerSection photographers={essay.photographers} />

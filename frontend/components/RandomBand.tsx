@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { accentFor, todayKey } from "@/lib/accent";
 import styles from "./RandomBand.module.css";
 
 /**
@@ -28,7 +27,6 @@ export function RandomBand() {
       href="/random"
       prefetch={false}
       className={styles.band}
-      data-accent={accentFor(todayKey())}
       data-reveal
     >
       <span className={styles.line}>

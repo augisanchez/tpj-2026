@@ -9,7 +9,6 @@ import {
 } from "motion/react";
 import { useDrag } from "@use-gesture/react";
 import { HomepageHero } from "./HomepageHero";
-import { HomepageHeroListing } from "./HomepageHeroListing";
 import { cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
 import styles from "./HomepageHeroCarousel.module.css";
 
@@ -25,9 +24,6 @@ export type HeroSlide = {
   backgroundImage?: { src: string; alt: string; width?: number; height?: number };
   /** CSS object-position for the image, e.g. "50% 25%" to keep a face in frame. */
   imageFocus?: string;
-  /** Set on the latest story: hangs an "On view" wall label under the
-   *  frame, naming the medium ("Photo essay"). */
-  onView?: string;
 };
 
 type Props = {
@@ -38,14 +34,6 @@ type Props = {
 };
 
 const DEFAULT_INTERVAL = 7000;
-
-/** A slide minus the carousel-only fields, ready for HomepageHero. */
-function heroPropsOf(slide: HeroSlide) {
-  const props: Partial<HeroSlide> = { ...slide };
-  delete props.key;
-  delete props.onView;
-  return props as Omit<HeroSlide, "key" | "onView">;
-}
 const SWIPE_DISTANCE = 60;
 const SWIPE_VELOCITY = 0.3;
 
@@ -181,32 +169,12 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
   );
 
   if (slides.length === 0) return null;
-
-  // The wall label belongs to the first slide only. It keeps its space
-  // on the other slides and fades, so rotation never moves the page.
-  const lead = slides[0];
-  const listing = lead.onView ? (
-    <HomepageHeroListing
-      medium={lead.onView}
-      title={lead.title}
-      photographerName={lead.photographerName}
-      date={lead.date}
-      visible={index === 0}
-    />
-  ) : null;
-
   if (slides.length === 1) {
-    const heroProps = heroPropsOf(slides[0]);
-    return (
-      <>
-        <HomepageHero {...heroProps} />
-        {listing && <div className={styles.soloListing}>{listing}</div>}
-      </>
-    );
+    const { key: _k, ...heroProps } = slides[0];
+    return <HomepageHero {...heroProps} />;
   }
 
-  const activeKey = slides[index].key;
-  const activeHeroProps = heroPropsOf(slides[index]);
+  const { key: activeKey, ...activeHeroProps } = slides[index];
 
   return (
     <div
@@ -272,7 +240,6 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
       </div>
       </div>
       </div>
-      {listing}
     </div>
   );
 }

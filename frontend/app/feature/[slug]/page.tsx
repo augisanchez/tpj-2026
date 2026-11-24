@@ -9,7 +9,6 @@ import { Hero } from "@/components/Hero";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
 import { hangPlates } from "@/lib/exhibition";
-import { accentFor } from "@/lib/accent";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchFeatureBySlug } from "@/lib/queries/feature-by-slug";
 import { previewTarget } from "@/lib/preview";
@@ -127,7 +126,7 @@ export default async function FeaturePage({ params }: Props) {
 
       <ArticleBody html={bodyHtml} />
 
-      <ExhibitionChecklist plates={plates} accent={accentFor(feature.slug)} />
+      <ExhibitionChecklist plates={plates} />
 
       {feature.photographers.length > 0 && (
         <AboutPhotographerSection photographers={feature.photographers} />

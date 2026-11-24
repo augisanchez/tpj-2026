@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { accentFor, todayKey } from "@/lib/accent";
 import { randomStory } from "@/lib/queries/story-index";
 import { NOT_FOUND_META } from "@/lib/seo";
 import { TpjImage } from "@/components/TpjImage";
@@ -16,7 +15,7 @@ export default async function NotFound() {
   const pick = await randomStory({ withImage: true });
 
   return (
-    <section className={styles.page} data-accent={accentFor(todayKey())}>
+    <section className={styles.page}>
       <div className={styles.text}>
         <p className={styles.eyebrow}>Error 404</p>
         <h1 className={styles.title} data-reveal="lines">

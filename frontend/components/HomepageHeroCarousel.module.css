@@ -117,13 +117,3 @@
     max-height: none;
   }
 }
-
-/* Single-slide hero: the wall label takes the hero's side insets. */
-.soloListing {
-  padding-inline: max(32px, calc((100% - 1920px) / 2));
-}
-@media (max-width: 640px) {
-  .soloListing {
-    padding-inline: 16px;
-  }
-}
