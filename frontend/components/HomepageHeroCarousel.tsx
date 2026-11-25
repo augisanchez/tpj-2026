@@ -24,6 +24,8 @@ export type HeroSlide = {
   backgroundImage?: { src: string; alt: string; width?: number; height?: number };
   /** CSS object-position for the image, e.g. "50% 25%" to keep a face in frame. */
   imageFocus?: string;
+  /** Up to four images shown as a 2×2 collage instead of one photo. */
+  collage?: { src: string; alt: string }[];
 };
 
 type Props = {

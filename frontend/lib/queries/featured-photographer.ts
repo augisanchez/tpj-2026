@@ -38,8 +38,12 @@ export type FeaturedPhotographer = {
   name: string;
   slug: string;
   bio: string;
-  /** Their portrait, else the cover of their most recent work. */
+  /** One full-size image: their only story's cover, else their portrait. */
   image: { src: string; alt: string } | null;
+  /** True when `image` is the portrait (keep the face in frame). */
+  imageIsPortrait: boolean;
+  /** With two or more stories: a 2×2 of their work with the portrait. */
+  collage: { src: string; alt: string }[] | null;
 };
 
 export async function fetchFeaturedPhotographer(): Promise<FeaturedPhotographer | null> {
@@ -53,17 +57,28 @@ export async function fetchFeaturedPhotographer(): Promise<FeaturedPhotographer 
   const portraitSrc = rewriteMediaUrl(
     raw.featuredImage?.node?.sourceUrl ?? raw.tpjPortraitUrl ?? null
   );
-  // Only look up their work when there's no portrait to show.
-  const cover = portraitSrc
-    ? null
-    : (await fetchPhotographerArticles(raw.slug).catch(() => null))?.articles.find(
-        (a) => a.featuredImage
-      )?.featuredImage ?? null;
+  // Portraits are too small to fill the hero on their own. Their work
+  // carries it: one story's cover full-size, or a collage of their work
+  // with the portrait once there are two or more.
+  const work = ((await fetchPhotographerArticles(raw.slug).catch(() => null))?.articles ?? [])
+    .filter((a) => a.featuredImage)
+    .map((a) => ({ src: a.featuredImage!.src, alt: a.title }));
+  const portrait = portraitSrc ? { src: portraitSrc, alt: raw.title } : null;
+
+  let collage: { src: string; alt: string }[] | null = null;
+  if (work.length >= 2) {
+    // Cells run top-left, top-right, bottom-left, bottom-right. The text
+    // sits bottom left, so the portrait takes the top right.
+    collage = portrait ? [work[0], portrait, ...work.slice(1, 3)] : work.slice(0, 4);
+  }
+  const image = work[0] ?? portrait;
 
   return {
     name: raw.title,
     slug: raw.slug,
     bio: raw.content ? htmlToPlainText(raw.content) : "",
-    image: portraitSrc ? { src: portraitSrc, alt: raw.title } : cover,
+    image,
+    imageIsPortrait: !work.length && !!portrait,
+    collage,
   };
 }

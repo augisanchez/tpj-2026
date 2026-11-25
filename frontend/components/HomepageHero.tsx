@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ContentTypeChip } from "./ContentTypeChip";
 import { TpjImage } from "./TpjImage";
+import { ThemeThumbnail } from "./ThemeThumbnail";
 import styles from "./HomepageHero.module.css";
 
 type Props = {
@@ -20,6 +21,8 @@ type Props = {
   backgroundImage?: { src: string; alt: string; width?: number; height?: number };
   /** CSS object-position for the image, e.g. "50% 25%" to keep a face in frame. */
   imageFocus?: string;
+  /** Up to four images shown as a 2×2 collage instead of one photo. */
+  collage?: { src: string; alt: string }[];
   /** Fill a parent frame (carousel) instead of drawing its own rounded card. */
   fill?: boolean;
   /** Only the first slide's image should load eagerly. */
@@ -36,6 +39,7 @@ export function HomepageHero({
   creditPrefix = "Photographs by",
   backgroundImage,
   imageFocus,
+  collage,
   fill = false,
   priority = true,
 }: Props) {
@@ -61,7 +65,11 @@ export function HomepageHero({
         data-pz
         style={{ "--pz-range": "1%" } as React.CSSProperties}
       >
-        {backgroundImage && (
+        {collage && collage.length >= 2 ? (
+          <div className={`${styles.imageWrap} pz-media`}>
+            <ThemeThumbnail images={collage} fillParent />
+          </div>
+        ) : backgroundImage && (
           <div
             className={`${styles.imageWrap} pz-media`}
             style={imageFocus ? ({ "--hero-focus": imageFocus } as React.CSSProperties) : undefined}

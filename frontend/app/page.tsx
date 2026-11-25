@@ -200,8 +200,9 @@ export default async function Home() {
       title: featuredPhotographer.name,
       excerpt: summarize(featuredPhotographer.bio, 220),
       backgroundImage: featuredPhotographer.image ?? undefined,
+      collage: featuredPhotographer.collage ?? undefined,
       // Portraits are mostly upright head-and-shoulders: keep the face in frame.
-      imageFocus: "50% 22%",
+      imageFocus: featuredPhotographer.imageIsPortrait ? "50% 22%" : undefined,
     });
   } else if (heroArticle) {
     const fallback = articles.find((a) => a.contentType !== heroArticle.contentType);
