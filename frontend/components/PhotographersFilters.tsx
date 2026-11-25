@@ -199,8 +199,11 @@ export function PhotographersFilters({ photographers }: Props) {
               <h2 className={styles.letterHeading}>
                 <span className={styles.letterMark}>{letter}</span>
               </h2>
+              {/* Keyed by view and role: switching either remounts the
+                  cards, so MotionRoot replays the diagonal wave (same as
+                  the homepage theme switcher). Search stays instant. */}
               <LazyLetterGrid
-                key={view}
+                key={`${view}:${role}`}
                 eager={isFiltering || i < 2}
                 people={list}
                 variant={view}

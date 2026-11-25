@@ -16,33 +16,30 @@
   color: var(--muted);
 }
 
-/* Native horizontal scroller. The 4px inset keeps focus rings
-   unclipped; the negative margin cancels it so cards line up with
-   the label. */
-.strip {
-  display: flex;
-  gap: 24px;
-  margin: 0 -4px;
-  padding: 4px 4px 16px;
+/* The shared card grid (same as the homepage theme section). */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--space-element);
+  row-gap: 56px;
+  margin: 0;
+  padding: 0;
   list-style: none;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
-  scroll-padding-inline: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--placeholder) transparent;
 }
 
 .item {
-  flex: 0 0 clamp(220px, 18vw, 360px);
-  scroll-snap-align: start;
+  min-width: 0;
 }
 
-@media (max-width: 640px) {
-  .strip {
-    gap: 16px;
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .item {
-    flex-basis: 72vw;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 48px;
   }
 }
