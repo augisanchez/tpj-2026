@@ -38,6 +38,29 @@ type Props = {
  * in reading order. Run when the viewer opens, so late-loading photos
  * are measured with their real size.
  */
+/**
+ * The file to show full screen: the smallest candidate in the photo's
+ * srcset that covers the screen at its pixel density, else the largest.
+ * Usually a size the page already fetched for wide or 2x screens, so it
+ * rarely costs a new resize.
+ */
+function screenSrc(img: HTMLImageElement): string {
+  const fallback = img.currentSrc || img.src;
+  const set = img.srcset;
+  if (!set) return fallback;
+  const candidates = set
+    // Candidates are separated by a comma and a space; the image
+    // server's own URLs carry commas without spaces (width=640,quality=75).
+    .split(/,\s+/)
+    .map((c) => c.trim().split(/\s+/))
+    .map(([url, d]) => ({ url, w: d && d.endsWith("w") ? parseInt(d, 10) : 0 }))
+    .filter((c) => c.url && c.w > 0)
+    .sort((a, b) => a.w - b.w);
+  if (!candidates.length) return fallback;
+  const need = Math.min(window.innerWidth, window.innerHeight * 1.5) * Math.min(window.devicePixelRatio || 1, 2);
+  return (candidates.find((c) => c.w >= need) ?? candidates[candidates.length - 1]).url;
+}
+
 function collectImages(root: HTMLElement): ViewerImage[] {
   const images: ViewerImage[] = [];
   const imgs = root.querySelectorAll<HTMLImageElement>("img");
@@ -57,7 +80,7 @@ function collectImages(root: HTMLElement): ViewerImage[] {
 
     images.push({
       el: img,
-      src: img.currentSrc || img.src,
+      src: screenSrc(img),
       alt: img.alt || "",
       caption,
     });
