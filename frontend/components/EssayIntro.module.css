@@ -31,6 +31,7 @@
   line-height: 1.4;
   letter-spacing: 0.01em;
   color: var(--muted);
+  text-align: center; /* a separator, centered in the column */
 }
 
 /* A note with no intro above it sits at the intro's own top spacing. */
