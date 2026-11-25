@@ -30,6 +30,8 @@
   overflow: hidden;
   background: var(--hero-bg);
   color: var(--hero-text);
+  --skeleton-base: var(--hero-bg);
+  --skeleton-sweep: rgb(255 255 255 / 0.08);
   text-decoration: none;
 }
 

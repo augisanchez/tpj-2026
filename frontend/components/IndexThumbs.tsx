@@ -119,7 +119,7 @@ export function IndexThumbs({ listId, rows: data }: Props) {
 
   if (!enabled) return null;
   return (
-    <div ref={box} className={styles.thumb} aria-hidden="true" data-on="">
+    <div ref={box} className={styles.thumb} aria-hidden="true" data-on="" data-skeleton="">
       {src && (
         // One element per source, so each starts hidden until loaded.
         // eslint-disable-next-line @next/next/no-img-element

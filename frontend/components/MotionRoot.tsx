@@ -200,7 +200,11 @@ export function MotionRoot() {
     // is hidden, to rise in as it's scrolled to. Page-to-page navigation
     // still runs the full logo + staggered entrance.
     document.querySelectorAll<HTMLImageElement>("img[data-fade], [data-img-body] img").forEach((img) => {
-      if (onFirstScreen(img)) img.dataset.ld = "1";
+      // Already painted: done. Still loading: show it as it streams in
+      // (no fade), but keep the skeleton behind it until it lands.
+      if (!onFirstScreen(img)) return;
+      if (img.complete) img.dataset.ld = "1";
+      else img.dataset.instant = "1";
     });
     root.classList.add("img-fade", "motion-ready");
     if (reducedMotion()) return;

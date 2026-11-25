@@ -36,7 +36,7 @@ export function ScrollCue() {
       aria-hidden="true"
     >
       <span className={styles.label}>Continue</span>
-      {/* Three arrows take turns dropping through the slot: chevron,
+      {/* Three arrows cycle in one slot like GIF frames: chevron,
           arrow, double chevron. Same stroke grid as components/Icon. */}
       <span className={styles.arrows}>
         {ARROWS.map((d, i) => (

@@ -105,10 +105,18 @@ export function IndexPhotographerCard({ listId, rows: data }: Props) {
   const count = person?.count ?? 0;
   return (
     <div ref={box} className={styles.person} aria-hidden="true" data-on="">
-      <div className={styles.personPhoto}>
+      <div className={styles.personPhoto} data-skeleton="">
         {portrait ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={portrait} src={portrait} alt="" decoding="async" />
+          <img
+            key={portrait}
+            src={portrait}
+            alt=""
+            decoding="async"
+            onLoad={(e) => {
+              e.currentTarget.dataset.ready = "1";
+            }}
+          />
         ) : (
           <span>{initials(person?.name ?? "")}</span>
         )}

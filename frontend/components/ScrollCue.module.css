@@ -33,14 +33,13 @@
   text-transform: uppercase;
 }
 
-/* A fixed slot the arrows drop through. Each glyph enters from above,
-   holds, then exits below while the next one enters. */
+/* Three arrows stacked in one slot, shown one at a time with hard cuts,
+   like the frames of an animated GIF. */
 .arrows {
   position: relative;
   display: block;
   width: 18px;
   height: 18px;
-  overflow: hidden;
 }
 
 .arrow {
@@ -52,16 +51,16 @@
   stroke-width: 2.25;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transform: translateY(-110%);
-  animation: tpj-cue-drop 3.6s var(--ease-out) infinite both;
+  opacity: 0;
+  animation: tpj-cue-frame 1.8s steps(1, end) infinite both;
 }
 
-/* Offsets so exactly one glyph is in the slot at a time from t = 0. */
+/* Each frame holds for 600ms; offsets make exactly one show at a time. */
 .arrow:nth-child(2) {
-  animation-delay: -2.4s;
+  animation-delay: -1.2s;
 }
 .arrow:nth-child(3) {
-  animation-delay: -1.2s;
+  animation-delay: -0.6s;
 }
 
 @media (min-width: 641px) {
@@ -79,24 +78,20 @@
   }
 }
 
-@keyframes tpj-cue-drop {
+@keyframes tpj-cue-frame {
   0% {
-    transform: translateY(-110%);
+    opacity: 1;
   }
-  8%,
-  26% {
-    transform: translateY(0);
-  }
-  33.34%,
+  33.333%,
   100% {
-    transform: translateY(110%);
+    opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .arrow {
     animation: none;
-    transform: none;
+    opacity: 1;
   }
   .arrow + .arrow {
     display: none;

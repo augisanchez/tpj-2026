@@ -10,7 +10,9 @@
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  background: var(--placeholder);
+  background: var(--hero-bg);
+  --skeleton-base: var(--hero-bg);
+  --skeleton-sweep: rgb(255 255 255 / 0.08);
 }
 
 .image {
