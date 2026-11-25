@@ -137,8 +137,12 @@
   margin-block: -4px;
 }
 
-.caption a:hover {
-  text-decoration: underline;
+.caption a:hover,
+.caption a:focus-visible {
+  background: var(--acid-signal);
+  color: var(--acid-ink);
+  box-shadow: 0 0 0 2px var(--acid-signal);
+  border-radius: 2px;
 }
 
 .no {

@@ -42,16 +42,30 @@
 }
 
 .noteLink {
-  color: var(--text);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  transition: text-decoration-color 150ms ease-out,
-    text-decoration-thickness 150ms ease-out;
+  color: inherit;
+  /* No underline (Nov 2026). Links read by weight, a cue that isn't
+     colour (WCAG 1.4.1), and fill with signal green on hover/focus.
+     Readers who ask for more contrast get the underline back. */
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 2px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-color 150ms ease-out, box-shadow 150ms ease-out, color 150ms ease-out;
 }
 
-.noteLink:hover {
-  text-decoration-color: var(--chip-bg);
-  text-decoration-thickness: 3px;
+.noteLink:hover,
+.noteLink:focus-visible {
+  background: var(--acid-signal);
+  color: var(--acid-ink);
+  box-shadow: 0 0 0 2px var(--acid-signal);
+}
+
+@media (prefers-contrast: more) {
+  .noteLink {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
 }
 

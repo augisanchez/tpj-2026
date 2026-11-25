@@ -81,9 +81,10 @@
 }
 
 .list > li > a:nth-child(2):hover {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
+  background: var(--acid-signal);
+  color: var(--acid-ink);
+  box-shadow: 0 0 0 2px var(--acid-signal);
+  border-radius: 2px;
 }
 
 .list > li > a:nth-child(2):focus-visible {
