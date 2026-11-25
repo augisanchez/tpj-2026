@@ -1,7 +1,8 @@
 /* Sits between the body (which already ends on its own bottom padding)
    and the photographer card. */
+/* Lines up with the article's 760px text column, like the credits. */
 .section {
-  max-width: var(--content-max);
+  max-width: calc(760px + 2 * var(--gutter));
   margin: 0 auto;
   padding: 0 var(--gutter) clamp(64px, 3rem + 3vw, 200px);
   --thumb-h: clamp(96px, 4rem + 3vw, 200px);
@@ -85,10 +86,10 @@
 .caption {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 600;
-  font-size: 11px;
-  line-height: 14px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--muted);
   transition: color 150ms ease-out;
 }
@@ -98,6 +99,14 @@
   color: var(--text);
 }
 
+/* Match the article body's 16px phone inset so the strip, the credits
+   and the text share one left edge. */
+@media (max-width: 768px) {
+  .section {
+    padding-inline: 16px;
+  }
+}
+
 @media (max-width: 640px) {
   .section {
     --thumb-h: 88px;
@@ -105,8 +114,8 @@
   /* Phones: the strip runs to the screen edge so the next plate peeks in. */
   .strip {
     gap: 12px;
-    margin-inline: calc(-1 * var(--gutter));
-    padding-inline: var(--gutter);
-    scroll-padding-inline: var(--gutter);
+    margin-inline: -16px;
+    padding-inline: 16px;
+    scroll-padding-inline: 16px;
   }
 }

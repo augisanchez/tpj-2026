@@ -9,8 +9,7 @@ type Props = {
 };
 
 /**
- * End-of-article checklist: every photograph in the piece as a numbered
- * plate. Each thumbnail links to its anchor in the body (plain hash links
+ * End-of-article "Photographs": every photograph in the piece, numbered. Each thumbnail links to its anchor in the body (plain hash links
  * work without JavaScript); with JavaScript the photo is centred on screen
  * and focused. The strip is a native horizontal scroller, so trackpad
  * momentum, touch and keyboard all work as the platform expects.
@@ -35,19 +34,19 @@ export function ExhibitionChecklist({ plates }: Props) {
   return (
     <section className={styles.section} aria-labelledby="checklist-heading" data-checklist>
       <div className={styles.head} data-reveal>
-        <h2 id="checklist-heading" className={styles.label}>Exhibition checklist</h2>
+        <h2 id="checklist-heading" className={styles.label}>Photographs</h2>
       </div>
       <ol className={styles.strip} data-reveal-children onClick={onClick}>
         {plates.map((p) => {
           const ratio = p.width && p.height ? Math.min(2, Math.max(0.6, p.width / p.height)) : 1.333;
           return (
             <li key={p.id} className={styles.item} style={{ ["--r" as string]: ratio }}>
-              <a href={`#${p.id}`} className={styles.link} aria-label={`Plate ${p.n}: ${p.alt || "photograph"}. Go to photograph`}>
+              <a href={`#${p.id}`} className={styles.link} aria-label={`Photograph ${p.n} of ${plates.length}${p.alt ? `: ${p.alt}` : ""}. Go to photograph`}>
                 <span className={styles.frame}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- body URLs are already CDN renditions */}
                   <img src={p.src} alt="" loading="lazy" decoding="async" data-fade className={styles.img} />
                 </span>
-                <span className={styles.caption} aria-hidden="true">Plate {p.n}</span>
+                <span className={styles.caption} aria-hidden="true">{p.n}</span>
               </a>
             </li>
           );
