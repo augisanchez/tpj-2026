@@ -4,7 +4,7 @@
 .section {
   position: relative;
   overflow: hidden;
-  padding: clamp(40px, 1.5rem + 2.5vw, 120px) 0;
+  padding: clamp(28px, 1.05rem + 1.75vw, 84px) 0; /* 70% of the first cut */
 }
 
 .link {
@@ -28,15 +28,15 @@
 .unit {
   display: inline-flex;
   align-items: center;
-  gap: clamp(16px, 0.5rem + 1.2vw, 40px);
-  padding-right: clamp(16px, 0.5rem + 1.2vw, 40px);
+  gap: clamp(11px, 0.35rem + 0.84vw, 28px);
+  padding-right: clamp(11px, 0.35rem + 0.84vw, 28px);
 }
 
 .solid,
 .outline {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  font-size: clamp(56px, 1.5rem + 6vw, 200px);
+  font-size: clamp(39px, 1.05rem + 4.2vw, 140px);
   line-height: 1.05;
   letter-spacing: -0.02em;
   text-transform: uppercase;
@@ -45,7 +45,7 @@
 /* Outlined variant: the same word as a stroke, filled on hover. */
 .outline {
   color: transparent;
-  -webkit-text-stroke: clamp(1.5px, 0.1vw + 1px, 3px) var(--text);
+  -webkit-text-stroke: clamp(1px, 0.07vw + 0.7px, 2px) var(--text);
   transition: color 200ms ease-out;
 }
 
@@ -59,13 +59,13 @@
    for a bit of play. */
 .chip {
   display: inline-block;
-  padding: 6px 10px;
+  padding: 4px 7px;
   border-radius: var(--radius);
   background: var(--acid-signal);
   color: var(--acid-ink);
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 600;
-  font-size: clamp(14px, 0.8rem + 0.35vw, 22px);
+  font-size: clamp(12px, 0.56rem + 0.25vw, 16px); /* 12px floor */
   line-height: 1.2;
   white-space: nowrap;
 }

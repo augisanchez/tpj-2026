@@ -7,15 +7,14 @@ type Props = {
   stories: RelatedStory[];
 };
 
-/** Cards shown: one row of the shared four-column card grid. */
+/** Cards shown: two rows of two large cards. */
 const SHOWN = 4;
 
 /**
- * Related stories at the end of an essay: one row of the same card grid
- * the homepage theme section uses (4 columns, 2 on tablets, 1 on
- * phones), with the site's ArticleCard and the "About the photographer"
- * section label. The strongest matches come first (related-stories.ts),
- * so the row shows the top four.
+ * Related stories at the end of an essay: four large cards, two by two
+ * (one column on phones), with the site's ArticleCard and the "About
+ * the photographer" section label. The strongest matches come first
+ * (related-stories.ts).
  */
 export function RelatedStrip({ label, stories }: Props) {
   if (stories.length === 0) return null;
@@ -28,7 +27,7 @@ export function RelatedStrip({ label, stories }: Props) {
         {stories.slice(0, SHOWN).map((s) => (
           <li key={s.href} className={styles.item}>
             <ArticleCard
-              variant="3up"
+              variant="2up"
               article={{
                 title: s.title,
                 date: s.date,

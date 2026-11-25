@@ -10,9 +10,33 @@
 
 .head {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 20px;
+}
+
+/* Back-to-top arrow beside the heading: a 24px target in the label's
+   muted grey, ink on hover. */
+.top {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius);
+  color: var(--muted);
+  transition: color 150ms ease-out, background-color 150ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .top:hover {
+    color: var(--acid-ink);
+    background: var(--acid-signal);
+  }
+}
+
+.top:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 /* Same section label as "About the photographer": muted caps, no fill. */
@@ -28,28 +52,18 @@
 }
 
 
-/* Native horizontal scroller: momentum on trackpads and touch, arrow
-   keys once a plate has focus, snap is a gentle suggestion only. */
+/* Every thumbnail visible: the row wraps, nothing scrolls or hides. */
 .strip {
   display: flex;
-  gap: 16px;
-  /* The 4px inset keeps focus rings unclipped; the margin cancels it so
-     the first plate lines up with the label. */
-  margin: 0 -4px;
-  padding: 4px 4px 16px;
+  flex-wrap: wrap;
+  gap: 24px 16px;
+  margin: 0;
+  padding: 0;
   list-style: none;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
-  scroll-padding-inline: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--placeholder) transparent;
-  -webkit-overflow-scrolling: touch;
 }
 
 .item {
   flex: 0 0 auto;
-  scroll-snap-align: start;
 }
 
 .link {
@@ -111,11 +125,7 @@
   .section {
     --thumb-h: 88px;
   }
-  /* Phones: the strip runs to the screen edge so the next plate peeks in. */
   .strip {
-    gap: 12px;
-    margin-inline: -16px;
-    padding-inline: 16px;
-    scroll-padding-inline: 16px;
+    gap: 16px 12px;
   }
 }

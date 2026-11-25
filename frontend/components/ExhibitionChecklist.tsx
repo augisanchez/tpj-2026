@@ -2,6 +2,7 @@
 
 import type { MouseEvent } from "react";
 import type { Plate } from "@/lib/exhibition";
+import { Icon } from "./Icon";
 import styles from "./ExhibitionChecklist.module.css";
 
 type Props = {
@@ -11,8 +12,8 @@ type Props = {
 /**
  * End-of-article "Photographs": every photograph in the piece, numbered. Each thumbnail links to its anchor in the body (plain hash links
  * work without JavaScript); with JavaScript the photo is centred on screen
- * and focused. The strip is a native horizontal scroller, so trackpad
- * momentum, touch and keyboard all work as the platform expects.
+ * and focused. Every thumbnail shows: they wrap into rows, nothing
+ * scrolls or hides. An arrow beside the heading goes back to the top.
  */
 export function ExhibitionChecklist({ plates }: Props) {
   if (plates.length === 0) return null;
@@ -31,10 +32,26 @@ export function ExhibitionChecklist({ plates }: Props) {
     history.replaceState(null, "", link.hash);
   };
 
+  const toTop = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    // Move focus to the page top so keyboard users land there too.
+    const main = document.querySelector<HTMLElement>("main");
+    if (main) {
+      main.setAttribute("tabindex", "-1");
+      main.focus({ preventScroll: true });
+    }
+  };
+
   return (
     <section className={styles.section} aria-labelledby="checklist-heading" data-checklist>
       <div className={styles.head} data-reveal>
         <h2 id="checklist-heading" className={styles.label}>Photographs</h2>
+        <a href="#" className={styles.top} onClick={toTop} data-tip="Back to the top." aria-label="Back to top">
+          <Icon name="arrowUp" size={16} />
+        </a>
       </div>
       <ol className={styles.strip} data-reveal-children onClick={onClick}>
         {plates.map((p) => {

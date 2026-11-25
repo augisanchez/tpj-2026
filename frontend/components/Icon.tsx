@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import styles from "./Icon.module.css";
 
-export type IconName = "shuffle" | "search" | "grid" | "list" | "filter" | "close";
+export type IconName = "shuffle" | "search" | "grid" | "list" | "filter" | "close" | "arrowUp";
 
 /**
  * The one icon set. Every glyph is drawn on the header's grid: a 24
@@ -53,6 +53,12 @@ const GLYPHS: Record<IconName, ReactNode> = {
     <>
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
+    </>
+  ),
+  arrowUp: (
+    <>
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <polyline points="5 11 12 4 19 11" />
     </>
   ),
 };
