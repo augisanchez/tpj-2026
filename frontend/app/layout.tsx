@@ -41,6 +41,11 @@ const sourceSerif = localFont({
   ],
   display: "swap",
   variable: "--font-serif",
+  // The serif is reading text (bios, interview answers, quotes), not
+  // first-screen type. Preloading both files on every page made them
+  // compete with the first photo for bandwidth; they still load as soon
+  // as the CSS asks for them.
+  preload: false,
 });
 
 export const metadata: Metadata = {
