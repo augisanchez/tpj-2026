@@ -30,6 +30,8 @@ export type CdnImageOpts = {
    *  next.config). Only applies with the default quality. */
   slowQuality?: number;
   format?: "auto" | "webp" | "avif" | "jpeg" | "png";
+  /** Gaussian blur radius (Cloudflare `blur`, 1 to 250). */
+  blur?: number;
 };
 
 /** AVIF/WebP at 75 is visually the same as 85 for photographs at about a
@@ -68,6 +70,7 @@ export function cdnImageUrl(
     typeof opts.height === "number" ? `height=${opts.height}` : null,
     opts.fit ? `fit=${opts.fit}` : null,
     opts.gravity ? `gravity=${opts.gravity}` : null,
+    typeof opts.blur === "number" ? `blur=${opts.blur}` : null,
     typeof opts.quality === "number"
       ? `quality=${opts.quality}`
       : `quality=(level=${DEFAULT_QUALITY},slow-connection=${opts.slowQuality ?? SLOW_QUALITY})`,
@@ -80,6 +83,17 @@ export function cdnImageUrl(
   // SVGs, external shop images) is served as-is.
   if (!path.startsWith("/wp-content/uploads/")) return url;
   return `${CDN_BASE}/cdn-cgi/image/${params}${CDN_PATH_PREFIX}${path}`;
+}
+
+/**
+ * The blur-up placeholder: the same photo 32px wide, low quality and
+ * pre-blurred at the edge (about 0.5KB), drawn under the real image
+ * while it loads. Null when the CDN is off or the image isn't a
+ * WordPress upload, so callers simply skip the effect.
+ */
+export function cdnPlaceholderUrl(rawUrl: string | null | undefined): string | null {
+  const url = cdnImageUrl(rawUrl, { width: 32, quality: 40, blur: 2 });
+  return url && url.includes("/cdn-cgi/image/") ? url : null;
 }
 
 /** Default srcset widths for editorial photography — mobile portrait

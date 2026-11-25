@@ -261,12 +261,52 @@ export function MotionRoot() {
   useEffect(() => {
     const SEL = "img[data-fade], [data-img-body] img";
     const mark = (img: HTMLImageElement) => {
-      if (!img.dataset.ld) img.dataset.ld = "1";
+      if (img.dataset.ld) return;
+      // Blur-up images swap only once decoded, so the focus-in never
+      // runs on a photo that hasn't painted yet.
+      if (img.dataset.lqip !== undefined && typeof img.decode === "function") {
+        if (img.dataset.decoding) return;
+        img.dataset.decoding = "1";
+        img
+          .decode()
+          .catch(() => {})
+          .then(() => {
+            img.dataset.ld = "1";
+          });
+        return;
+      }
+      img.dataset.ld = "1";
     };
-    const scan = () =>
+    // Article body photos carry their blur-up source as data-lqip-src
+    // (lib/media.ts); apply it as each nears the viewport.
+    const lqipIo =
+      typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver(
+            (entries) => {
+              for (const e of entries) {
+                if (!e.isIntersecting) continue;
+                const img = e.target as HTMLImageElement;
+                lqipIo?.unobserve(img);
+                const u = img.dataset.lqipSrc;
+                if (img.complete || !u || !u.startsWith("https://")) continue;
+                img.style.setProperty("--lqip", `url("${u}")`);
+                img.dataset.fade = img.dataset.fade ?? "";
+                img.dataset.lqip = "";
+              }
+            },
+            { rootMargin: "600px 0px" }
+          );
+    const scan = () => {
       document.querySelectorAll<HTMLImageElement>(SEL).forEach((img) => {
         if (img.complete) mark(img);
       });
+      if (!lqipIo) return;
+      document.querySelectorAll<HTMLImageElement>("img[data-lqip-src]:not([data-lqip-seen])").forEach((img) => {
+        img.dataset.lqipSeen = "1";
+        if (!img.complete) lqipIo.observe(img);
+      });
+    };
     const onDone = (e: Event) => {
       const t = e.target;
       if (t instanceof HTMLImageElement && t.matches(SEL)) mark(t);
@@ -284,6 +324,7 @@ export function MotionRoot() {
       document.removeEventListener("load", onDone, true);
       document.removeEventListener("error", onDone, true);
       mo.disconnect();
+      lqipIo?.disconnect();
       cancelAnimationFrame(raf);
     };
   }, []);
