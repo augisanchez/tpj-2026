@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import styles from "./NavTooltips.module.css";
 
 /**
@@ -26,9 +26,16 @@ const TIPS: Record<string, string> = {
   "/search": "Find a story or a photographer.",
 };
 
+/** First hover waits this long, so passing over the nav doesn't flash tips. */
 const SHOW_DELAY_MS = 350;
-const HIDE_GRACE_MS = 120;
-const GAP = 10;
+/** Moving from one link to the next within this window swaps instantly. */
+const WARM_MS = 500;
+/** Covers the gap when the pointer crosses from one link to its neighbour. */
+const HIDE_GRACE_MS = 80;
+/** Offset from the cursor tip, so the label sits beside the arrow, not under it. */
+const CURSOR_X = 14;
+const CURSOR_Y = 20;
+const FOCUS_GAP = 10;
 const EDGE = 8;
 
 function tipFor(el: HTMLElement): string | null {
@@ -41,116 +48,170 @@ function tipFor(el: HTMLElement): string | null {
 }
 
 /**
- * Shared tooltip layer. Shows after a short hover delay, at once for
- * keyboard focus, stays while the pointer moves onto it, and hides on
- * Escape, blur, scroll or leave (WCAG 1.4.13). Touch never triggers it.
- * The target gets aria-describedby while the tip is up.
+ * Shared tooltip layer. With a mouse it follows the cursor and swaps its
+ * text as the pointer moves from one link to the next. The first tip
+ * waits a beat; after that, neighbouring links answer at once. Keyboard
+ * focus shows it under the focused control. Escape, click and scroll
+ * dismiss it. Touch never triggers it. The target gets aria-describedby
+ * while the tip is up.
  */
 export function NavTooltips() {
-  const [tip, setTip] = useState<{ text: string; x: number; y: number; above: boolean } | null>(null);
   const box = useRef<HTMLDivElement>(null);
-  const target = useRef<HTMLElement | null>(null);
-  const showTimer = useRef(0);
-  const hideTimer = useRef(0);
 
   useEffect(() => {
-    const clear = () => {
-      window.clearTimeout(showTimer.current);
-      window.clearTimeout(hideTimer.current);
+    const tip = box.current;
+    if (!tip) return;
+
+    let current: HTMLElement | null = null; // element the tip belongs to
+    let dismissed: HTMLElement | null = null; // Escape'd until the pointer leaves it
+    let visible = false;
+    let lastHidden = 0;
+    let px = 0;
+    let py = 0;
+    let frame = 0;
+    let showTimer = 0;
+    let hideTimer = 0;
+
+    const clearTimers = () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(hideTimer);
     };
+
+    const placeAt = (x: number, y: number, follow: boolean) => {
+      const w = tip.offsetWidth;
+      const h = tip.offsetHeight;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      let left = follow ? x + CURSOR_X : x;
+      let top = follow ? y + CURSOR_Y : y;
+      if (left + w > vw - EDGE) left = follow ? x - CURSOR_X - w : vw - w - EDGE;
+      if (top + h > vh - EDGE) top = follow ? y - 12 - h : y - h;
+      left = Math.max(EDGE, left);
+      top = Math.max(EDGE, top);
+      tip.style.transform = `translate3d(${Math.round(left)}px, ${Math.round(top)}px, 0)`;
+    };
+
+    const describe = (el: HTMLElement | null) => {
+      if (current && current !== el) current.removeAttribute("aria-describedby");
+      current = el;
+      el?.setAttribute("aria-describedby", "nav-tooltip");
+    };
+
+    const showText = (text: string) => {
+      tip.textContent = text;
+      tip.setAttribute("data-on", "");
+      visible = true;
+    };
+
     const hide = () => {
-      clear();
-      target.current?.removeAttribute("aria-describedby");
-      target.current = null;
-      setTip(null);
+      clearTimers();
+      if (visible) lastHidden = performance.now();
+      visible = false;
+      tip.removeAttribute("data-on");
+      describe(null);
     };
-    const show = (el: HTMLElement, text: string) => {
-      const r = el.getBoundingClientRect();
-      const above = r.bottom + 48 > window.innerHeight;
-      target.current?.removeAttribute("aria-describedby");
-      target.current = el;
-      el.setAttribute("aria-describedby", "nav-tooltip");
-      setTip({ text, x: r.left + r.width / 2, y: above ? r.top - GAP : r.bottom + GAP, above });
-    };
+
     // Links by destination, plus any control that carries its own
     // data-tip (icon buttons such as Grid / List).
-    const linkFrom = (e: Event) =>
+    const targetFrom = (e: Event) =>
       (e.target as Element | null)?.closest?.("a[href], [data-tip]") as HTMLElement | null;
+
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      px = e.clientX;
+      py = e.clientY;
+      if (!visible || frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (visible) placeAt(px, py, true);
+      });
+    };
 
     const onOver = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
-      if (box.current?.contains(e.target as Node)) {
-        window.clearTimeout(hideTimer.current);
-        return;
-      }
-      const el = linkFrom(e);
-      if (!el) return;
+      const el = targetFrom(e);
+      if (!el || el === current || el === dismissed) return;
       const text = tipFor(el);
       if (!text) return;
-      window.clearTimeout(hideTimer.current);
-      if (target.current === el) return;
-      window.clearTimeout(showTimer.current);
-      showTimer.current = window.setTimeout(() => show(el, text), SHOW_DELAY_MS);
+      px = e.clientX;
+      py = e.clientY;
+      clearTimers();
+      describe(el);
+      const warm = visible || performance.now() - lastHidden < WARM_MS;
+      if (warm) {
+        showText(text);
+        placeAt(px, py, true);
+      } else {
+        showTimer = window.setTimeout(() => {
+          if (current !== el) return;
+          showText(text);
+          placeAt(px, py, true);
+        }, SHOW_DELAY_MS);
+      }
     };
+
     const onOut = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
       const to = e.relatedTarget as Node | null;
-      if (to && (box.current?.contains(to) || target.current?.contains(to))) return;
-      window.clearTimeout(showTimer.current);
-      if (target.current) hideTimer.current = window.setTimeout(hide, HIDE_GRACE_MS);
-    };
-    const onFocus = (e: FocusEvent) => {
-      const el = linkFrom(e);
-      if (!el || !el.matches(":focus-visible")) return;
-      const text = tipFor(el);
-      if (text) show(el, text);
-    };
-    const onBlur = (e: FocusEvent) => {
-      if (target.current && e.target === target.current) hide();
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && target.current) hide();
+      if (dismissed && !(to && dismissed.contains(to))) dismissed = null;
+      if (!current || (to && current.contains(to))) return;
+      // If the pointer lands on another link, onOver cancels this and
+      // swaps the text in place.
+      window.clearTimeout(showTimer);
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(hide, HIDE_GRACE_MS);
     };
 
+    const onFocus = (e: FocusEvent) => {
+      const el = targetFrom(e);
+      if (!el || !el.matches(":focus-visible")) return;
+      const text = tipFor(el);
+      if (!text) return;
+      clearTimers();
+      describe(el);
+      showText(text);
+      const r = el.getBoundingClientRect();
+      const below = r.bottom + FOCUS_GAP + tip.offsetHeight <= window.innerHeight - EDGE;
+      placeAt(r.left, below ? r.bottom + FOCUS_GAP : r.top - FOCUS_GAP, false);
+    };
+
+    const onBlur = (e: FocusEvent) => {
+      if (current && e.target === current) hide();
+    };
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || !current) return;
+      dismissed = current;
+      hide();
+    };
+
+    const onScroll = () => {
+      if (current) hide();
+    };
+
+    document.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerover", onOver);
     document.addEventListener("pointerout", onOut);
     document.addEventListener("focusin", onFocus);
     document.addEventListener("focusout", onBlur);
     document.addEventListener("keydown", onKey);
     document.addEventListener("click", hide, true);
-    window.addEventListener("scroll", hide, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      clear();
+      clearTimers();
+      cancelAnimationFrame(frame);
+      document.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerover", onOver);
       document.removeEventListener("pointerout", onOut);
       document.removeEventListener("focusin", onFocus);
       document.removeEventListener("focusout", onBlur);
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("click", hide, true);
-      window.removeEventListener("scroll", hide);
+      window.removeEventListener("scroll", onScroll);
     };
   }, []);
 
-  // Keep the tip inside the viewport once its width is known.
-  useEffect(() => {
-    const el = box.current;
-    if (!el || !tip) return;
-    const w = el.offsetWidth;
-    const left = Math.min(Math.max(tip.x - w / 2, EDGE), window.innerWidth - w - EDGE);
-    el.style.left = `${left}px`;
-  }, [tip]);
-
-  return (
-    <div
-      ref={box}
-      id="nav-tooltip"
-      role="tooltip"
-      className={styles.tip}
-      data-on={tip ? "" : undefined}
-      data-above={tip?.above ? "" : undefined}
-      style={tip ? { top: tip.y } : undefined}
-    >
-      {tip?.text}
-    </div>
-  );
+  // Text and position are set directly on the node, so following the
+  // cursor never re-renders React.
+  return <div ref={box} id="nav-tooltip" role="tooltip" className={styles.tip} />;
 }

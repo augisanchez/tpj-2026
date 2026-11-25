@@ -22,11 +22,37 @@
   max-width: 100%;
 }
 
-/* The shuffle glyph at the display line's cap height (Oswald, 0.81em),
-   standing on the baseline like a capital. */
+/* The shuffle glyph in a ring, as tall as the display caps (Oswald,
+   0.81em) and standing on the baseline like a capital. Hovering
+   anywhere on the band flips the ring over: halfway through the turn
+   it fills with ink and the glyph turns white. */
+.badge {
+  /* Inline-block with no in-flow content: its baseline is its bottom
+     edge, so the ring stands on the text baseline. */
+  position: relative;
+  display: inline-block;
+  width: 0.81em;
+  height: 0.81em;
+  vertical-align: baseline;
+  border: 0.055em solid var(--acid-ink);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--acid-ink);
+  transform: perspective(8em) rotateY(0deg);
+  transition:
+    transform 420ms var(--ease-out),
+    background-color 0s linear 140ms,
+    color 0s linear 140ms;
+}
+
 .icon {
-  --cap: 0.81em;
-  transition: transform 300ms var(--ease-out);
+  position: absolute;
+  inset: 21%;
+  display: block;
+  width: 58%;
+  height: 58%;
+  /* Undo the mirror the flip puts on the glyph, at the same midpoint. */
+  transition: transform 0s linear 140ms;
 }
 
 .note {
@@ -44,17 +70,36 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .band:hover .badge {
+    transform: perspective(8em) rotateY(180deg);
+    background-color: var(--acid-ink);
+    color: #fff;
+  }
   .band:hover .icon {
-    transform: translateX(0.12em);
+    transform: scaleX(-1);
   }
 }
 
+.band:focus-visible .badge {
+  transform: perspective(8em) rotateY(180deg);
+  background-color: var(--acid-ink);
+  color: #fff;
+}
 .band:focus-visible .icon {
-  transform: translateX(0.12em);
+  transform: scaleX(-1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .icon {
+  .badge,
+  .band:hover .badge,
+  .band:focus-visible .badge {
+    transform: none;
+    transition: background-color 150ms ease-out, color 150ms ease-out;
+  }
+  .icon,
+  .band:hover .icon,
+  .band:focus-visible .icon {
+    transform: none;
     transition: none;
   }
 }

@@ -160,6 +160,27 @@
   overflow: hidden;
 }
 
+/* The year stamp: a signal-green chip, the same mark as the type tags,
+   pinned to the top-left at the caption's inset. Above the gradient,
+   below the hover frame. */
+.year {
+  --inset: clamp(12px, 0.5rem + 0.5vw, 24px);
+  position: absolute;
+  top: var(--inset);
+  left: var(--inset);
+  z-index: 1;
+  padding: 4px 6px;
+  border-radius: var(--radius);
+  background: var(--acid-signal);
+  color: var(--acid-ink);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(12px, 0.7rem + 0.12vw, 14px);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
 .type {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 600;

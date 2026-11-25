@@ -8,6 +8,12 @@ import styles from "./ScrollCue.module.css";
  * Bobs gently to draw the eye, fades out once the visitor has scrolled
  * past the first 80px so it doesn't follow them down the page.
  */
+const ARROWS = [
+  "M6 9l6 6 6-6",
+  "M12 4v15M6 13l6 6 6-6",
+  "M6 6l6 6 6-6M6 12l6 6 6-6",
+];
+
 export function ScrollCue() {
   const [hidden, setHidden] = useState(false);
 
@@ -30,18 +36,15 @@ export function ScrollCue() {
       aria-hidden="true"
     >
       <span className={styles.label}>Continue</span>
-      <svg
-        className={styles.arrow}
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <path
-          d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
-          fill="currentColor"
-        />
-      </svg>
+      {/* Three arrows take turns dropping through the slot: chevron,
+          arrow, double chevron. Same stroke grid as components/Icon. */}
+      <span className={styles.arrows}>
+        {ARROWS.map((d, i) => (
+          <svg key={i} className={styles.arrow} viewBox="0 0 24 24" fill="none">
+            <path d={d} />
+          </svg>
+        ))}
+      </span>
     </div>
   );
 }

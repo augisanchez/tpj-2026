@@ -1,5 +1,8 @@
 /* A small label in the signal green: the same mark as the type tags,
-   so a tooltip reads as part of the system, not a browser default. */
+   so a tooltip reads as part of the system, not a browser default.
+   Position comes from JS as a transform (it follows the cursor), so the
+   only animated property is opacity. Text swaps between links are
+   instant. */
 .tip {
   position: fixed;
   z-index: 1000;
@@ -18,36 +21,14 @@
   text-transform: none;
   white-space: normal;
   pointer-events: none;
+  will-change: transform;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(4px);
-  transition: opacity 120ms ease-out, transform 160ms var(--ease-out), visibility 0s linear 160ms;
-}
-
-.tip[data-above] {
-  transform: translateY(calc(-100% + 4px));
+  transition: opacity 100ms ease-out, visibility 0s linear 100ms;
 }
 
 .tip[data-on] {
   opacity: 1;
   visibility: visible;
-  pointer-events: auto;
-  transform: translateY(0);
-  transition: opacity 120ms ease-out, transform 160ms var(--ease-out), visibility 0s;
-}
-
-.tip[data-on][data-above] {
-  transform: translateY(-100%);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tip,
-  .tip[data-on] {
-    transform: none;
-    transition: opacity 80ms linear, visibility 0s;
-  }
-  .tip[data-above],
-  .tip[data-on][data-above] {
-    transform: translateY(-100%);
-  }
+  transition: opacity 100ms ease-out, visibility 0s;
 }

@@ -5,6 +5,7 @@ import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
 import { capWidths, cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
 import styles from "./ArticleCard.module.css";
+import { creditFor } from "@/lib/credit";
 
 // Rendered card widths per layout, so the browser picks the right srcset size.
 const CARD_SIZES: Record<string, string> = {
@@ -54,17 +55,6 @@ type Props = {
    */
   badgeCount?: number;
 };
-
-const fold = (s: string) =>
-  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-
-/** The credit line, unless the title already names the photographer
- *  (interviews are usually titled with the name), so it shows once. */
-function creditFor(title: string, photographer?: string | null): string | null {
-  const name = photographer?.trim();
-  if (!name) return null;
-  return fold(title).includes(fold(name)) ? null : name;
-}
 
 const CHIP_SIZE_BY_VARIANT: Record<ArticleCardVariant, ContentTypeChipSize> = {
   "1up": "large",

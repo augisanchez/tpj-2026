@@ -251,6 +251,7 @@ export default async function Home() {
       title: a.title,
       photographer: a.photographerName,
       contentType: a.contentType,
+      year: a.date ? new Date(a.date).getFullYear() : null,
     }));
   const mosaicTiles = pickRandom(mosaicPool, 20);
   // Lead tiles (0 and 14) are large: full image; the rest get the 600px square.

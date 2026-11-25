@@ -59,12 +59,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  column-gap: 0.18em;
-  row-gap: 0.04em;
+  column-gap: 0.42em;
+  row-gap: 0.2em;
   font-family: var(--font-display), Impact, sans-serif;
   /* Big enough to read as a wall, small enough that the wall and the
      cards it controls fit one screen, so a click visibly does something. */
-  font-size: clamp(32px, 0.75rem + 2.6vw, 72px);
+  font-size: clamp(24px, 0.5rem + 1.7vw, 48px);
   /* Hang the highlighter padding into the gutter so the caps line up
      with the label and the cards. */
   margin-left: -0.1em;
@@ -232,8 +232,8 @@
 @media (max-width: 640px) {
   .list {
     flex-wrap: nowrap;
-    column-gap: 0.28em;
-    font-size: 40px;
+    column-gap: 0.5em;
+    font-size: 30px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;

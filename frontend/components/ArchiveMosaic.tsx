@@ -8,6 +8,8 @@ export type MosaicTile = {
   title: string;
   photographer: string | null;
   contentType: "essay" | "interview" | "feature";
+  /** Year first published: the green stamp in the tile's corner. */
+  year: number | null;
 };
 
 const TYPE_LABEL = { essay: "Photo Essay", interview: "Interview", feature: "Feature" } as const;
@@ -20,7 +22,9 @@ type Props = {
 /**
  * Revisit: pieces older than two years in a mixed-size grid. Every tile
  * shows its main title (the photographer for interviews, the article
- * title otherwise) under a quiet content-type tag.
+ * title otherwise) under a quiet content-type tag, and the year it was
+ * published on a signal-green stamp in the corner, so the archive reads
+ * as an archive.
  */
 export function ArchiveMosaic({ tiles, total }: Props) {
   return (
@@ -47,6 +51,7 @@ export function ArchiveMosaic({ tiles, total }: Props) {
                 sizes={i === 0 || i === 14 ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 768px) 17vw, 50vw"}
                 className={`${styles.image} pz-media`}
               />
+              {t.year ? <span className={styles.year}>{t.year}</span> : null}
               <span className={styles.caption}>
                 <span className={styles.type}>{TYPE_LABEL[t.contentType]}</span>
                 <span className={styles.piece}>

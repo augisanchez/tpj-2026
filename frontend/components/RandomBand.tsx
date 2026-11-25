@@ -19,7 +19,9 @@ export function RandomBand() {
       <span className={styles.line}>
         {/* No-break space: the glyph never wraps onto a line alone. */}
         Show me something{"\u00a0"}
-        <Icon name="shuffle" inline className={styles.icon} />
+        <span className={styles.badge}>
+          <Icon name="shuffle" className={styles.icon} />
+        </span>
       </span>
       <span className={styles.note}>
         A random story from everything published since 2012.

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { capWidths, cdnImageUrl, cdnSrcSet, isCdnEnabled } from "@/lib/cdn";
+import { creditFor } from "@/lib/credit";
 import styles from "./Ticker.module.css";
 
 export type TickerItem = {
@@ -123,7 +124,8 @@ export function Ticker({ items, label = "Latest stories", speed = 40 }: Props) {
                 />
               </span>
               <span className={styles.title}>{item.title}</span>
-              {item.photographer && (
+              {/* Interviews are titled with the name: say it once. */}
+              {creditFor(item.title, item.photographer) && (
                 <span className={styles.photographer}>{item.photographer}</span>
               )}
             </Link>
