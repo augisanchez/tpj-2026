@@ -8,18 +8,21 @@ export const metadata = pageMetadata({
   path: "/about",
 });
 
-const TEAM = [
-  { name: "Agustin Sanchez", role: "Founder, Publisher" },
-  { name: "Lou Noble", role: "Editor-In-Chief" },
-  { name: "SuzAnne Steben", role: "Managing Editor" },
+// Personal sites as linked on the v1 About page (checked Nov 2026).
+// Paige Mauriello's old site no longer resolves; Sally Reynolds had none.
+const TEAM: { name: string; role: string; url?: string }[] = [
+  { name: "Agustin Sanchez", role: "Founder, Publisher", url: "https://www.agustin-sanchez.com/" },
+  { name: "Lou Noble", role: "Editor-In-Chief", url: "https://www.louobedlam.com/" },
+  { name: "SuzAnne Steben", role: "Managing Editor", url: "http://www.suzannesteben.com/" },
   { name: "Paige Mauriello", role: "Essays Editor" },
-  { name: "Asa Featherstone, IV", role: "Contributing Editor" },
+  { name: "Asa Featherstone, IV", role: "Contributing Editor", url: "https://www.asafeatherstone.com/" },
   { name: "Sally Reynolds", role: "Contributing Editor" },
   {
     name: "Kate Sweeney",
     role: "Staff Photographer · Photographer-in-Residence (2016–2019)",
+    url: "https://www.katesweeneyphotography.com/",
   },
-  { name: "Jason Travis", role: "Photographer-in-Residence (2020)" },
+  { name: "Jason Travis", role: "Photographer-in-Residence (2020)", url: "http://www.jasontravisphoto.com/" },
 ];
 
 export default function AboutPage() {
@@ -84,7 +87,16 @@ export default function AboutPage() {
           <div className={styles.teamGrid}>
             {TEAM.map((member) => (
               <article key={member.name} className={styles.member}>
-                <h3 className={styles.memberName}>{member.name}</h3>
+                <h3 className={styles.memberName}>
+                  {member.url ? (
+                    <a href={member.url} target="_blank" rel="noopener noreferrer" className={styles.memberLink}>
+                      {member.name}
+                      <span className={styles.srOnly}> (opens in a new tab)</span>
+                    </a>
+                  ) : (
+                    member.name
+                  )}
+                </h3>
                 <p className={styles.memberRole}>{member.role}</p>
               </article>
             ))}

@@ -108,13 +108,46 @@
 }
 
 .memberName {
-  font-family: var(--font-display), Impact, sans-serif;
+  font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 700;
-  font-size: clamp(20px, 1rem + 0.9vw, 44px); /* caps ~3556 */
-  line-height: 1.1;
+  font-size: clamp(18px, 0.9rem + 0.6vw, 32px);
+  line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--text);
   margin: 0;
+}
+
+/* Name links to the person's site in a new tab: no underline, the
+   site's signal-green fill on hover and focus. */
+.memberLink {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.memberLink:hover,
+.memberLink:focus-visible {
+  background: var(--acid-signal);
+  color: var(--acid-ink);
+  box-shadow: 0 0 0 3px var(--acid-signal);
+}
+
+@media (prefers-contrast: more) {
+  .memberLink {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .memberRole {
