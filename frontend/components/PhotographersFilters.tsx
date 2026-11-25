@@ -6,6 +6,7 @@ import { PhotographersIndexList } from "./PhotographersIndexList";
 import { LazyLetterGrid } from "./LazyLetterGrid";
 import { Icon } from "./Icon";
 import { ViewToggle, type View } from "./ViewToggle";
+import { Chevron } from "./ExploreFilters";
 import type { ArtistRole, PhotographerIndexItem } from "@/lib/queries/photographers-index";
 import indexStyles from "./PhotographersIndex.module.css";
 import f from "./FilterBar.module.css";
@@ -36,6 +37,19 @@ function firstLetter(name: string): string {
     if (/[A-Za-z]/.test(ch)) return ch.toUpperCase();
   }
   return "#";
+}
+
+/**
+ * Jump to a letter section and hold it there while the lazy sections
+ * around it fill in (they would otherwise push the target off screen).
+ */
+function jumpToLetter(letter: string) {
+  const el = document.getElementById(`letter-${letter}`);
+  if (!el) return;
+  history.replaceState(history.state, "", `#letter-${letter}`);
+  const align = () => el.scrollIntoView({ block: "start" });
+  align();
+  [80, 200, 400, 700, 1100].forEach((ms) => window.setTimeout(align, ms));
 }
 
 export function PhotographersFilters({ photographers }: Props) {
@@ -156,6 +170,30 @@ export function PhotographersFilters({ photographers }: Props) {
           </div>
         </div>
 
+        {/* Phones: the A to Z row is hidden, so a letter menu jumps
+            instead. Native select: the phone's own picker. */}
+        {grouped.length > 0 && (
+          <div className={`${f.group} ${styles.letterMenu}`}>
+            <label className={f.label} htmlFor="artist-letter">Jump to letter</label>
+            <span className={f.selectWrap}>
+              <select
+                id="artist-letter"
+                className={`${f.control} ${f.select} ${styles.letterSelect}`}
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) jumpToLetter(e.target.value);
+                }}
+              >
+                <option value="" disabled>A–Z</option>
+                {grouped.map(([letter]) => (
+                  <option key={letter} value={letter}>{letter}</option>
+                ))}
+              </select>
+              <Chevron />
+            </span>
+          </div>
+        )}
+
         {/* Grid / List sits at the right edge, like Explore's. */}
         <div className={`${f.end} ${styles.viewGroup}`}>
           <ViewToggle view={view} onChange={chooseView} />
@@ -169,6 +207,11 @@ export function PhotographersFilters({ photographers }: Props) {
                 <a
                   key={letter}
                   href={`#letter-${letter}`}
+                  onClick={(e) => {
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                    e.preventDefault();
+                    jumpToLetter(letter);
+                  }}
                   className={`${f.control} ${styles.letter}`}
                 >
                   {letter}

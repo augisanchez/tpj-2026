@@ -117,16 +117,31 @@ a.letter {
   }
 }
 
-/* Phones: search and Grid / List share the first row, roles below. */
+/* Letter menu: phones only, where the A to Z row is hidden. */
+div.letterMenu {
+  display: none;
+}
+
+.letterSelect {
+  width: 72px;
+}
+
+/* Phones: search, letter menu and Grid / List share the first row,
+   roles below. */
 @media (max-width: 768px) {
   div.searchGroup {
     order: 0;
   }
-  .viewGroup {
+  div.letterMenu {
+    display: flex;
     order: 1;
+    flex: none;
+  }
+  .viewGroup {
+    order: 2;
   }
   .roleGroup {
-    order: 2;
+    order: 3;
     flex-basis: 100%;
   }
 }
