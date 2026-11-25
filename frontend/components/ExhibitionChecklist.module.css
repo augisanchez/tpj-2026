@@ -8,6 +8,11 @@
   --thumb-h: clamp(96px, 4rem + 3vw, 200px);
 }
 
+/* In the end-of-story row: no width or padding of its own. */
+.embedded {
+  --thumb-h: clamp(96px, 4rem + 3vw, 200px);
+}
+
 .head {
   display: flex;
   align-items: center;
@@ -99,7 +104,8 @@
 }
 
 @media (max-width: 640px) {
-  .section {
+  .section,
+  .embedded {
     --thumb-h: 88px;
   }
   .strip {

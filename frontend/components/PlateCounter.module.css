@@ -1,5 +1,7 @@
 /* Fixed frame counter, bottom left, in the page gutter. Rises in while
-   body photographs are on screen and sinks away otherwise. */
+   body photographs are on screen and sinks away otherwise. White with a
+   difference blend, like the TPJ watermark opposite: it inverts what's
+   behind it, so it reads on the wall grey and over photographs alike. */
 .counter {
   position: fixed;
   /* Inside the 1,920px column on ultrawide screens (audit L16). */
@@ -13,7 +15,8 @@
   line-height: 1;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
+  color: #fff;
+  mix-blend-mode: difference;
   pointer-events: none;
   user-select: none;
   opacity: 0;

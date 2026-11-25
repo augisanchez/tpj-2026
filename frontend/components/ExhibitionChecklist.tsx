@@ -7,6 +7,10 @@ import styles from "./ExhibitionChecklist.module.css";
 
 type Props = {
   plates: Plate[];
+  /** Inside ArticleEndMatter: the row supplies width and spacing. */
+  embedded?: boolean;
+  /** Section title; defaults to "Photographs". */
+  title?: string;
 };
 
 /**
@@ -16,7 +20,7 @@ type Props = {
  * scrolls or hides. Hovering a thumbnail shows an up arrow: it jumps to
  * that photograph in the body.
  */
-export function ExhibitionChecklist({ plates }: Props) {
+export function ExhibitionChecklist({ plates, embedded = false, title = "Photographs" }: Props) {
   if (plates.length === 0) return null;
 
   const onClick = (e: MouseEvent<HTMLOListElement>) => {
@@ -34,9 +38,9 @@ export function ExhibitionChecklist({ plates }: Props) {
   };
 
   return (
-    <section className={styles.section} aria-labelledby="checklist-heading" data-checklist>
+    <section className={embedded ? styles.embedded : styles.section} aria-labelledby="checklist-heading" data-checklist>
       <div className={styles.head} data-reveal>
-        <h2 id="checklist-heading" className={styles.label}>Photographs</h2>
+        <h2 id="checklist-heading" className={styles.label}>{title}</h2>
       </div>
       <ol className={styles.strip} data-reveal-children onClick={onClick}>
         {plates.map((p) => {

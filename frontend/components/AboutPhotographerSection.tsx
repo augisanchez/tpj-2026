@@ -1,17 +1,7 @@
 import { PhotographerListCard } from "./PhotographerListCard";
-import { Icon, type IconName } from "./Icon";
+import { ArtistLinks } from "./ArtistLinks";
 import type { Photographer } from "@/lib/photographer-types";
 import styles from "./AboutPhotographerSection.module.css";
-
-/** Icon per link label (labels come from lib/social-links.ts). */
-const LINK_ICONS: Record<string, IconName> = {
-  Website: "globe",
-  Blog: "globe",
-  Instagram: "instagram",
-  Twitter: "x",
-  Facebook: "facebook",
-  Flickr: "flickr",
-};
 
 type Props = {
   /** Single photographer (legacy callers / homepage spotlight). */
@@ -59,26 +49,7 @@ export function AboutPhotographerSection({
               centered
               compact
             />
-            {/* Their own sites, as the old site showed under each story:
-                quiet outlines, the destination in the shared tooltip. */}
-            {p.socials && p.socials.length > 0 && (
-              <ul className={styles.social} aria-label={`${p.name} elsewhere`}>
-                {p.socials.map((link) => (
-                  <li key={link.href}>
-                    <a
-                      href={link.href}
-                      className={styles.socialLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`${p.name} on ${link.label} (opens in a new tab)`}
-                      data-tip={link.label}
-                    >
-                      <Icon name={LINK_ICONS[link.label] ?? "link"} size={20} />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ArtistLinks name={p.name} links={p.socials} />
           </div>
         ))}
       </div>

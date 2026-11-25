@@ -1,0 +1,50 @@
+/* Same treatment as the footer's own accounts: 44px targets, ink
+   outlines that fill green on hover. */
+.social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* In a left-aligned bio the first icon's glyph sits on the text edge:
+   pull the row left by the 12px of target around a 20px glyph. */
+.start {
+  justify-content: flex-start;
+  margin-left: -12px;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .socialLink:hover {
+    background: var(--acid-signal);
+    color: var(--acid-ink);
+  }
+}
+
+.socialLink:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .socialLink {
+    transition: none;
+  }
+}

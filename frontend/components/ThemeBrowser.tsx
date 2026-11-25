@@ -3,6 +3,7 @@
 import Link from "./SmartLink";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArticleCard } from "./ArticleCard";
+import { ContentTypeChip } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
 import { THEMES } from "@/lib/themes";
 import type { RecentEssay } from "@/lib/queries/recent-essays";
@@ -76,6 +77,7 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
 
   const cards = groups[shownSlug] ?? [];
   const activeCount = counts[shownSlug] ?? 0;
+  const shownTheme = THEMES.find((t) => t.slug === shownSlug) ?? THEMES[0];
   const remaining = activeCount - cards.length;
   const tileImages = (extras[shownSlug] ?? [])
     .map((e) => (e.featuredImage ? { src: e.featuredImage.src, alt: "" } : null))
@@ -322,16 +324,24 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
           ))}
           {remaining > 0 && (
             <div key="more">
-              <Link
-                href={`/theme/${shownSlug}`}
-                className={styles.moreTile}
-                data-pz
-                aria-label={`All ${activeCount} stories`}
-              >
-                <div className="pz-media" style={{ position: "absolute", inset: 0 }}>
-                  <ThemeThumbnail images={tileImages} fillParent />
+              {/* The whole theme behind one link: the cover mosaic with the
+                  count left, then the theme named like a card title, with
+                  its one-line question. */}
+              <Link href={`/theme/${shownSlug}`} className={styles.more}>
+                <div className={styles.moreTile} data-pz>
+                  <div className="pz-media" style={{ position: "absolute", inset: 0 }}>
+                    <ThemeThumbnail images={tileImages} fillParent />
+                  </div>
+                  <span className={styles.moreCount} aria-hidden="true">+{remaining}</span>
                 </div>
-                <span className={styles.moreCount}>+{remaining}</span>
+                <div className={styles.moreText}>
+                  <ContentTypeChip label="Theme" size="medium" />
+                  <h3 className={styles.moreTitle}>
+                    Explore {shownTheme.name}
+                    <span className={styles.srOnly}>, all {activeCount} stories</span>
+                  </h3>
+                  <p className={styles.morePrompt}>{shownTheme.prompt}</p>
+                </div>
               </Link>
             </div>
           )}

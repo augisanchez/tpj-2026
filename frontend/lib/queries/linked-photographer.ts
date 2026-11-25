@@ -310,3 +310,38 @@ export function stripPhotographerBlob(html: string): string {
   const dl = creditsToDefinitionList(extractLegacyCredits(html.slice(idx)));
   return html.slice(0, trimmed.length) + (dl ? `\n${dl}` : "");
 }
+
+/**
+ * Lift the story's credits (model, styling, location...) out of the body
+ * so they can sit under the photographer at the end of the story. Takes
+ * the colophon stripPhotographerBlob built, or, in stories without the
+ * legacy block, a run of credit lines after the last photograph. A run is
+ * taken only when every line in it reads as a credit; anything else
+ * stays in the body untouched.
+ */
+export function splitCredits(html: string): { body: string; credits: string } {
+  const dl = html.match(/\s*<dl class="article-credits">[\s\S]*?<\/dl>\s*$/);
+  if (dl) return { body: html.slice(0, dl.index), credits: dl[0].trim() };
+
+  const lastFig = html.lastIndexOf("</figure>");
+  const tailStart = lastFig === -1 ? 0 : lastFig + "</figure>".length;
+  const tail = html.slice(tailStart);
+  // The first paragraph in the tail that starts like a credit.
+  const re = /<p\b[^>]*>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(tail))) {
+    const run = tail.slice(m.index);
+    const lines = run
+      .split(BLOCK_BREAK)
+      .map(creditText)
+      .filter(Boolean);
+    if (!lines.length || !CREDIT_LINE.test(lines[0])) continue;
+    const credits = extractLegacyCredits(run);
+    if (credits.length !== lines.length) return { body: html, credits: "" };
+    const before = html
+      .slice(0, tailStart + m.index)
+      .replace(/(?:\s|&nbsp;|<p[^>]*>\s*(?:&nbsp;|\s)*<\/p>)+$/i, "");
+    return { body: before, credits: creditsToDefinitionList(credits) };
+  }
+  return { body: html, credits: "" };
+}

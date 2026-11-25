@@ -1,7 +1,6 @@
 "use client";
 
 import { NavLink as Link } from "./SmartLink";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
 import { MobileDrawer, type DrawerLink, type DrawerPhotographer } from "./MobileDrawer";
@@ -71,9 +70,7 @@ export function NavClient({ recent }: { recent: DrawerPhotographer[] }) {
     };
   }, []);
 
-  // Not on the homepage: the front page is the brand already.
-  const pathname = usePathname();
-  const showMark = pathname !== "/" && scrolled && !footerInView;
+  const showMark = scrolled && !footerInView;
 
   return (
     <>
@@ -88,7 +85,7 @@ export function NavClient({ recent }: { recent: DrawerPhotographer[] }) {
       tabIndex={showMark ? undefined : -1}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/svg/tpj_black.svg" alt="" />
+      <img src="/svg/tpj_white.svg" alt="" />
     </Link>
     <header className={`${styles.nav}${hidden ? " " + styles.hidden : ""}`}>
       <Link href="/" className={styles.brand} aria-label="The Photographic Journal">

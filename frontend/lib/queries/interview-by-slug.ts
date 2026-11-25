@@ -9,6 +9,7 @@ import {
   LinkedPhotographersFields,
   resolveArticlePhotographers,
   stripPhotographerBlob,
+  splitCredits,
   type RawLinkedPhotographer,
 } from "./linked-photographer";
 
@@ -57,6 +58,8 @@ export type Interview = {
   date: string;
   dateGmt?: string | null;
   body: string;
+  /** Credits colophon (model, styling...) shown under the photographer. */
+  credits: string;
   excerpt: string | null;
   intro: string | null;
   interviewer: string | null;
@@ -130,7 +133,9 @@ export async function fetchInterviewBySlug(
         credit: photographers.map((p) => p.name).filter(Boolean).join(" and ") || photographerNameTrimmed,
       })
     : "";
-  const body = photographers.length > 0 ? stripPhotographerBlob(rawBody) : rawBody;
+  const { body, credits } = splitCredits(
+    photographers.length > 0 ? stripPhotographerBlob(rawBody) : rawBody
+  );
 
   const intro = raw.articleIntro ? raw.articleIntro.trim() : null;
   const interviewer = raw.articleAuthor ? raw.articleAuthor.trim() : null;
@@ -144,6 +149,7 @@ export async function fetchInterviewBySlug(
     date: raw.date,
     dateGmt: raw.dateGmt ?? null,
     body,
+    credits,
     excerpt: raw.excerpt,
     intro: intro || null,
     interviewer: interviewer || null,

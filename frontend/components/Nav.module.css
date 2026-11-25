@@ -43,9 +43,10 @@
 /* TPJ watermark: fixed bottom right, mirroring the plate counter in the
    bottom left (PlateCounter.module.css): same breakpoint, same edge
    inset, same rise and sink. Shown once the reader has scrolled, gone
-   at the footer. A small wall-grey tab keeps the black mark readable
-   over dark photographs; the mark's edge lines up 24px in, like the
-   counter's. */
+   at the footer. A white mark with a difference blend: it inverts
+   whatever sits behind it (near-black on the wall grey, light over dark
+   photographs), so it reads anywhere without a tab behind it. The
+   mark's edge lines up 24px in, like the counter's. */
 .watermark {
   display: none;
 }
@@ -61,7 +62,7 @@
     align-items: center;
     padding: 6px;
     border-radius: var(--radius);
-    background: var(--bg);
+    mix-blend-mode: difference;
     opacity: 0;
     transform: translateY(8px);
     pointer-events: none;

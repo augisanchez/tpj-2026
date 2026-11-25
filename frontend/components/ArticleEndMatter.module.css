@@ -1,0 +1,198 @@
+/* First row of the article pre-footer: bio left, photographs right,
+   split evenly. The artist centers on the photographs beside them.
+   Width and padding come from the pre-footer band. */
+.endMatter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: clamp(32px, 1rem + 2vw, 64px);
+  row-gap: 56px;
+  align-items: center;
+}
+
+/* Photographs with no credited artist take the whole row. */
+.photos:only-child {
+  grid-column: 1 / -1;
+}
+
+.about,
+.photos {
+  min-width: 0;
+}
+
+/* Same section label as "Photographs": muted caps, no fill. */
+.label {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.person + .person {
+  margin-top: 48px;
+}
+
+/* Portrait, name and story count: one link to the profile. */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: var(--radius);
+}
+
+.head:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+
+.portrait {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(72px, 3rem + 3vw, 112px);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--placeholder);
+}
+
+.portraitImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* The cards' hover ring, as a circle drawn above the photo. */
+.portrait::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: box-shadow 200ms ease-out;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 1.25rem + 1.25vw, 48px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--muted);
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform 200ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .head:hover .portrait::after {
+    box-shadow: inset 0 0 0 4px var(--accent);
+  }
+  .head:hover .count {
+    color: var(--text);
+  }
+  .head:hover .arrow {
+    transform: translateX(4px);
+  }
+}
+
+.head:focus-visible .portrait::after {
+  box-shadow: inset 0 0 0 4px var(--accent);
+}
+
+/* The story's reading type, held to the reading measure so a long bio
+   keeps its line length in a wide column. */
+.bio {
+  max-width: var(--measure);
+  margin: 24px 0 0;
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .endMatter {
+    grid-template-columns: 1fr;
+    row-gap: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrow,
+  .portrait::after {
+    transition: none;
+  }
+}
+
+/* The story's credits (model, styling...) under the artist: label over
+   names, the same colophon type the body used. */
+.credits {
+  margin-top: 32px;
+}
+
+.credits :global(dl.article-credits) {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.credits :global(dl.article-credits) dt {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.credits :global(dl.article-credits) dd {
+  margin: 4px 0 0;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.credits :global(dl.article-credits) a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .credits :global(dl.article-credits) a:hover {
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 2px;
+  }
+}

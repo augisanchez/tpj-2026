@@ -6,6 +6,10 @@
   --muted: #6a6a6a; /* 4.8:1 on --bg (audit L4: #6e6e6e was 4.48:1) */
   --border: #ddd;
   --placeholder: #d1d1d1;
+  /* Pre-footer band ("Continue the thread"): one step lighter than the
+     placeholder, a step darker than the page, so it reads as a shelf
+     that runs into the footer. */
+  --prefooter-bg: #e6e6e6;
   /* Every photograph, any size: a hairline round, like a mounted print. */
   --radius-img: 3px;
   /* Same corner for every other box: buttons, chips, forms, quotes. */

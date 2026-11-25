@@ -1,10 +1,10 @@
 import { NOT_FOUND_META } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { notFound } from "next/navigation";
-import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
+import { ArticleEndMatter } from "@/components/ArticleEndMatter";
+import { ArticlePrefooter } from "@/components/ArticlePrefooter";
 import { ArticleBody } from "@/components/ArticleBody";
 import { EssayIntro } from "@/components/EssayIntro";
-import { ExhibitionChecklist } from "@/components/ExhibitionChecklist";
 import { Hero } from "@/components/Hero";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedArticles } from "@/components/RelatedArticles";
@@ -131,19 +131,22 @@ export default async function FeaturePage({ params }: Props) {
 
       <ArticleBody html={bodyHtml} />
 
-      <ExhibitionChecklist plates={plates} />
+      <ArticlePrefooter>
+        <ArticleEndMatter
+          photographers={feature.photographers}
+          plates={plates}
+          type="feature"
+          credits={feature.credits}
+        />
 
-      {feature.photographers.length > 0 && (
-        <AboutPhotographerSection photographers={feature.photographers} />
-      )}
-
-      <RelatedArticles
-        eyebrow="More features"
-        heading="Continue the thread"
-        essays={related}
-        contentTypeLabel="Feature"
-        hrefBase="/feature"
-      />
+        <RelatedArticles
+          eyebrow="More features"
+          heading="Continue the thread"
+          essays={related}
+          contentTypeLabel="Feature"
+          hrefBase="/feature"
+        />
+      </ArticlePrefooter>
     </>
   );
 }

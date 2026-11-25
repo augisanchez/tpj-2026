@@ -1,10 +1,10 @@
 import { NOT_FOUND_META } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { notFound } from "next/navigation";
-import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
+import { ArticleEndMatter } from "@/components/ArticleEndMatter";
+import { ArticlePrefooter } from "@/components/ArticlePrefooter";
 import { ArticleBody } from "@/components/ArticleBody";
 import { EssayIntro } from "@/components/EssayIntro";
-import { ExhibitionChecklist } from "@/components/ExhibitionChecklist";
 import { Hero } from "@/components/Hero";
 import { PlateCounter } from "@/components/PlateCounter";
 import { ReadingProgress } from "@/components/ReadingProgress";
@@ -109,13 +109,16 @@ export default async function EssayPage({ params }: Props) {
       <ArticleBody html={bodyHtml} />
       <PlateCounter total={plates.length} />
 
-      <ExhibitionChecklist plates={plates} />
+      <ArticlePrefooter>
+        <ArticleEndMatter
+          photographers={essay.photographers}
+          plates={plates}
+          type="essay"
+          credits={essay.credits}
+        />
 
-      {essay.photographers.length > 0 && (
-        <AboutPhotographerSection photographers={essay.photographers} />
-      )}
-
-      <RelatedStrip label="Related stories" stories={related} />
+        <RelatedStrip label="Related stories" stories={related} />
+      </ArticlePrefooter>
       <SubmitMarquee />
     </>
   );

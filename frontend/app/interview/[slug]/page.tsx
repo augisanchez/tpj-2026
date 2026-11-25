@@ -1,9 +1,9 @@
 import { NOT_FOUND_META } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { notFound } from "next/navigation";
-import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
+import { ArticleEndMatter } from "@/components/ArticleEndMatter";
+import { ArticlePrefooter } from "@/components/ArticlePrefooter";
 import { EssayIntro } from "@/components/EssayIntro";
-import { ExhibitionChecklist } from "@/components/ExhibitionChecklist";
 import { Hero } from "@/components/Hero";
 import { InterviewBody } from "@/components/InterviewBody";
 import { ReadingProgress } from "@/components/ReadingProgress";
@@ -111,19 +111,22 @@ export default async function InterviewPage({ params }: Props) {
 
       <InterviewBody html={bodyHtml} />
 
-      <ExhibitionChecklist plates={plates} />
+      <ArticlePrefooter>
+        <ArticleEndMatter
+          photographers={interview.photographers}
+          plates={plates}
+          type="interview"
+          credits={interview.credits}
+        />
 
-      {interview.photographers.length > 0 && (
-        <AboutPhotographerSection photographers={interview.photographers} />
-      )}
-
-      <RelatedArticles
-        eyebrow="More interviews"
-        heading="Continue the thread"
-        essays={related}
-        contentTypeLabel="Interview"
-        hrefBase="/interview"
-      />
+        <RelatedArticles
+          eyebrow="More interviews"
+          heading="Continue the thread"
+          essays={related}
+          contentTypeLabel="Interview"
+          hrefBase="/interview"
+        />
+      </ArticlePrefooter>
     </>
   );
 }
