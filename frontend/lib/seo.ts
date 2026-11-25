@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cdnImageUrl } from "./cdn";
 import { htmlToPlainText } from "./text-utils";
+import { SOCIAL_LINKS } from "./social";
 
 export const SITE_NAME = "The Photographic Journal";
 /** The public domain. Canonical URLs always point here, so the v2
@@ -24,6 +25,8 @@ type PageMeta = {
   description?: string;
   path: string;
   image?: { src: string; alt?: string } | null;
+  /** The route has a generated opengraph-image file; leave images to it. */
+  generatedImage?: boolean;
   type?: "article" | "profile" | "website";
   publishedTime?: string;
   authors?: string[];
@@ -33,9 +36,20 @@ type PageMeta = {
  *  wall under the TPJ mark. Used wherever a page has no photo of its own. */
 export const DEFAULT_SHARE_IMAGE = { url: "/og-default.jpg", width: 1200, height: 630, alt: SITE_NAME };
 
-export function pageMetadata({ title, description, path, image, type = "website", publishedTime, authors }: PageMeta): Metadata {
-  const ogImage = image?.src ? cdnImageUrl(image.src, { width: 1200, quality: 80, format: "jpeg" }) : null;
-  const images = ogImage ? [{ url: ogImage, alt: image?.alt || title }] : [DEFAULT_SHARE_IMAGE];
+/** Share size: the 1.91:1 crop Facebook, LinkedIn and X all use. */
+const SHARE_SIZE = { width: 1200, height: 630 };
+
+export function pageMetadata({ title, description, path, image, type = "website", publishedTime, authors, generatedImage }: PageMeta): Metadata {
+  // Pre-cropped to the share size, subject kept in frame, so platforms
+  // don't crop the photograph arbitrarily.
+  const ogImage = image?.src
+    ? cdnImageUrl(image.src, { ...SHARE_SIZE, fit: "cover", gravity: "face", quality: 80, format: "jpeg" })
+    : null;
+  const images = generatedImage
+    ? undefined
+    : ogImage
+      ? [{ url: ogImage, ...SHARE_SIZE, alt: image?.alt || title }]
+      : [DEFAULT_SHARE_IMAGE];
   return {
     title,
     description,
@@ -46,10 +60,10 @@ export function pageMetadata({ title, description, path, image, type = "website"
       title,
       description,
       url: path,
-      images,
+      ...(images ? { images } : {}),
       ...(type === "article" && publishedTime ? { publishedTime, authors } : {}),
     },
-    twitter: { card: "summary_large_image", title, description, images: images.map((i) => i.url) },
+    twitter: { card: "summary_large_image", title, description, ...(images ? { images: images.map((i) => i.url) } : {}) },
   };
 }
 
@@ -64,6 +78,8 @@ const PUBLISHER = {
   name: SITE_NAME,
   url: SITE_URL,
   logo: { "@type": "ImageObject", url: `${SITE_URL}/svg/tpj_black.svg` },
+  // Tells search engines these accounts are TPJ's.
+  sameAs: SOCIAL_LINKS.map((l) => l.url),
 };
 
 /** Article + breadcrumb JSON-LD for essays, interviews and features. */
