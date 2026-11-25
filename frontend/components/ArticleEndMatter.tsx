@@ -7,6 +7,9 @@ import type { Photographer } from "@/lib/photographer-types";
 import type { Plate } from "@/lib/exhibition";
 import styles from "./ArticleEndMatter.module.css";
 
+/** From this many photographs, the photographs get two-thirds of the row. */
+const MANY_PLATES = 12;
+
 type Props = {
   photographers: Photographer[];
   plates: Plate[];
@@ -28,7 +31,9 @@ export function ArticleEndMatter({ photographers, plates, type, credits }: Props
   if (!hasPeople && !hasPlates) return null;
 
   return (
-    <div className={styles.endMatter}>
+    <div
+      className={`${styles.endMatter}${hasPeople && plates.length >= MANY_PLATES ? " " + styles.many : ""}`}
+    >
       {hasPeople && (
         <section className={styles.about} aria-labelledby="about-heading" data-reveal>
           <h2 id="about-heading" className={styles.label}>

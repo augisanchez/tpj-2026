@@ -1,9 +1,14 @@
-/* First row of the article pre-footer: bio left, photographs right,
-   split evenly. The artist centers on the photographs beside them.
-   Width and padding come from the pre-footer band. */
+/* First row of the article pre-footer: bio left, photographs right.
+   The artist centers on the photographs beside them. Width and padding
+   come from the pre-footer band.
+   Split by how many photographs there are: an even split for a short
+   set, so it doesn't float beside a long bio; a third / two-thirds split
+   for a long one (.many), where the photographs need the room and the
+   bio steps down to interface type to stay readable in the narrow
+   column. */
 .endMatter {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   column-gap: clamp(32px, 1rem + 2vw, 64px);
   row-gap: 56px;
   align-items: center;
@@ -139,8 +144,24 @@
   color: var(--text);
 }
 
+.many {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+}
+
+.many .name {
+  font-size: clamp(26px, 1rem + 1vw, 36px);
+}
+
+.many .bio {
+  margin-top: 20px;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
 @media (max-width: 768px) {
-  .endMatter {
+  .endMatter,
+  .many {
     grid-template-columns: 1fr;
     row-gap: 48px;
   }
