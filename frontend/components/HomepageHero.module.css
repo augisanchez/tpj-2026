@@ -103,7 +103,8 @@
   font-weight: 700;
   color: var(--hero-text);
   font-size: clamp(48px, 1.5rem + 2.8vw, 160px);
-  line-height: 0.88;
+  /* Room for descenders on wrapped lines (same as the article hero). */
+  line-height: 1.04;
   letter-spacing: -0.025em;
   margin: 0 0 12px;
   max-width: 14ch;
