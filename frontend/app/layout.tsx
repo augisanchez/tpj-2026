@@ -77,6 +77,16 @@ export default function RootLayout({
             fresh DNS + TLS handshake (worst on slow mobile links). Images
             load without CORS, so no crossOrigin. */}
         {IMAGE_ORIGIN && <link rel="preconnect" href={IMAGE_ORIGIN} />}
+        {/* Hand the connection hints (Accept-CH in next.config) to the
+            image host. Chrome only sends them cross-origin with this meta;
+            the Permissions-Policy header alone wasn't enough when tested.
+            Cloudflare reads them for the slow-connection quality. */}
+        {IMAGE_ORIGIN && (
+          <meta
+            httpEquiv="delegate-ch"
+            content={["rtt", "downlink", "ect", "save-data"].map((h) => `${h} ${IMAGE_ORIGIN}`).join("; ")}
+          />
+        )}
         {/* Turn on reveal hidden-states before first paint; drop them if
             the app never hydrates so content can't stay invisible. */}
         {/* Head script: motion + image-fade flags (with a no-boot safety
