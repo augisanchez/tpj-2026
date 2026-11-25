@@ -149,12 +149,33 @@
     bottom: 24px;
     gap: 12px;
   }
+  /* The phone card is a fixed 4:5, so a long title must not outgrow it:
+     size follows the screen width and the title stops at four lines
+     (padding keeps the last line's descenders inside the clip). */
   .title {
-    font-size: 48px;
-    margin-bottom: 8px;
+    font-size: clamp(28px, 10.5vw, 44px);
+    margin-bottom: 4px;
+    max-width: none;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    overflow: hidden;
+    padding-bottom: 0.12em;
   }
   .subtitle {
     display: none;
+  }
+  /* Small phones, or any phone with Safari's page zoom turned up: three
+     lines, so the label, title and byline always fit the card. */
+  @media (max-width: 359px) {
+    .title {
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+    }
+    .stack {
+      gap: 8px;
+    }
   }
   @media (hover: hover) and (pointer: fine) {
     .card:hover::after {

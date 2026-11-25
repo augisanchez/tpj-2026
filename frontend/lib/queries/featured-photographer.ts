@@ -58,12 +58,34 @@ export async function fetchFeaturedPhotographer(): Promise<FeaturedPhotographer 
     raw.featuredImage?.node?.sourceUrl ?? raw.tpjPortraitUrl ?? null
   );
   // Portraits are too small to fill the hero on their own. Their work
-  // carries it: one story's cover full-size, or a collage of their work
-  // with the portrait once there are two or more.
-  const work = ((await fetchPhotographerArticles(raw.slug).catch(() => null))?.articles ?? [])
-    .filter((a) => a.featuredImage)
-    .map((a) => ({ src: a.featuredImage!.src, alt: a.title }));
-  const portrait = portraitSrc ? { src: portraitSrc, alt: raw.title } : null;
+  // carries it. Rules:
+  // - Work means photographs they made: photo essay and feature covers.
+  //   An interview's cover is usually a photograph OF them, so it counts
+  //   as a portrait, never as work.
+  // - No image appears twice (the same upload often serves as both the
+  //   portrait and an interview cover).
+  // - A collage needs two or more distinct pieces of work; otherwise the
+  //   hero shows one image: their work, else a portrait.
+  const articles = (await fetchPhotographerArticles(raw.slug).catch(() => null))?.articles ?? [];
+  const seen = new Set<string>();
+  const once = (img: { src: string; alt: string } | null) => {
+    if (!img) return null;
+    const id = imageIdentity(img.src);
+    if (seen.has(id)) return null;
+    seen.add(id);
+    return img;
+  };
+  const work = articles
+    .filter((a) => a.featuredImage && a.contentType !== "interview")
+    .map((a) => once({ src: a.featuredImage!.src, alt: a.title }))
+    .filter((x): x is { src: string; alt: string } => !!x);
+  const portrait =
+    once(portraitSrc ? { src: portraitSrc, alt: raw.title } : null) ??
+    articles
+      .filter((a) => a.featuredImage && a.contentType === "interview")
+      .map((a) => once({ src: a.featuredImage!.src, alt: raw.title }))
+      .find(Boolean) ??
+    null;
 
   let collage: { src: string; alt: string }[] | null = null;
   if (work.length >= 2) {
@@ -78,7 +100,13 @@ export async function fetchFeaturedPhotographer(): Promise<FeaturedPhotographer 
     slug: raw.slug,
     bio: raw.content ? htmlToPlainText(raw.content) : "",
     image,
-    imageIsPortrait: !work.length && !!portrait,
+    imageIsPortrait: !work.length && !!image,
     collage,
   };
+}
+
+/** Same upload, whatever the size variant or host: "IMG_4070-1024x683.jpg" and "IMG_4070.jpg" match. */
+function imageIdentity(src: string): string {
+  const file = (src.split("?")[0].split("/").pop() ?? src).toLowerCase();
+  return file.replace(/-(\d+x\d+|scaled|e\d{10,})(?=\.[a-z0-9]+$)/g, "");
 }
