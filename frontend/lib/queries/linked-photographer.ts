@@ -2,6 +2,7 @@ import { gql } from "graphql-request";
 import { rewriteMediaUrl } from "../media";
 import { htmlToInlineText, slugifyName, titleCaseName } from "../text-utils";
 import type { Photographer } from "@/lib/photographer-types";
+import { buildSocialLinks } from "../social-links";
 
 export const LinkedPhotographerFields = gql`
   linkedPhotographer {
@@ -112,6 +113,7 @@ export function rawLinkedPhotographerToPhotographer(
     bio,
     articleCount: raw.linkedArticleCount ?? 0,
     portrait: portraitSrc ? { src: portraitSrc, alt: name } : undefined,
+    socials: buildSocialLinks(raw).map(({ label, href }) => ({ label, href })),
   };
 }
 

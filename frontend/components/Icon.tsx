@@ -11,7 +11,10 @@ export type IconName =
   | "arrowUp"
   | "instagram"
   | "x"
-  | "facebook";
+  | "facebook"
+  | "globe"
+  | "flickr"
+  | "link";
 
 /**
  * The one icon set. Every glyph is drawn on the header's grid: a 24
@@ -88,6 +91,27 @@ const GLYPHS: Record<IconName, ReactNode> = {
   ),
   facebook: (
     <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" />
+  ),
+  // A personal site or blog.
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0 -18" />
+    </>
+  ),
+  flickr: (
+    <>
+      <circle cx="7.5" cy="12" r="3.5" />
+      <circle cx="16.5" cy="12" r="3.5" />
+    </>
+  ),
+  // Any other profile (Tumblr, Vimeo, VSCO, Bluesky, Threads, LinkedIn).
+  link: (
+    <>
+      <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+      <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+    </>
   ),
 };
 

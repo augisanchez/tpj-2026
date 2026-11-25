@@ -47,3 +47,58 @@
     flex: 0 0 calc(50% - calc(var(--space-element) / 2));
   }
 }
+
+/* Card plus its link icons. */
+.person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.person > :first-child {
+  align-self: stretch;
+}
+
+/* Same treatment as the footer's own accounts: 44px targets, ink
+   outlines that fill green on hover, centered under the card. */
+.social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .socialLink:hover {
+    background: var(--acid-signal);
+    color: var(--acid-ink);
+  }
+}
+
+.socialLink:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .socialLink {
+    transition: none;
+  }
+}

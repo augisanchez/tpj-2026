@@ -9,6 +9,8 @@ export type Photographer = {
   bio?: string;
   articleCount: number;
   portrait?: { src: string; alt: string };
+  /** Their own sites and profiles, cleaned (lib/social-links.ts). */
+  socials?: { label: string; href: string }[];
 };
 
 /**
