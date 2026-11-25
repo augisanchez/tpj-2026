@@ -121,7 +121,7 @@ export function SubmitMarquee() {
 
   return (
     <section className={styles.section} aria-label="Submit your photographs">
-      <Link href="/submit" className={styles.link} aria-label="Send us pix: submit your photographs">
+      <Link href="/submit" className={styles.link} aria-label="Send us pix: submit your photographs" data-tip="">
         <span ref={track} className={styles.track} aria-hidden="true">
           <Sequence />
           <Sequence />
