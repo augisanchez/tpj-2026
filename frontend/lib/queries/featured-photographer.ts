@@ -42,7 +42,7 @@ export type FeaturedPhotographer = {
   image: { src: string; alt: string } | null;
   /** True when `image` is the portrait (keep the face in frame). */
   imageIsPortrait: boolean;
-  /** With two or more stories: a 2×2 of their work with the portrait. */
+  /** A full 2×2 of their work (with the portrait when there is one), or null. */
   collage: { src: string; alt: string }[] | null;
 };
 
@@ -64,8 +64,7 @@ export async function fetchFeaturedPhotographer(): Promise<FeaturedPhotographer 
   //   as a portrait, never as work.
   // - No image appears twice (the same upload often serves as both the
   //   portrait and an interview cover).
-  // - A collage needs two or more distinct pieces of work; otherwise the
-  //   hero shows one image: their work, else a portrait.
+  // - Otherwise the hero shows one image: their work, else a portrait.
   const articles = (await fetchPhotographerArticles(raw.slug).catch(() => null))?.articles ?? [];
   const seen = new Set<string>();
   const once = (img: { src: string; alt: string } | null) => {
@@ -87,11 +86,16 @@ export async function fetchFeaturedPhotographer(): Promise<FeaturedPhotographer 
       .find(Boolean) ??
     null;
 
+  // The collage is always a full 2×2: three works plus the portrait, or
+  // four works. With fewer, a 2- or 3-cell grid crops badly behind the
+  // text, so the hero shows one image instead.
   let collage: { src: string; alt: string }[] | null = null;
-  if (work.length >= 2) {
+  if (portrait && work.length >= 3) {
     // Cells run top-left, top-right, bottom-left, bottom-right. The text
     // sits bottom left, so the portrait takes the top right.
-    collage = portrait ? [work[0], portrait, ...work.slice(1, 3)] : work.slice(0, 4);
+    collage = [work[0], portrait, work[1], work[2]];
+  } else if (work.length >= 4) {
+    collage = work.slice(0, 4);
   }
   const image = work[0] ?? portrait;
 
