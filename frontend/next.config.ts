@@ -38,6 +38,12 @@ const CSP = [
   "report-uri /api/csp-report",
 ].join("; ");
 
+/** Origins that receive the connection hints (the image host). */
+const IMAGE_ORIGIN = "https://cms.thephotographicjournal.com";
+const CH_DELEGATE = ["ch-rtt", "ch-downlink", "ch-ect", "ch-save-data"]
+  .map((h) => `${h}=(self "${IMAGE_ORIGIN}")`)
+  .join(", ");
+
 const nextConfig: NextConfig = {
   // Share-image fonts and mark, read from disk at render time (lib/og.tsx).
   outputFileTracingIncludes: { "/**": ["./assets/og/**/*"] },
@@ -50,7 +56,16 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+          // Connection hints for images: Chromium sends RTT, Downlink, ECT
+          // and Save-Data only to origins the page asks for them and
+          // delegates them to, and the photos come from the CMS host.
+          // Cloudflare reads them to serve the slow-connection quality
+          // (lib/cdn.ts). Safari and Firefox ignore all of this.
+          { key: "Accept-CH", value: "RTT, Downlink, ECT, Save-Data" },
+          {
+            key: "Permissions-Policy",
+            value: `camera=(), microphone=(), geolocation=(), browsing-topics=(), ${CH_DELEGATE}`,
+          },
           // Report-only: blocks nothing, logs what it would block to
           // /api/csp-report. Enforce after launch once the logs are clean
           // (see docs/CUTOVER.md). Article bodies are WordPress HTML, so
