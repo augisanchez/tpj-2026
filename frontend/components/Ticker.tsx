@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Link from "next/link";
+import Link from "./SmartLink";
 import { capWidths, cdnImageUrl, cdnSrcSet, isCdnEnabled } from "@/lib/cdn";
 import { creditFor } from "@/lib/credit";
 import styles from "./Ticker.module.css";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/SmartLink";
 import { randomStory } from "@/lib/queries/story-index";
 import { NOT_FOUND_META } from "@/lib/seo";
 import { Icon } from "@/components/Icon";

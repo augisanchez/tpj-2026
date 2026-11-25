@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./SmartLink";
 import { cdnImageUrl } from "@/lib/cdn";
 import type { PhotographerIndexItem } from "@/lib/queries/photographers-index";
 import styles from "./PhotographersIndexList.module.css";

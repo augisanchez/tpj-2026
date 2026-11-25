@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import Link from "next/link";
+import { NavLink as Link } from "./SmartLink";
 import { ReactNode, useState } from "react";
 import { Icon, type IconName } from "./Icon";
 import styles from "./MobileDrawer.module.css";

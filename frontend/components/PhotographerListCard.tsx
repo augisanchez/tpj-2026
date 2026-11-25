@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./SmartLink";
 import { PhotographerAvatar } from "./PhotographerAvatar";
 import type { RoleCounts } from "@/lib/queries/photographers-index";
 import styles from "./PhotographerListCard.module.css";

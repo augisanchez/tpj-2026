@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { NavLink as Link } from "./SmartLink";
 import { SOCIAL_LINKS } from "@/lib/social";
 import { Icon, type IconName } from "./Icon";
 import styles from "./Footer.module.css";

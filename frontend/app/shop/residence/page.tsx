@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/SmartLink";
 import { AboutPhotographerSection } from "@/components/AboutPhotographerSection";
 import { ContentTypeChip } from "@/components/ContentTypeChip";
 import { JsonLd } from "@/components/JsonLd";

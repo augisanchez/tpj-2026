@@ -1,5 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
-import Link from "next/link";
+import Link from "@/components/SmartLink";
 import { ContactForm } from "@/components/ContactForm";
 import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/ContactPage.module.css";

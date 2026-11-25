@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "./SmartLink";
 import { TpjImage } from "./TpjImage";
 import styles from "./InterviewQuoteRotator.module.css";
 

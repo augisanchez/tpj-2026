@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./SmartLink";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
 import { capWidths, cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
