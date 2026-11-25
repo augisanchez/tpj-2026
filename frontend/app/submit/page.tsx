@@ -11,17 +11,14 @@ export const metadata = pageMetadata({
 
 type Guideline = { title: string; detail?: string };
 
-/* Requirements grouped by what they describe. Group headings reuse words
-   already in the copy. The wide group runs three across on desktop; the
-   two half groups sit side by side, two across each. */
+/* Requirements as a checklist, grouped by what they describe. Group
+   headings reuse words already in the copy. */
 const GUIDELINE_GROUPS: {
   heading: string;
-  span: "wide" | "half";
   items: Guideline[];
 }[] = [
   {
     heading: "Photo essays",
-    span: "wide",
     items: [
       {
         title: "Photo essays only.",
@@ -40,7 +37,6 @@ const GUIDELINE_GROUPS: {
   },
   {
     heading: "Images",
-    span: "half",
     items: [
       { title: "Between 10 and 20 images." },
       { title: "1800 to 2400 pixels wide at 72 dpi." },
@@ -48,7 +44,6 @@ const GUIDELINE_GROUPS: {
   },
   {
     heading: "Intro and title",
-    span: "half",
     items: [
       {
         title: "An intro of no more than 200 words.",
@@ -115,9 +110,7 @@ export default function SubmitPage() {
               <section
                 key={group.heading}
                 aria-labelledby={headingId}
-                className={`${styles.group} ${
-                  group.span === "wide" ? styles.groupWide : styles.groupHalf
-                }`}
+                className={styles.group}
               >
                 <h3 id={headingId} className={styles.groupHeading}>
                   {group.heading}
@@ -125,6 +118,11 @@ export default function SubmitPage() {
                 <ul className={styles.groupList}>
                   {group.items.map((item) => (
                     <li key={item.title} className={styles.guideline}>
+                      <span className={styles.check} aria-hidden="true">
+                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3.5 8.5 6.5 11.5 12.5 4.5" />
+                        </svg>
+                      </span>
                       <p className={styles.guidelineHeadline}>{item.title}</p>
                       {item.detail && (
                         <p className={styles.guidelineDetail}>{item.detail}</p>

@@ -107,12 +107,13 @@
   gap: 8px;
 }
 
+/* Same type as the banner's description above: Inter 500, at a size
+   that keeps the longest name on one line in the four-column grid. */
 .memberName {
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
+  font-weight: 500;
   font-size: clamp(18px, 0.9rem + 0.6vw, 32px);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  line-height: 1.4;
   color: var(--text);
   margin: 0;
 }
