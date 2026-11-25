@@ -1,7 +1,7 @@
 .intro {
   max-width: none;
   margin: 0 auto;
-  padding: clamp(48px, 2rem + 3vw, 192px) var(--gutter) 0; /* caps ~4800 */
+  padding: var(--story-gap) var(--gutter) 0;
 }
 
 .text {
@@ -18,10 +18,10 @@
 }
 
 /* Editing note: above the intro, in grey (--muted is the lightest grey
-   that holds 4.5:1 for text this size), one intro line of space below. */
+   that holds 4.5:1 for text this size), --story-gap below. */
 .note {
   max-width: var(--measure);
-  margin: 0 auto 1.6em;
+  margin: 0 auto var(--story-gap);
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 500;
   font-size: 21px;

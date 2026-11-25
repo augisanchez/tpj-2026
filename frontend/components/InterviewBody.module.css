@@ -3,7 +3,9 @@
   flex-direction: column;
   align-items: center;
   gap: 32px;
-  padding: clamp(96px, 4rem + 5vw, 320px) var(--gutter); /* caps ~4480 */
+  /* Top: the story gap (hero or intro above). Bottom: room before the
+     pre-footer band. */
+  padding: var(--story-gap) var(--gutter) clamp(96px, 4rem + 5vw, 320px);
   margin: 0 auto;
 }
 
@@ -175,7 +177,7 @@
 
 @media (max-width: 768px) {
   .body {
-    padding: 64px var(--gutter);
+    padding: var(--story-gap) var(--gutter) 64px;
     gap: 24px;
   }
   .body > :global(.fig-twothirds),
@@ -260,4 +262,10 @@
   .body > :global(dl.article-credits) dd {
     margin-top: 2px;
   }
+}
+
+/* The first question starts at the story gap, without its own extra air. */
+.body > :first-child,
+.body > :global(p.int-q):first-child {
+  padding-top: 0;
 }

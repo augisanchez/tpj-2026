@@ -1,6 +1,8 @@
 .body {
   display: flow-root;
-  padding: clamp(96px, 4rem + 5vw, 320px) var(--gutter); /* caps ~4480 */
+  /* Top: the story gap (hero or intro above). Bottom: room before the
+     pre-footer band. */
+  padding: var(--story-gap) var(--gutter) clamp(96px, 4rem + 5vw, 320px);
   margin: 0 auto;
 }
 
@@ -301,7 +303,7 @@
 
 @media (max-width: 768px) {
   .body {
-    padding: 64px var(--gutter);
+    padding: var(--story-gap) var(--gutter) 64px;
     gap: 24px;
   }
 }
@@ -336,4 +338,10 @@
    space on top of the rhythm above. */
 .body > br {
   display: none;
+}
+
+/* The story starts at the story gap: a first photograph doesn't add its
+   own top margin. */
+.body > :first-child {
+  margin-top: 0;
 }

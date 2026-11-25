@@ -98,6 +98,9 @@
   --text-lede: min(var(--text-intro), calc(var(--text-body) * 1.4));
   --measure-page: 880px;
   --grid-gap: 24px;
+  /* The one distance down the top of a story: hero to editing note to
+     intro to the story itself. */
+  --story-gap: clamp(48px, 2rem + 3vw, 192px);
 
   /* Motion (docs/MOTION-PLAN.md). Arrivals ease out, exits ease in,
      travel eases in-out. Only transform / opacity / clip-path move. */
