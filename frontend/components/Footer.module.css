@@ -58,6 +58,49 @@
   margin-right: 0.5em;
 }
 
+/* Social accounts: three ink outlines on a 44px round chip (WCAG 2.5.8
+   asks for 24; 44 suits thumbs). The negative margin keeps the chips'
+   invisible padding from pushing the row apart, so the icons sit about
+   as far from the links as the copyright does. */
+.social {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin: -10px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--footer-text);
+  text-decoration: none;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.socialLink:hover {
+  background: var(--footer-text);
+  color: var(--footer-bg);
+}
+
+.socialLink:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .socialLink {
+    transition: none;
+  }
+}
+
 /* Oversized wordmark, cropped by the footer's bottom edge. Sized to
    the footer's inner width so it runs edge to edge at any viewport;
    the crop shows the top of the capitals. */

@@ -1,12 +1,24 @@
 import type { ReactNode } from "react";
 import styles from "./Icon.module.css";
 
-export type IconName = "shuffle" | "search" | "grid" | "list" | "filter" | "close" | "arrowUp";
+export type IconName =
+  | "shuffle"
+  | "search"
+  | "grid"
+  | "list"
+  | "filter"
+  | "close"
+  | "arrowUp"
+  | "instagram"
+  | "x"
+  | "facebook";
 
 /**
  * The one icon set. Every glyph is drawn on the header's grid: a 24
  * unit viewBox, 2 unit stroke, round caps and joins, no fill, and the
- * drawing kept inside 3 to 21 so all six sit at the same optical size.
+ * drawing kept inside 3 to 21 so every glyph sits at the same optical
+ * size. The brand marks (instagram, x, facebook) follow the same rules:
+ * outlines, not the platforms' filled logos.
  */
 const GLYPHS: Record<IconName, ReactNode> = {
   shuffle: (
@@ -60,6 +72,22 @@ const GLYPHS: Record<IconName, ReactNode> = {
       <line x1="12" y1="20" x2="12" y2="4" />
       <polyline points="5 11 12 4 19 11" />
     </>
+  ),
+  instagram: (
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="4" />
+      <circle cx="12" cy="12" r="3.5" />
+      <line x1="16.5" y1="7.5" x2="16.51" y2="7.5" />
+    </>
+  ),
+  x: (
+    <>
+      <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
+      <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+    </>
+  ),
+  facebook: (
+    <path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" />
   ),
 };
 

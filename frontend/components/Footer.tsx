@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SOCIAL_LINKS } from "@/lib/social";
 import { Icon, type IconName } from "./Icon";
 import styles from "./Footer.module.css";
 
@@ -13,6 +14,14 @@ const FOOTER_LINKS: { label: string; href: string; icon?: IconName }[] = [
   { label: "Shop", href: "/shop" },
   { label: "Random", href: "/random", icon: "shuffle" },
 ];
+
+// Typed on the account names, so a new entry in SOCIAL_LINKS fails the
+// build until it has a glyph.
+const SOCIAL_ICONS: Record<(typeof SOCIAL_LINKS)[number]["name"], IconName> = {
+  Instagram: "instagram",
+  X: "x",
+  Facebook: "facebook",
+};
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -34,6 +43,24 @@ export function Footer() {
             </Link>
           ))}
         </nav>
+        {/* The journal's own accounts. Quiet: ink outlines that fill on
+            hover, the handle in the shared tooltip. */}
+        <ul className={styles.social} aria-label="The Photographic Journal elsewhere">
+          {SOCIAL_LINKS.map((account) => (
+            <li key={account.name}>
+              <a
+                href={account.url}
+                className={styles.socialLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`TPJ on ${account.name} (opens in a new tab)`}
+                data-tip={`${account.handle} on ${account.name}`}
+              >
+                <Icon name={SOCIAL_ICONS[account.name]} size={20} />
+              </a>
+            </li>
+          ))}
+        </ul>
         <p className={styles.copyright}>
           &copy; {year}{" "}The Photographic Journal &middot; Est. 2012
         </p>
