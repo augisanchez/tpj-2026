@@ -1,10 +1,14 @@
-/* Full-bleed marquee on the pre-footer grey, so it joins the shelf above
-   the footer. The overflow clip is horizontal only; the display type
+/* Full-bleed marquee on the wall grey: no fill, so it never reads as a
+   second footer. The overflow clip is horizontal only; the display type
    keeps its full height. */
 .section {
   position: relative;
-  background: var(--prefooter-bg);
   overflow: hidden;
+}
+
+/* Story pages: on the pre-footer grey, joining the band above it. */
+.prefooter {
+  background: var(--prefooter-bg);
 }
 
 /* The padding lives on the link, so the whole band is clickable, not

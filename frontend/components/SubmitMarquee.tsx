@@ -40,7 +40,8 @@ function Sequence() {
  * Motion rules (WCAG 2.2.2): a pause button, pause on hover and keyboard
  * focus, static under reduced motion, and no animation while off screen.
  */
-export function SubmitMarquee() {
+/** prefooter: on the story pre-footer grey (story pages only). */
+export function SubmitMarquee({ prefooter = false }: { prefooter?: boolean } = {}) {
   const track = useRef<HTMLSpanElement>(null);
   const [paused, setPaused] = useState(false);
   const hover = useRef(false);
@@ -120,7 +121,10 @@ export function SubmitMarquee() {
   };
 
   return (
-    <section className={styles.section} aria-label="Submit your photographs">
+    <section
+      className={`${styles.section}${prefooter ? " " + styles.prefooter : ""}`}
+      aria-label="Submit your photographs"
+    >
       <Link href="/submit" className={styles.link} aria-label="Send us pix: submit your photographs">
         <span ref={track} className={styles.track} aria-hidden="true">
           <Sequence />

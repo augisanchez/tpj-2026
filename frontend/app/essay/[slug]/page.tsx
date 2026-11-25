@@ -119,7 +119,7 @@ export default async function EssayPage({ params }: Props) {
 
         <RelatedStrip label="Related stories" stories={related} />
       </ArticlePrefooter>
-      <SubmitMarquee />
+      <SubmitMarquee prefooter />
     </>
   );
 }
