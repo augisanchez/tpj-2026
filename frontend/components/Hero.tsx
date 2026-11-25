@@ -11,7 +11,7 @@ type Props = {
   /** Secondary credit under the title, e.g. the interview portrait credit. */
   credit?: string | null;
   backgroundImage?: { src: string; alt: string; width?: number; height?: number };
-  /** Photographs in the piece; appended to the byline ("· 13 photographs"). */
+  /** Piece metadata from the article pages. Not rendered in the hero. */
   wallLabel?: { photographer?: string | null; year?: number | null; count: number };
 };
 
@@ -45,10 +45,10 @@ export function Hero({
   backgroundImage,
   wallLabel,
 }: Props) {
-  const count = wallLabel?.count ?? 0;
-  const meta = [byline, count > 0 ? `${count} ${count === 1 ? "photograph" : "photographs"}` : null]
-    .filter(Boolean)
-    .join("  ·  ");
+  // The byline alone: no photo count in the hero (Nov 2026). wallLabel
+  // is still passed by the pages but no longer shown here.
+  void wallLabel;
+  const meta = byline || null;
   return (
     <div className={styles.outer}>
       {/* The frame carries the scroll widening (Hero.module.css); the card
