@@ -99,15 +99,32 @@ export function MotionRoot() {
   // Wave: each item's delay grows with its distance from the batch's
   // top-left corner (across + down the viewport), so a grid ripples
   // diagonally however many items it has.
-  const play = (batch: HTMLElement[]) => {
-    const rects = new Map(batch.map((el) => [el, el.getBoundingClientRect()]));
-    const minTop = Math.min(...batch.map((el) => rects.get(el)!.top));
-    const minLeft = Math.min(...batch.map((el) => rects.get(el)!.left));
+  const play = (all: HTMLElement[]) => {
+    const rects = new Map(all.map((el) => [el, el.getBoundingClientRect()]));
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    // Anything already above the viewport (a jump link, a fast fling)
+    // shows at once with no wave. The wave is measured from what's on
+    // screen only; measuring from blocks far above pushed every visible
+    // item to the delay cap, so they all rose together.
+    const batch: HTMLElement[] = [];
+    for (const el of all) {
+      if (rects.get(el)!.bottom <= 0) {
+        if (el.dataset.reveal === "lines") splitLines(el);
+        el.classList.add("rv-in", "rv-instant");
+      } else {
+        batch.push(el);
+      }
+    }
+    if (!batch.length) return;
+    // Tops are clamped to the viewport edge, so a block hanging off the
+    // top doesn't push the first visible row's start later.
+    const top = (el: HTMLElement) => Math.max(0, rects.get(el)!.top);
+    const minTop = Math.min(...batch.map(top));
+    const minLeft = Math.min(...batch.map((el) => rects.get(el)!.left));
     batch.forEach((el) => {
       const r = rects.get(el)!;
-      const wave = ((r.left - minLeft) / vw + (r.top - minTop) / vh) * WAVE_MS;
+      const wave = ((r.left - minLeft) / vw + (top(el) - minTop) / vh) * WAVE_MS;
       if (el.dataset.reveal === "lines") splitLines(el);
       el.style.setProperty("--rv-d", `${Math.round(Math.min(wave, WAVE_CAP_MS))}ms`);
       // next frame so the hidden state paints first

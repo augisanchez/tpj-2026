@@ -24,11 +24,20 @@ const OUT_MS = 150;
 const IN_MS = 420;
 const IN_STEP_MS = 60;
 const IN_SHIFT = "8px";
+// Photos land as a wave: an upward wipe plus fade, one slot after the
+// other, however their loads happen to finish.
+const PHOTO_MS = 700;
+const PHOTO_STEP_MS = 90;
 const EASE_IN = "cubic-bezier(0.7, 0, 0.84, 0)";
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 const PANEL_ID = "theme-panel";
 const tabId = (slug: string) => `theme-tab-${slug}`;
+
+/** Milliseconds on the page clock; only called from handlers and effects. */
+function clock() {
+  return performance.now();
+}
 
 function reducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -101,6 +110,9 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
   };
 
   const enter = () => {
+    const t0 = clock();
+    // Delay that keeps slot order even when a photo arrives late.
+    const beat = (i: number) => Math.max(0, i * PHOTO_STEP_MS - (clock() - t0));
     panelItems().forEach((slot, i) => {
       // A freshly mounted slot (e.g. the count tile returning) is new to
       // the reveal system; mark it shown so its rise never stacks on ours.
@@ -109,14 +121,35 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
       photo.forEach((el) => {
         el.getAnimations().forEach((a) => a.cancel());
         if (el instanceof HTMLImageElement) {
-          // Back to "loading" so the frame shows the skeleton and the
-          // photo fades in once it has arrived. A cached or unchanged
-          // photo is marked loaded at once.
+          // The frame shows the skeleton until the photo has arrived
+          // (no data-ld), then the photo wipes up into the slot on its
+          // beat. data-instant hands the entrance to this animation
+          // instead of the site-wide image fade.
           delete el.dataset.ld;
-          delete el.dataset.instant;
-          if (el.complete && el.naturalWidth) requestAnimationFrame(() => { el.dataset.ld = "1"; });
+          el.dataset.instant = "1";
+          const land = () => {
+            el.animate(
+              [
+                { opacity: 0, clipPath: "inset(100% 0 0 0)" },
+                { opacity: 1, clipPath: "inset(0 0 0 0)" },
+              ],
+              { duration: PHOTO_MS, delay: beat(i), easing: EASE_OUT, fill: "backwards" },
+            );
+          };
+          if (el.complete && el.naturalWidth) {
+            el.dataset.ld = "1";
+            land();
+          } else {
+            el.addEventListener("load", land, { once: true });
+          }
         } else {
-          el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: IN_MS, delay: i * IN_STEP_MS, easing: EASE_OUT, fill: "backwards" });
+          el.animate(
+            [
+              { opacity: 0, clipPath: "inset(100% 0 0 0)" },
+              { opacity: 1, clipPath: "inset(0 0 0 0)" },
+            ],
+            { duration: PHOTO_MS, delay: i * PHOTO_STEP_MS, easing: EASE_OUT, fill: "backwards" },
+          );
         }
       });
       text.forEach((el) => {
