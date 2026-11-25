@@ -40,6 +40,46 @@
   display: none;
 }
 
+/* TPJ watermark: fixed bottom right, mirroring the plate counter in the
+   bottom left (PlateCounter.module.css): same breakpoint, same edge
+   inset, same rise and sink. Shown once the reader has scrolled, gone
+   at the footer. A small wall-grey tab keeps the black mark readable
+   over dark photographs; the mark's edge lines up 24px in, like the
+   counter's. */
+.watermark {
+  display: none;
+}
+
+@media (min-width: 1025px) {
+  .watermark {
+    position: fixed;
+    right: 18px;
+    bottom: 12px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px;
+    border-radius: var(--radius);
+    background: var(--bg);
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition:
+      opacity 300ms var(--ease-out),
+      transform 300ms var(--ease-out);
+  }
+  .watermark[data-on] {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .watermark img {
+    display: block;
+    height: 18px;
+    width: auto;
+  }
+}
+
 .links {
   display: flex;
   align-items: center;
@@ -150,6 +190,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .watermark {
+    transform: none !important;
+  }
   .nav,
   .nav.hidden {
     transform: none !important;

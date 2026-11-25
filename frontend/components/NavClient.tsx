@@ -29,6 +29,10 @@ const REVEAL_DELTA = 8;
 
 export function NavClient({ recent }: { recent: DrawerPhotographer[] }) {
   const [hidden, setHidden] = useState(false);
+  // Watermark: on once the reader is past the top of the page, off
+  // while the footer (which carries its own wordmark) is on screen.
+  const [scrolled, setScrolled] = useState(false);
+  const [footerInView, setFooterInView] = useState(false);
   const lastY = useRef(0);
   const ticking = useRef(false);
 
@@ -48,16 +52,41 @@ export function NavClient({ recent }: { recent: DrawerPhotographer[] }) {
           setHidden(false);
         }
 
+        setScrolled(y > 320);
         lastY.current = y;
         ticking.current = false;
       });
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const footer = document.querySelector("footer");
+    const io = footer
+      ? new IntersectionObserver(([e]) => setFooterInView(e.isIntersecting))
+      : null;
+    if (footer && io) io.observe(footer);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      io?.disconnect();
+    };
   }, []);
 
+  const showMark = scrolled && !footerInView;
+
   return (
+    <>
+    {/* The TPJ mark sits in the bottom-right corner once the reader has
+        scrolled (large screens only), so the brand is always on screen. */}
+    <Link
+      href="/"
+      className={styles.watermark}
+      data-on={showMark ? "" : undefined}
+      aria-label="The Photographic Journal, front page"
+      aria-hidden={showMark ? undefined : true}
+      tabIndex={showMark ? undefined : -1}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/svg/tpj_black.svg" alt="" />
+    </Link>
     <header className={`${styles.nav}${hidden ? " " + styles.hidden : ""}`}>
       <Link href="/" className={styles.brand} aria-label="The Photographic Journal">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -106,5 +135,6 @@ export function NavClient({ recent }: { recent: DrawerPhotographer[] }) {
         />
       </nav>
     </header>
+    </>
   );
 }

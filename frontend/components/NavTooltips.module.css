@@ -8,23 +8,38 @@
   z-index: 1000;
   top: 0;
   left: 0;
-  max-width: min(260px, calc(100vw - 16px));
-  padding: 6px 8px;
+  /* Every line is fixed copy (TIPS in NavTooltips.tsx), short enough to
+     set on one line: no ragged two-line wraps. The cap only matters on
+     a very narrow window, where it falls back to balanced lines. */
+  max-width: calc(100vw - 16px);
+  white-space: nowrap;
+  padding: 7px 10px 8px;
   border-radius: var(--radius);
   background: var(--acid-signal);
   color: var(--acid-ink);
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0.01em;
+  font-family: var(--font-ui), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: -0.005em;
+  font-kerning: normal;
+  font-feature-settings: "kern", "calt";
   text-transform: none;
-  white-space: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   pointer-events: none;
   will-change: transform;
   opacity: 0;
   visibility: hidden;
   transition: opacity 100ms ease-out, visibility 0s linear 100ms;
+}
+
+@media (max-width: 420px) {
+  .tip {
+    white-space: normal;
+    text-wrap: balance;
+  }
 }
 
 .tip[data-on] {
