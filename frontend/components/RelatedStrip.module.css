@@ -35,3 +35,11 @@
     row-gap: 48px;
   }
 }
+
+/* Phones: two stories, like "Continue the thread". A full column of
+   large cards reads as a second article. */
+@media (max-width: 640px) {
+  .item:nth-child(n + 3) {
+    display: none;
+  }
+}
