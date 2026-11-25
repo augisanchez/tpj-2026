@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  capDensity,
   capWidths,
   cdnImageUrl,
   cdnSrcSet,
@@ -122,7 +123,7 @@ export function TpjImage({
       ref={ref}
       src={finalSrc}
       srcSet={srcSet ?? undefined}
-      sizes={sizes}
+      sizes={capDensity(sizes)}
       alt={alt}
       width={width}
       height={height}
