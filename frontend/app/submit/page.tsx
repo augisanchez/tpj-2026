@@ -9,39 +9,64 @@ export const metadata = pageMetadata({
   path: "/submit",
 });
 
-const GUIDELINES: { title: string; detail?: string }[] = [
+type Guideline = { title: string; detail?: string };
+
+/* Requirements grouped by what they describe. Group headings reuse words
+   already in the copy. The wide group runs three across on desktop; the
+   two half groups sit side by side, two across each. */
+const GUIDELINE_GROUPS: {
+  heading: string;
+  span: "wide" | "half";
+  items: Guideline[];
+}[] = [
   {
-    title: "Photo essays only.",
-    detail:
-      "We publish photography, not writing. Essays that are mostly text, criticism, or commentary aren’t a fit, even if they include images.",
+    heading: "Photo essays",
+    span: "wide",
+    items: [
+      {
+        title: "Photo essays only.",
+        detail:
+          "We publish photography, not writing. Essays that are mostly text, criticism, or commentary aren’t a fit, even if they include images.",
+      },
+      {
+        title: "Any theme you like.",
+        detail:
+          "We try not to box in our photographers, but we do love work with a strong POV, real energy in its subjects and settings, and photos that carry emotion or some kind of thematic undercurrent.",
+      },
+      {
+        title: "A narrative or thematic connection across the images.",
+      },
+    ],
   },
   {
-    title: "Any theme you like.",
-    detail:
-      "We try not to box in our photographers, but we do love work with a strong POV, real energy in its subjects and settings, and photos that carry emotion or some kind of thematic undercurrent.",
+    heading: "Images",
+    span: "half",
+    items: [
+      { title: "Between 10 and 20 images." },
+      { title: "1800 to 2400 pixels wide at 72 dpi." },
+    ],
   },
   {
-    title: "A narrative or thematic connection across the images.",
-  },
-  {
-    title: "Between 10 and 20 images.",
-  },
-  {
-    title: "1800 to 2400 pixels wide at 72 dpi.",
-  },
-  {
-    title: "An intro of no more than 200 words.",
-    detail: "We may tighten it up.",
-  },
-  {
-    title: "A title.",
-    detail: "We may tweak that too.",
-  },
-  {
-    title: "We reserve the right to reject any essay before publication.",
-    detail: "It happens, and it’s nothing personal.",
+    heading: "Intro and title",
+    span: "half",
+    items: [
+      {
+        title: "An intro of no more than 200 words.",
+        detail: "We may tighten it up.",
+      },
+      {
+        title: "A title.",
+        detail: "We may tweak that too.",
+      },
+    ],
   },
 ];
+
+/* Not a requirement, so it sits under the grid as a closing note. */
+const FINE_PRINT: Guideline = {
+  title: "We reserve the right to reject any essay before publication.",
+  detail: "It happens, and it’s nothing personal.",
+};
 
 export default function SubmitPage() {
   return (
@@ -81,18 +106,41 @@ export default function SubmitPage() {
           </h2>
         </header>
 
-        <ol className={styles.guidelinesList}>
-          {GUIDELINES.map((item) => (
-            <li key={item.title} className={styles.guideline}>
-              <div className={styles.guidelineText}>
-                <p className={styles.guidelineHeadline}>{item.title}</p>
-                {item.detail && (
-                  <p className={styles.guidelineDetail}>{item.detail}</p>
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
+        <div className={styles.guidelines}>
+          {GUIDELINE_GROUPS.map((group) => {
+            const headingId = `guidelines-${group.heading
+              .toLowerCase()
+              .replace(/\s+/g, "-")}`;
+            return (
+              <section
+                key={group.heading}
+                aria-labelledby={headingId}
+                className={`${styles.group} ${
+                  group.span === "wide" ? styles.groupWide : styles.groupHalf
+                }`}
+              >
+                <h3 id={headingId} className={styles.groupHeading}>
+                  {group.heading}
+                </h3>
+                <ul className={styles.groupList}>
+                  {group.items.map((item) => (
+                    <li key={item.title} className={styles.guideline}>
+                      <p className={styles.guidelineHeadline}>{item.title}</p>
+                      {item.detail && (
+                        <p className={styles.guidelineDetail}>{item.detail}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+
+          <p className={styles.finePrint}>
+            <strong className={styles.finePrintLead}>{FINE_PRINT.title}</strong>{" "}
+            <span className={styles.finePrintDetail}>{FINE_PRINT.detail}</span>
+          </p>
+        </div>
 
         <SubmissionForm />
       </div>
