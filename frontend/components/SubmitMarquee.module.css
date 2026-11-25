@@ -4,13 +4,16 @@
 .section {
   position: relative;
   overflow: hidden;
-  padding: clamp(28px, 1.05rem + 1.75vw, 84px) 0; /* 70% of the first cut */
 }
 
+/* The padding lives on the link, so the whole band is clickable, not
+   just the line of type. */
 .link {
   display: block;
+  padding: clamp(28px, 1.05rem + 1.75vw, 84px) 0; /* 70% of the first cut */
   color: var(--text);
   text-decoration: none;
+  cursor: pointer;
 }
 
 .link:focus-visible {
