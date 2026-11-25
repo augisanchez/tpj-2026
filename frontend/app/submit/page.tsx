@@ -12,8 +12,8 @@ export const metadata = pageMetadata({
 
 type Guideline = { title: string; detail?: string };
 
-/* Requirements as a checklist, grouped by what they describe. Group
-   headings reuse words already in the copy. */
+/* Requirements in three boxed sections. Headings and titles are the
+   site's copy; the descriptions marked DRAFT are new and need Lou's ear. */
 const GUIDELINE_GROUPS: {
   heading: string;
   items: Guideline[];
@@ -33,32 +33,46 @@ const GUIDELINE_GROUPS: {
       },
       {
         title: "A narrative or thematic connection across the images.",
+        // DRAFT
+        detail:
+          "The photographs should talk to each other. A story, a mood, a question you keep circling back to. Show us the thread.",
+      },
+    ],
+  },
+  {
+    heading: "Support your essay",
+    items: [
+      {
+        title: "A title.",
+        // DRAFT (second sentence is the existing copy)
+        detail: "Something short that sounds like the work. We may tweak that too.",
+      },
+      {
+        title: "An intro of no more than 200 words.",
+        // DRAFT (last sentence is the existing copy)
+        detail:
+          "Tell us what we’re looking at and why it matters to you. Keep it tight. We may tighten it up.",
       },
     ],
   },
   {
     heading: "Images",
     items: [
-      { title: "Between 10 and 20 images." },
-      { title: "1800 to 2400 pixels wide at 72 dpi." },
-    ],
-  },
-  {
-    heading: "Intro and title",
-    items: [
       {
-        title: "An intro of no more than 200 words.",
-        detail: "We may tighten it up.",
+        title: "Between 10 and 20 images.",
+        // DRAFT
+        detail: "Enough to tell the story, few enough that every frame earns its place. Edit hard.",
       },
       {
-        title: "A title.",
-        detail: "We may tweak that too.",
+        title: "1800 to 2400 pixels wide at 72 dpi.",
+        // DRAFT
+        detail: "Big enough to look sharp on a large screen, light enough to load fast on a phone.",
       },
     ],
   },
 ];
 
-/* Not a requirement, so it sits under the grid as a closing note. */
+/* Not a requirement, so it sits under the sections as a closing note. */
 const FINE_PRINT: Guideline = {
   title: "We reserve the right to reject any essay before publication.",
   detail: "It happens, and it’s nothing personal.",
@@ -119,11 +133,6 @@ export default function SubmitPage() {
                 <ul className={styles.groupList}>
                   {group.items.map((item) => (
                     <li key={item.title} className={styles.guideline}>
-                      <span className={styles.check} aria-hidden="true">
-                        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3.5 8.5 6.5 11.5 12.5 4.5" />
-                        </svg>
-                      </span>
                       <p className={styles.guidelineHeadline}>{item.title}</p>
                       {item.detail && (
                         <p className={styles.guidelineDetail}>{item.detail}</p>
@@ -135,10 +144,10 @@ export default function SubmitPage() {
             );
           })}
 
-          <p className={styles.finePrint}>
-            <strong className={styles.finePrintLead}>{FINE_PRINT.title}</strong>{" "}
-            <span className={styles.finePrintDetail}>{FINE_PRINT.detail}</span>
-          </p>
+          <div className={styles.finePrint}>
+            <p className={styles.finePrintLead}>{FINE_PRINT.title}</p>
+            <p className={styles.finePrintDetail}>{FINE_PRINT.detail}</p>
+          </div>
         </div>
 
         <SubmissionForm />

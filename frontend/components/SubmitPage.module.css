@@ -68,13 +68,18 @@
 .guidelines {
   display: flex;
   flex-direction: column;
-  gap: clamp(40px, 1.5rem + 1.5vw, 64px);
+  gap: clamp(24px, 1rem + 1vw, 40px);
   max-width: 880px;
   margin: 0 auto 96px;
 }
 
+/* Each section is an outlined box: label, then title and description
+   pairs. No marks or rules between items; spacing does the work. */
 .group {
   min-width: 0;
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  padding: clamp(16px, 0.75rem + 0.6vw, 24px) clamp(16px, 0.75rem + 0.6vw, 24px) clamp(20px, 1rem + 0.6vw, 28px);
 }
 
 .groupHeading {
@@ -85,36 +90,22 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 0 0 4px;
+  margin: 0 0 clamp(16px, 0.75rem + 0.5vw, 24px);
 }
 
 .groupList {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 1rem + 0.6vw, 32px);
 }
 
-/* One checklist row: the mark, then the title over its description.
-   Rows are divided by a hairline. */
 .guideline {
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
-  column-gap: 16px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.check {
-  grid-row: 1 / span 2;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  /* Centre on the title's first line (font-size x 1.4 line height). */
-  margin-top: calc((clamp(18px, 0.9rem + 0.6vw, 32px) * 1.4 - 24px) / 2);
-  border-radius: var(--radius);
-  background: var(--acid-signal);
-  color: var(--acid-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* Same type as the About staff names and the banner text: Inter 500. */
@@ -122,36 +113,44 @@
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 500;
   font-size: clamp(18px, 0.9rem + 0.6vw, 32px);
-  line-height: 1.4;
+  line-height: 1.3;
   color: var(--text);
   margin: 0;
 }
 
 .guidelineDetail {
-  grid-column: 2;
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 400;
   font-size: clamp(15px, 0.85rem + 0.2vw, 18px);
   line-height: 1.55;
   color: var(--muted);
-  margin: 6px 0 0;
+  margin: 0;
   max-width: 62ch;
 }
 
+/* Closing note: a title over a muted line, outside the boxes. */
 .finePrint {
-  margin: 0;
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: clamp(15px, 0.85rem + 0.2vw, 18px);
-  line-height: 1.55;
-  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: clamp(8px, 0.25rem + 0.6vw, 24px);
 }
 
 .finePrintLead {
-  font-weight: 700;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(18px, 0.9rem + 0.6vw, 32px);
+  line-height: 1.3;
+  color: var(--text);
+  margin: 0;
 }
 
 .finePrintDetail {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: clamp(15px, 0.85rem + 0.2vw, 18px);
+  line-height: 1.55;
   color: var(--muted);
+  margin: 0;
 }
 
 /* Page-local override for the SupportingPageBanner title when the page
