@@ -4,6 +4,16 @@
   padding: 8px var(--gutter) 0;
 }
 
+/* Mouse swipes: no text selection or image ghost while dragging. */
+.frame {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.frame img {
+  -webkit-user-drag: none;
+}
+
 .frame {
   position: relative;
   width: 100%;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -147,24 +147,30 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
     return () => window.clearTimeout(id);
   }, [index, intent, slides, intervalMs, reducedMotion, paused, stopped]);
 
-  // Swipe gestures for touch + pointer drag. Crossing 60px of drag
+  // Swipe with a finger or a mouse drag. Crossing 60px of drag
   // distance OR 0.3 velocity in either direction advances. Vertical
-  // movement is ignored so vertical page scroll still works inside
-  // the carousel surface.
+  // movement is ignored so the page still scrolls through the carousel
+  // on touch screens. A drag that moved the slide swallows the click
+  // that follows it, so swiping never also opens the story.
+  const dragged = useRef(false);
   const bindDrag = useDrag(
-    ({ last, movement: [mx], velocity: [vx], direction: [dx] }) => {
+    ({ first, last, movement: [mx], velocity: [vx] }) => {
+      if (first) dragged.current = false;
+      if (Math.abs(mx) > 8) dragged.current = true;
       if (!last) return;
       if (slides.length <= 1) return;
       const distance = Math.abs(mx);
       const speed = Math.abs(vx);
       if (distance < SWIPE_DISTANCE && speed < SWIPE_VELOCITY) return;
-      const dir = dx < 0 ? 1 : -1; // swipe left → next
+      // The whole swipe's direction, not the last frame's (a finger
+      // lifting can twitch back).
+      const dir = mx < 0 ? 1 : -1; // swipe left → next
       advance(dir);
+      setIntent(true);
     },
     {
       axis: "x",
       filterTaps: true,
-      pointer: { touch: true },
     }
   );
 
@@ -190,6 +196,14 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
       }}
       onBlurCapture={() => setPaused(false)}
       {...bindDrag()}
+      onClickCapture={(e) => {
+        if (!dragged.current) return;
+        dragged.current = false;
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      // The browser's own image and link dragging would steal a mouse swipe.
+      onDragStart={(e) => e.preventDefault()}
       style={{ touchAction: "pan-y" }}
     >
       <div className={styles.frame} data-reveal="wipe">
