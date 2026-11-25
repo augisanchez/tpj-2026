@@ -1,17 +1,28 @@
 /* The bar, field, toggle and count line come from FilterBar.module.css;
    this file holds the alphabet shortcut and the lettered sections. */
 
-.alphabet {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: center;
+/* A to Z gets its own full-width row under the search, role and view
+   controls, starting at the gutter like everything else. */
+div.alphabetGroup {
+  flex-basis: 100%;
 }
 
-/* A square control per letter. */
+/* One row, always: letters share the width, from 40px down to the
+   24px tap minimum, instead of wrapping onto a second line. */
+.alphabet {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
+}
+
 a.letter {
-  min-width: 36px;
-  padding: 0 6px;
+  flex: 1 1 0;
+  min-width: 24px;
+  max-width: 40px;
+  padding: 0;
+  justify-content: center;
 }
 
 /* The count line lines up with the page gutter. */
@@ -103,6 +114,20 @@ a.letter {
   }
   .sections {
     gap: 80px;
+  }
+}
+
+/* Phones: search and Grid / List share the first row, roles below. */
+@media (max-width: 768px) {
+  div.searchGroup {
+    order: 0;
+  }
+  .viewGroup {
+    order: 1;
+  }
+  .roleGroup {
+    order: 2;
+    flex-basis: 100%;
   }
 }
 

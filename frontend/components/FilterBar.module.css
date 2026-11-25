@@ -1,7 +1,7 @@
 /* One control language for every filter bar (Explore, its phone sheet,
    Photographers, Search). Every control is 36px tall with a 44px hit
    area, a 1px --border hairline, 3px corners, and one selected state:
-   --text fill, --bg type. Labels are small muted caps.
+   --text fill, --bg type. Group labels are visually hidden.
 
    The bar spans the page edge to edge; its content lines up with the
    page gutter. A page sets --inset when its gutter differs, and a bar
@@ -43,15 +43,20 @@
   margin-left: auto;
 }
 
+/* Group labels (Type, Theme, Sort, Role, Search, Jump to) are read by
+   screen readers but not shown: every control names itself ("All
+   themes", "Newest", the search placeholder, the grid and list icons,
+   A to Z), so a visible label only added clutter. */
 .label {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0;
-  flex-shrink: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ── The control: button, select, field, link ── */

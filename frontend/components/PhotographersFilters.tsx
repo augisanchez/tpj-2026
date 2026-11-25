@@ -156,10 +156,13 @@ export function PhotographersFilters({ photographers }: Props) {
           </div>
         </div>
 
-        <ViewToggle view={view} onChange={chooseView} />
+        {/* Grid / List sits at the right edge, like Explore's. */}
+        <div className={`${f.end} ${styles.viewGroup}`}>
+          <ViewToggle view={view} onChange={chooseView} />
+        </div>
 
         {grouped.length > 0 && (
-          <div className={`${f.group} ${f.end} ${styles.alphabetGroup}`}>
+          <div className={`${f.group} ${styles.alphabetGroup}`}>
             <p className={f.label}>Jump to</p>
             <div className={styles.alphabet}>
               {grouped.map(([letter]) => (
