@@ -17,19 +17,31 @@
   white-space: pre-wrap;
 }
 
-/* Editing note: same column as the intro, small muted italic, set apart
-   by space alone. */
+/* Editing note: a separator between the intro and the story. Set like
+   the hero's secondary lines (14px regular), in grey, with the same
+   space above it as the story body leaves below it, so it sits centered
+   in the pause. */
 .note {
   max-width: var(--measure);
-  margin: 24px auto 0;
+  margin: clamp(96px, 4rem + 5vw, 320px) auto 0; /* = the body's top padding */
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 400;
-  font-style: italic;
   font-size: 14px;
   line-height: 1.5;
+  letter-spacing: 0.02em;
   color: var(--muted);
 }
 
-.text + .note {
-  margin-top: clamp(24px, 1rem + 1vw, 40px);
+/* A note with no intro above it sits at the intro's own top spacing. */
+.note:first-child {
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  .note {
+    margin-top: 64px;
+  }
+  .note:first-child {
+    margin-top: 0;
+  }
 }
