@@ -50,10 +50,37 @@ export function isCdnEnabled(): boolean {
   return Boolean(CDN_BASE);
 }
 
+/**
+ * Every resized image on the site comes from this ladder. Cloudflare
+ * counts each image x settings combination as one resize a month, so a
+ * short shared ladder keeps the count low: each photo exists in at most
+ * a few sizes, whichever page or component asks for it. Rungs are
+ * chosen so the common screens share files: a 2x phone (about 780px
+ * needed) and a 1x laptop (about 1100px) both take 1200.
+ *   320   small avatars and thumbnails
+ *   640   cards and thumbnails on phones and 1x screens
+ *   1200  full-width on phones and 1x laptops, cards on 2x screens
+ *   2400  full-width on 2x laptops and desktops, heroes
+ */
+export const LADDER = [320, 640, 1200, 2400] as const;
+
+/** The smallest ladder width that covers `w` (the top rung if none does). */
+export function snapWidth(w: number): number {
+  return LADDER.find((l) => l >= w) ?? LADDER[LADDER.length - 1];
+}
+
 export function cdnImageUrl(
   rawUrl: string | null | undefined,
   opts: CdnImageOpts = {}
 ): string | null {
+  // Plain resizes snap to the ladder and use the one site-wide quality,
+  // so callers can't create one-off combinations. Crops (with a height),
+  // share images (explicit format) and the blur placeholder keep theirs.
+  const special = typeof opts.height === "number" || Boolean(opts.format) || typeof opts.blur === "number";
+  if (!special) {
+    opts = { ...opts, quality: undefined };
+    if (typeof opts.width === "number") opts.width = snapWidth(opts.width);
+  }
   const url = rewriteMediaUrl(rawUrl);
   if (!url) return null;
   if (!CDN_BASE) return url;
@@ -96,9 +123,8 @@ export function cdnPlaceholderUrl(rawUrl: string | null | undefined): string | n
   return url && url.includes("/cdn-cgi/image/") ? url : null;
 }
 
-/** Default srcset widths for editorial photography — mobile portrait
- *  through 5K display. */
-export const DEFAULT_WIDTHS = [480, 768, 1024, 1440, 1920, 2560];
+/** Default srcset widths: the ladder above thumbnail size. */
+export const DEFAULT_WIDTHS: number[] = [640, 1200, 2400];
 
 /**
  * Build a `srcset` string for an image at the given widths. Returns
@@ -112,7 +138,7 @@ export function cdnSrcSet(
 ): string | null {
   if (!isCdnEnabled()) return null;
   if (!rawUrl) return null;
-  const entries = widths
+  const entries = [...new Set(widths.map(snapWidth))]
     .map((w) => {
       const url = cdnImageUrl(rawUrl, { ...opts, width: w });
       return url && url.includes("/cdn-cgi/image/") ? `${url} ${w}w` : null;
@@ -128,10 +154,15 @@ export function cdnSrcSet(
  * width as the top candidate.
  */
 export function capWidths(widths: number[], intrinsic?: number | null): number[] {
-  if (!intrinsic || intrinsic <= 0) return widths;
-  const kept = widths.filter((w) => w < intrinsic);
-  if (intrinsic < widths[widths.length - 1]) kept.push(intrinsic);
-  return kept.length ? kept : widths;
+  // Snap to the ladder, then drop rungs above the original's own width
+  // except the first one that covers it (Cloudflare returns the original
+  // size for it, and the rung is shared with every other image).
+  const rungs = [...new Set(widths.map(snapWidth))].sort((a, b) => a - b);
+  if (!intrinsic || intrinsic <= 0) return rungs;
+  const kept = rungs.filter((w) => w < intrinsic);
+  const cover = rungs.find((w) => w >= intrinsic);
+  if (cover) kept.push(cover);
+  return kept.length ? kept : rungs;
 }
 
 /**

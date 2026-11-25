@@ -115,7 +115,9 @@ export function TpjImage({
   // server HTML so it paints with the page; the rest get it as they near
   // the viewport, so offscreen images cost nothing. Already-loaded
   // (cached) images skip the effect.
-  const lqip = cdnPlaceholderUrl(src);
+  // Placeholders cost a Cloudflare resize each, so only priority images
+  // (heroes, the first screen) get one; the rest show the shimmer alone.
+  const lqip = priority ? cdnPlaceholderUrl(src) : null;
   useEffect(() => {
     const img = ref.current;
     if (!img || !lqip) return;

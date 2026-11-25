@@ -172,7 +172,7 @@ export function resolveArticlePhotographers(input: {
 
 /** A credit line: "Model:", "Styling:", "Hair & Makeup:", "Assistance & Moral Support:"... */
 const CREDIT_LINE =
-  /^(?:credits?\s*:?\s*)?(?:models?|muses?|styl(?:ing|ist|ists|ed by)|hair|make-?up|mua|wardrobe|assist(?:ant|ants|ance|ed by)?|casting|retouch(?:ing|er)?|(?:art |creative )?direction|creative director|art director|producers?|production|grooming|set design|nails|jewel(?:le)?ry|special thanks|thanks to|featuring|locations?|clothing|shot on)\b[^:]{0,40}:/i;
+  /^(?:credits?\s*:?\s*)?(?:models?|muses?|styl(?:ing|ist|ists|ed by)|hair|make[- ]?up|mua|talent|props?|lighting|video(?:graphy| by)?|wardrobe|assist(?:ant|ants|ance|ed by)?|casting|retouch(?:ing|er)?|(?:art |creative )?direction|creative director|art director|producers?|production|grooming|set design|nails|jewel(?:le)?ry|special thanks|thanks to|featuring|locations?|clothing|shot on)\b[^:]{0,40}:/i;
 
 const BLOCK_BREAK =
   /<\/?(?:p|div|h[1-6]|li|ul|ol|blockquote|figure|section|span)\b[^>]*>|<br\s*\/?>/gi;

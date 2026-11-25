@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "./SmartLink";
-import { capWidths, cdnImageUrl, cdnSrcSet, isCdnEnabled, capDensity, cdnPlaceholderUrl } from "@/lib/cdn";
+import { capWidths, cdnImageUrl, cdnSrcSet, isCdnEnabled, capDensity } from "@/lib/cdn";
 import { creditFor } from "@/lib/credit";
 import styles from "./Ticker.module.css";
 
@@ -118,7 +118,6 @@ export function Ticker({ items, label = "Latest stories", speed = 40 }: Props) {
                   src={cdnImageUrl(src, { width: Math.min(720, image.width ?? 720) }) ?? src}
                   srcSet={cdnSrcSet(image.src, capWidths([240, 360, 480, 720], image.width)) ?? undefined}
                   sizes={capDensity(sizes)}
-                  data-lqip-src={cdnPlaceholderUrl(image.src) ?? undefined}
                   alt={hidden ? "" : image.alt}
                   loading={!hidden && i < EAGER_COUNT ? "eager" : "lazy"}
                   decoding="async"

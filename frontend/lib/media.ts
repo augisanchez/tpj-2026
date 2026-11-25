@@ -5,7 +5,6 @@ import {
   cdnImageUrl,
   cdnSrcSet,
   isCdnEnabled,
-  cdnPlaceholderUrl,
   capDensity,
 } from "./cdn";
 
@@ -86,7 +85,9 @@ const BODY_SIZES = {
 } as const;
 const ARTICLE_BODY_SIZES = BODY_SIZES.full;
 const SIZES_TOKEN = "__TPJ_SIZES__";
-const BODY_WIDTHS = [480, 768, 1024, 1440, 1920, 2560, 3200, 3840];
+// Literal, not DEFAULT_WIDTHS: cdn.ts imports this file, so a module-level
+// read of its exports here would run before they exist. Same as the ladder.
+const BODY_WIDTHS = [640, 1200, 2400];
 
 function sizesForFigure(cls: string): string {
   if (/fig-(two-?up)/.test(cls)) return BODY_SIZES.twoUp;
@@ -148,10 +149,6 @@ export function rewriteArticleBodyImages(html: string): string {
     attrs += ` srcset="${srcSet}"`;
     attrs += ` sizes="${SIZES_TOKEN}"`;
     if (!LOADING_RE.test(attrs)) attrs += ` loading="lazy"`;
-    // Blur-up source; MotionRoot applies it as the image nears the
-    // viewport (globals.css "Blur-up"), so offscreen photos cost nothing.
-    const lqip = cdnPlaceholderUrl(originalSrc);
-    if (lqip) attrs += ` data-lqip-src="${lqip}"`;
     return frameImage(`<img${attrs}>`);
   });
   // Each image's sizes follows the figure it sits in (full, two-up…).

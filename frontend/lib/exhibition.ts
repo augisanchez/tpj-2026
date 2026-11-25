@@ -18,7 +18,8 @@ export type Plate = {
 };
 
 const FRAME_RE = /<span class="img-frame"([^>]*)>(<img\b[^>]*>)/gi;
-const THUMB_WIDTH = 480;
+// A ladder rung (lib/cdn.ts LADDER), so thumbnails share files with cards.
+const THUMB_WIDTH = 640;
 
 function attr(tag: string, name: string): string | undefined {
   const m = new RegExp(`\\s${name}\\s*=\\s*(["'])(.*?)\\1`, "i").exec(tag);
