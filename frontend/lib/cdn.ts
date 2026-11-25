@@ -8,7 +8,7 @@ import { rewriteMediaUrl } from "./media";
  *    `rewriteMediaUrl(rawUrl)` unchanged. The page sees the same
  *    image URL it sees today; no edge transforms.
  *  - **Post-cutover (`NEXT_PUBLIC_CDN_BASE` set):** returns
- *    `{base}/cdn-cgi/image/width=...,format=auto,quality=85/{path}`,
+ *    `{base}/cdn-cgi/image/width=...,quality=(level=75,slow-connection=45),format=auto/{path}`,
  *    which routes through Cloudflare Image Resizing.
  *
  * The wrapper lets us ship `<TpjImage>` across every call site now
@@ -22,9 +22,22 @@ export type CdnImageOpts = {
   /** Where to keep when cropping: "face" keeps faces (center if none),
    *  "auto" finds the most salient area. */
   gravity?: "face" | "auto" | "top" | "center";
+  /** Fixed quality (OG cards, feeds, thumbnails). Omit for the site
+   *  default: 75, dropping to 45 on slow connections. */
   quality?: number;
+  /** Quality on a slow connection (Save-Data, or Chromium's ECT 3g or
+   *  slower, RTT over 150ms, downlink under 5Mbps; see Accept-CH in
+   *  next.config). Only applies with the default quality. */
+  slowQuality?: number;
   format?: "auto" | "webp" | "avif" | "jpeg" | "png";
 };
+
+/** AVIF/WebP at 75 is visually the same as 85 for photographs at about a
+ *  third fewer bytes. Cloudflare swaps in SLOW_QUALITY when the browser
+ *  reports a slow connection or data saver (Chromium only; Safari and
+ *  Firefox always get DEFAULT_QUALITY). Measured 768px AVIF: 32KB vs 13KB. */
+export const DEFAULT_QUALITY = 75;
+export const SLOW_QUALITY = 45;
 
 export const CDN_BASE = process.env.NEXT_PUBLIC_CDN_BASE;
 /** Key prefix of the WordPress uploads inside the media bucket (R2 keys are
@@ -55,7 +68,9 @@ export function cdnImageUrl(
     typeof opts.height === "number" ? `height=${opts.height}` : null,
     opts.fit ? `fit=${opts.fit}` : null,
     opts.gravity ? `gravity=${opts.gravity}` : null,
-    `quality=${opts.quality ?? 85}`,
+    typeof opts.quality === "number"
+      ? `quality=${opts.quality}`
+      : `quality=(level=${DEFAULT_QUALITY},slow-connection=${opts.slowQuality ?? SLOW_QUALITY})`,
     `format=${opts.format ?? "auto"}`,
   ]
     .filter((p): p is string => p !== null)
