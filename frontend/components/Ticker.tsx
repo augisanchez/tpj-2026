@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "./SmartLink";
 import { capWidths, cdnImageUrl, cdnSrcSet, isCdnEnabled, capDensity } from "@/lib/cdn";
 import { creditFor } from "@/lib/credit";
+import { typeLabel, type ContentType } from "@/lib/content-types";
 import styles from "./Ticker.module.css";
 
 export type TickerItem = {
@@ -20,6 +21,12 @@ type Props = {
   /** Scroll speed in px per second. */
   speed?: number;
 };
+
+/** The story type from its URL ("/interview/x" -> interview). */
+function typeOf(href: string): ContentType | null {
+  const seg = href.split("/")[1];
+  return seg === "essay" || seg === "interview" || seg === "feature" ? seg : null;
+}
 
 /** Rendered image height (px) at desktop / phone; keep in sync with the CSS. */
 const IMAGE_HEIGHT = { desktop: 200, phone: 140 };
@@ -124,10 +131,15 @@ export function Ticker({ items, label = "Latest stories", speed = 40 }: Props) {
                 />
               </span>
               <span className={styles.title}>{item.title}</span>
-              {/* Interviews are titled with the name: say it once. */}
-              {creditFor(item.title, item.photographer) && (
-                <span className={styles.photographer}>{item.photographer}</span>
-              )}
+              {/* Every label is two lines. Interviews are titled with the
+                  name, so their second line names the type instead of
+                  repeating it. */}
+              {(() => {
+                const credit = creditFor(item.title, item.photographer);
+                const type = typeOf(item.href);
+                const line = credit ? item.photographer : type ? typeLabel(type) : null;
+                return line ? <span className={styles.photographer}>{line}</span> : null;
+              })()}
             </Link>
           </li>
         );

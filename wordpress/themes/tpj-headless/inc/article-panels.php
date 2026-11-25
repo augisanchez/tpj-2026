@@ -42,6 +42,15 @@ const TPJ_BYLINE_AUTHOR_META_KEY = 'tpj_byline_author';
  */
 const TPJ_HERO_IMAGE_META_KEY = '_tpj_hero_image_id';
 
+/**
+ * Editing note shown under the intro ("This interview has been edited
+ * for length and clarity."). Interviews default to the standard line
+ * until an editor changes it; an empty value hides the note. Features
+ * have the field with no default.
+ */
+const TPJ_EDITORIAL_NOTE_META_KEY = 'tpj_editorial_note';
+const TPJ_EDITORIAL_NOTE_DEFAULT  = 'This interview has been edited for length and clarity.';
+
 add_action( 'init', 'tpj_register_article_panel_meta' );
 
 function tpj_register_article_panel_meta() {
@@ -75,6 +84,19 @@ function tpj_register_article_panel_meta() {
 			'sanitize_callback' => 'sanitize_text_field',
 			'auth_callback'     => $auth_callback,
 		] );
+
+		if ( 'essay' !== $type ) {
+			register_post_meta( $type, TPJ_EDITORIAL_NOTE_META_KEY, [
+				'type'              => 'string',
+				'single'            => true,
+				'show_in_rest'      => true,
+				// A missing row reads as the standard note on interviews;
+				// a saved empty string means "no note".
+				'default'           => 'interview' === $type ? TPJ_EDITORIAL_NOTE_DEFAULT : '',
+				'sanitize_callback' => 'sanitize_text_field',
+				'auth_callback'     => $auth_callback,
+			] );
+		}
 
 		register_post_meta( $type, TPJ_HERO_IMAGE_META_KEY, [
 			'type'              => 'integer',
@@ -119,5 +141,10 @@ function tpj_enqueue_article_panels() {
 		],
 		file_exists( $path ) ? filemtime( $path ) : null,
 		true
+	);
+	wp_add_inline_script(
+		'tpj-article-panels',
+		'window.tpjEditorialNoteDefault = ' . wp_json_encode( TPJ_EDITORIAL_NOTE_DEFAULT ) . ';',
+		'before'
 	);
 }

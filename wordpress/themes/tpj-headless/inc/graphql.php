@@ -426,6 +426,17 @@ add_action( 'graphql_register_types', function () {
 				return $v === '' ? null : $v;
 			},
 		] );
+		if ( 'Essay' !== $type ) {
+			register_graphql_field( $type, 'editorialNote', [
+				'type'        => 'String',
+				'description' => 'Editing note shown under the intro (tpj_editorial_note). Interviews default to the standard line; null when an editor cleared it.',
+				'resolve'     => function ( $post ) {
+					$id = is_object( $post ) ? ( $post->ID ?? $post->databaseId ?? 0 ) : 0;
+					$v  = $id ? trim( (string) get_post_meta( $id, 'tpj_editorial_note', true ) ) : '';
+					return $v === '' ? null : $v;
+				},
+			] );
+		}
 		register_graphql_field( $type, 'heroImage', [
 			'type'        => 'MediaItem',
 			'description' => 'Image shown at the top of the article. Falls back through `_tpj_hero_image_id` → v1 `header_image` → `_thumbnail_id` (WP featured). Use this on detail pages instead of `featuredImage` so v1 archive renders the correct hero crop.',

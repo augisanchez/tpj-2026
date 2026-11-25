@@ -5,7 +5,7 @@
  * article-photographer-picker.js.
  *
  * Two panels per article type:
- *   - "Article details" (intro + byline author)
+ *   - "Article details" (intro, byline author, editing note, portrait credit)
  *   - "Hero image" (media-library picker)
  *
  * Saves flow through the REST API. The postmeta keys are
@@ -86,6 +86,8 @@
 		var introState = useMeta( INTRO_KEY, '' );
 		var authorState = useMeta( BYLINE_KEY, '' );
 		var creditState = useMeta( 'tpj_portrait_credit', '' );
+		var noteDefault = window.tpjEditorialNoteDefault || '';
+		var noteState = useMeta( 'tpj_editorial_note', postType === 'interview' ? noteDefault : '' );
 		var intro = introState[ 0 ];
 		var setIntro = introState[ 1 ];
 		var author = authorState[ 0 ];
@@ -120,6 +122,35 @@
 							placeholder: 'Jane Doe',
 							__nextHasNoMarginBottom: true,
 						} )
+				  )
+				: null,
+			postType === 'interview' || postType === 'feature'
+				? createElement(
+						'div',
+						{ style: { marginTop: '16px' } },
+						createElement( TextareaControl, {
+							label: 'Editing note',
+							help:
+								'Shown under the intro. Clear it to show no note.' +
+								( postType === 'interview' ? ' Standard: ' + noteDefault : '' ),
+							value: noteState[ 0 ] || '',
+							onChange: noteState[ 1 ],
+							rows: 2,
+							__nextHasNoMarginBottom: true,
+						} ),
+						postType === 'interview' && noteState[ 0 ] !== noteDefault
+							? createElement(
+									wp.components.Button,
+									{
+										variant: 'link',
+										style: { marginTop: '8px' },
+										onClick: function () {
+											noteState[ 1 ]( noteDefault );
+										},
+									},
+									'Use the standard note'
+							  )
+							: null
 				  )
 				: null,
 			postType === 'interview'
