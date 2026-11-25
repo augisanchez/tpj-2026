@@ -5,7 +5,6 @@ import styles from "./Footer.module.css";
 // Text-led: an icon, when given, sits before the word at text size.
 const FOOTER_LINKS: { label: string; href: string; icon?: IconName }[] = [
   { label: "Explore", href: "/explore" },
-  { label: "Index", href: "/explore?view=list" },
   { label: "Artists", href: "/artists" },
   { label: "Themes", href: "/themes" },
   { label: "About", href: "/about" },

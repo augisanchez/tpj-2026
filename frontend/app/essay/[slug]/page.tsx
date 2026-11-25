@@ -9,7 +9,6 @@ import { Hero } from "@/components/Hero";
 import { PlateCounter } from "@/components/PlateCounter";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedStrip } from "@/components/RelatedStrip";
-import { SubmitBand } from "@/components/SubmitBand";
 import { hangPlates } from "@/lib/exhibition";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchEssayBySlug } from "@/lib/queries/essay-by-slug";
@@ -114,10 +113,6 @@ export default async function EssayPage({ params }: Props) {
       {essay.photographers.length > 0 && (
         <AboutPhotographerSection photographers={essay.photographers} />
       )}
-
-      {/* Band before the strip: the footer is acid too, and two acid
-          blocks must never touch. */}
-      <SubmitBand />
 
       <RelatedStrip label="Related stories" stories={related} />
     </>
