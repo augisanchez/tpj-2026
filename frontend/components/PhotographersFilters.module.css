@@ -105,3 +105,35 @@ a.letter {
     gap: 80px;
   }
 }
+
+/* Role filter. On phones the five buttons don't fit, so the row
+   scrolls sideways inside the content width instead of pushing the
+   page wider. */
+.roleGroup {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .roleGroup {
+    width: 100%;
+  }
+  .roleScroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    max-width: 100%;
+    min-width: 0;
+    /* Room for the focus ring inside the scroll box. */
+    padding-block: 4px;
+    margin-block: -4px;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+  .roleScroll::-webkit-scrollbar {
+    display: none;
+  }
+  .roleScroll > * {
+    flex: none;
+  }
+}

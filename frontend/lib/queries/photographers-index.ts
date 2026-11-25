@@ -11,7 +11,6 @@ const PhotographersIndexQuery = gql`
         title
         slug
         content
-        linkedArticleCount
         interviewCount
         appearsInCount
         tpjPortraitUrl
@@ -207,7 +206,7 @@ type Raw = {
   title: string;
   slug: string;
   content: string | null;
-  linkedArticleCount: number | null;
+  linkedArticleCount?: number | null;
   interviewCount: number | null;
   appearsInCount?: number | null;
   tpjPortraitUrl: string | null;
@@ -394,7 +393,12 @@ export async function fetchPhotographersIndex(): Promise<
         name,
         slug: node.slug,
         bioPreview: bioPreview(node.content),
-        articleCount: node.linkedArticleCount ?? node.interviewCount ?? 0,
+        // linkedArticleCount was dropped from the query: it cost ~9s of a
+        // 10s request on the CMS (a count per record). The role counts
+        // come from one article query and carry the same number.
+        articleCount: counts
+          ? counts.photographs + counts.interviews + counts.conducted + counts.written
+          : node.interviewCount ?? 0,
         appearsInCount: node.appearsInCount ?? 0,
         roles: rolesFrom(counts),
         counts,

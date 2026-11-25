@@ -90,13 +90,17 @@
 .body > :global(dl.article-credits) dd {
   margin: 0;
   font-size: var(--text-caption);
-  line-height: 1.6;
+  line-height: max(1.6em, 26px);
   color: var(--text);
   overflow-wrap: anywhere;
 }
 
 .body > :global(dl.article-credits) a {
   color: inherit;
+  /* A 24px tall hit area (WCAG 2.5.8). Lines run 26px apart so links
+     on wrapped lines never overlap. */
+  display: inline-block;
+  line-height: max(1.5em, 24px);
 }
 
 @media (max-width: 640px) {

@@ -131,9 +131,9 @@ export function PhotographersFilters({ photographers }: Props) {
           </span>
         </div>
 
-        <div className={f.group}>
+        <div className={`${f.group} ${styles.roleGroup}`}>
           <p className={f.label} aria-hidden="true">Role</p>
-          <div className={f.segmented} role="group" aria-label="Role">
+          <div className={`${f.segmented} ${styles.roleScroll}`} role="group" aria-label="Role">
             <button
               type="button"
               className={f.control}
