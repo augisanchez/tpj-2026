@@ -15,29 +15,6 @@
   margin: 0 0 20px;
 }
 
-/* Back-to-top arrow beside the heading: a 24px target in the label's
-   muted grey, ink on hover. */
-.top {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius);
-  color: var(--muted);
-  transition: color 150ms ease-out, background-color 150ms ease-out;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .top:hover {
-    color: var(--acid-ink);
-    background: var(--acid-signal);
-  }
-}
-
-.top:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
 
 /* Same section label as "About the photographer": muted caps, no fill. */
 .label {
@@ -127,5 +104,46 @@
   }
   .strip {
     gap: 16px 12px;
+  }
+}
+
+/* Up arrow on hover and focus: the thumbnail jumps to its photograph
+   above. A signal-green chip in the corner, like the type tags. */
+.frame {
+  position: relative;
+}
+
+.jump {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius);
+  background: var(--acid-signal);
+  color: var(--acid-ink);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 150ms ease-out, transform 200ms var(--ease-out);
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover .jump {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.link:focus-visible .jump {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jump {
+    transform: none;
   }
 }

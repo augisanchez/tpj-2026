@@ -13,7 +13,8 @@ type Props = {
  * End-of-article "Photographs": every photograph in the piece, numbered. Each thumbnail links to its anchor in the body (plain hash links
  * work without JavaScript); with JavaScript the photo is centred on screen
  * and focused. Every thumbnail shows: they wrap into rows, nothing
- * scrolls or hides. An arrow beside the heading goes back to the top.
+ * scrolls or hides. Hovering a thumbnail shows an up arrow: it jumps to
+ * that photograph in the body.
  */
 export function ExhibitionChecklist({ plates }: Props) {
   if (plates.length === 0) return null;
@@ -32,26 +33,10 @@ export function ExhibitionChecklist({ plates }: Props) {
     history.replaceState(null, "", link.hash);
   };
 
-  const toTop = (e: MouseEvent<HTMLAnchorElement>) => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    e.preventDefault();
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
-    // Move focus to the page top so keyboard users land there too.
-    const main = document.querySelector<HTMLElement>("main");
-    if (main) {
-      main.setAttribute("tabindex", "-1");
-      main.focus({ preventScroll: true });
-    }
-  };
-
   return (
     <section className={styles.section} aria-labelledby="checklist-heading" data-checklist>
       <div className={styles.head} data-reveal>
         <h2 id="checklist-heading" className={styles.label}>Photographs</h2>
-        <a href="#" className={styles.top} onClick={toTop} data-tip="Back to the top." aria-label="Back to top">
-          <Icon name="arrowUp" size={16} />
-        </a>
       </div>
       <ol className={styles.strip} data-reveal-children onClick={onClick}>
         {plates.map((p) => {
@@ -62,6 +47,10 @@ export function ExhibitionChecklist({ plates }: Props) {
                 <span className={styles.frame}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- body URLs are already CDN renditions */}
                   <img src={p.src} alt="" loading="lazy" decoding="async" data-fade className={styles.img} />
+                  {/* Shown on hover and focus: this jumps up to the photo. */}
+                  <span className={styles.jump} aria-hidden="true">
+                    <Icon name="arrowUp" size={14} />
+                  </span>
                 </span>
                 <span className={styles.caption} aria-hidden="true">{p.n}</span>
               </a>
