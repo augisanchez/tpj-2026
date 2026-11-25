@@ -25,6 +25,7 @@ import type { RecentEssay } from "@/lib/queries/recent-essays";
 import type { Metadata } from "next";
 import { pageMetadata, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
+import { SubmitMarquee } from "@/components/SubmitMarquee";
 import styles from "./page.module.css";
 
 function summarize(
@@ -312,6 +313,8 @@ export default async function Home() {
         <ArchiveMosaic tiles={mosaicTiles} total={archiveCounts?.articles ?? null} />
       )}
 
+      {/* Last thing before the footer, same as at the end of an essay. */}
+      <SubmitMarquee />
     </div>
   );
 }

@@ -9,7 +9,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--homepage-rhythm);
-  padding-bottom: var(--homepage-rhythm);
+  /* The Send us pix marquee closes the page and carries its own air. */
+  padding-bottom: 0;
 }
 
 /* Listing sections (Keep Exploring, Themes, Dive Deeper) share the
