@@ -1,0 +1,106 @@
+/* Full-bleed marquee on the wall grey: no fill, so it never reads as a
+   second footer. The overflow clip is horizontal only; the display type
+   keeps its full height. */
+.section {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(40px, 1.5rem + 2.5vw, 120px) 0;
+}
+
+.link {
+  display: block;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.unit {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(16px, 0.5rem + 1.2vw, 40px);
+  padding-right: clamp(16px, 0.5rem + 1.2vw, 40px);
+}
+
+.solid,
+.outline {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 700;
+  font-size: clamp(56px, 1.5rem + 6vw, 200px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+/* Outlined variant: the same word as a stroke, filled on hover. */
+.outline {
+  color: transparent;
+  -webkit-text-stroke: clamp(1.5px, 0.1vw + 1px, 3px) var(--text);
+  transition: color 200ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover .outline {
+    color: var(--text);
+  }
+}
+
+/* The Submit page's lines on signal-green chips, tilted a few degrees
+   for a bit of play. */
+.chip {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: var(--acid-signal);
+  color: var(--acid-ink);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: clamp(14px, 0.8rem + 0.35vw, 22px);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.unit:nth-child(odd) .chip {
+  transform: rotate(-3deg);
+}
+
+.unit:nth-child(even) .chip {
+  transform: rotate(2deg);
+}
+
+/* Pause control, bottom right, same idea as the homepage hero's. */
+.pause {
+  position: absolute;
+  right: var(--gutter);
+  bottom: clamp(8px, 0.25rem + 0.6vw, 24px);
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.pause:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pause {
+    display: none;
+  }
+}

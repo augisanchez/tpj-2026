@@ -1,7 +1,9 @@
 .section {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: clamp(64px, 3rem + 3vw, 200px) var(--gutter) clamp(96px, 4rem + 5vw, 320px);
+  /* The submit marquee follows, carrying its own air, so the bottom is
+     lighter than the top. */
+  padding: clamp(64px, 3rem + 3vw, 200px) var(--gutter) clamp(24px, 1rem + 1.5vw, 80px);
 }
 
 /* Same section label as "About the photographer": muted caps. */
@@ -29,65 +31,6 @@
 
 .item {
   min-width: 0;
-}
-
-/* Submit tile: the card image's shape (4:3, 3px corners) in ink, with
-   the Submit page's line in the display face, and the same green hover
-   ring as the story cards. No acid fill, so it stays part of the row
-   instead of echoing the footer. */
-.submit {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  color: var(--text);
-  text-decoration: none;
-}
-
-.submitFrame {
-  position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 4 / 3;
-  border-radius: var(--radius-img);
-  background: var(--text);
-  color: var(--bg);
-  overflow: hidden;
-}
-
-.submitFrame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: var(--radius-img);
-  box-shadow: inset 0 0 0 0 transparent;
-  transition: box-shadow 200ms ease-out;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .submit:hover .submitFrame::after {
-    box-shadow: inset 0 0 0 4px var(--accent);
-  }
-}
-
-.submit:focus-visible .submitFrame::after {
-  box-shadow: inset 0 0 0 4px var(--accent);
-}
-
-.submitLine {
-  font-family: var(--font-display), Impact, sans-serif;
-  font-weight: 700;
-  font-size: clamp(28px, 1rem + 1.6vw, 56px);
-  line-height: 1;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-}
-
-.submitNote {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 500;
-  font-size: clamp(15px, 0.85rem + 0.15vw, 18px);
-  line-height: 1.3;
 }
 
 @media (max-width: 1024px) {

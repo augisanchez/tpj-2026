@@ -9,6 +9,7 @@ import { Hero } from "@/components/Hero";
 import { PlateCounter } from "@/components/PlateCounter";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedStrip } from "@/components/RelatedStrip";
+import { SubmitMarquee } from "@/components/SubmitMarquee";
 import { hangPlates } from "@/lib/exhibition";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchEssayBySlug } from "@/lib/queries/essay-by-slug";
@@ -115,6 +116,7 @@ export default async function EssayPage({ params }: Props) {
       )}
 
       <RelatedStrip label="Related stories" stories={related} />
+      <SubmitMarquee />
     </>
   );
 }
