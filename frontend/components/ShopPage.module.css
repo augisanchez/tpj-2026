@@ -4,7 +4,7 @@
 }
 
 .intro {
-  max-width: 880px;
+  max-width: var(--measure-page);
   margin: 0 auto 64px;
 }
 
@@ -27,7 +27,7 @@
   grid-template-columns: repeat(2, 1fr);
   column-gap: 24px;
   row-gap: 64px;
-  max-width: 880px;
+  max-width: var(--measure-page);
   margin: 0 auto;
 }
 

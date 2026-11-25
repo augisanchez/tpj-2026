@@ -20,13 +20,7 @@
   row-gap: 64px;
 }
 
-@media (min-width: 2560px) {
-  .grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-}
-
-@media (min-width: 1920px) and (max-width: 2559.98px) {
+@media (min-width: 1920px) {
   .grid {
     grid-template-columns: repeat(5, 1fr);
   }
@@ -40,7 +34,7 @@
 
 @media (max-width: 768px) {
   .page {
-    --inset: 16px;
+    --inset: var(--gutter);
     padding-bottom: 64px;
   }
   .grid {

@@ -10,7 +10,7 @@
    portraits and the initials fallback look intentional at this scale,
    so the page no longer breaks down when a photographer lacks a photo. */
 .profile {
-  padding: 0 32px;
+  padding: 0 var(--gutter);
   display: grid;
   grid-template-columns: minmax(0, 480px) minmax(0, 1fr);
   gap: 64px;
@@ -134,7 +134,7 @@
 }
 
 .articles {
-  padding: 96px 32px;
+  padding: 96px var(--gutter);
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -155,7 +155,9 @@
    section label it replaces. */
 .viewSwitch {
   display: flex;
-  gap: 32px;
+  /* Wraps on phones so three tabs never push the page sideways. */
+  flex-wrap: wrap;
+  gap: 8px 32px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -224,8 +226,8 @@
 @media (max-width: 640px) {
   .profile,
   .articles {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: var(--gutter);
+    padding-right: var(--gutter);
   }
   .profile {
     gap: 32px;

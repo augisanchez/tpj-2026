@@ -3,7 +3,7 @@
    wipe-in cover, wave-staggered photo grid with pointer zoom. */
 
 .page {
-  padding: clamp(32px, 1rem + 3vw, 120px) max(var(--gutter), calc((100% - 1920px) / 2)) clamp(96px, 4rem + 5vw, 240px);
+  padding: clamp(32px, 1rem + 3vw, 120px) var(--gutter) clamp(96px, 4rem + 5vw, 240px);
 }
 
 .top {
@@ -191,9 +191,6 @@
 }
 
 @media (max-width: 640px) {
-  .page {
-    padding-inline: 16px;
-  }
   .cover {
     border-radius: var(--radius-img);
   }

@@ -104,7 +104,7 @@
 
 @media (max-width: 768px) {
   .list {
-    padding: 0 16px;
+    padding: 0 var(--gutter);
   }
   .row {
     column-gap: 12px;

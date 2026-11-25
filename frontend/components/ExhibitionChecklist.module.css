@@ -2,7 +2,7 @@
    and the photographer card. */
 /* Lines up with the article's 760px text column, like the credits. */
 .section {
-  max-width: calc(760px + 2 * var(--gutter));
+  max-width: calc(var(--measure) + 2 * var(--gutter));
   margin: 0 auto;
   padding: 0 var(--gutter) clamp(64px, 3rem + 3vw, 200px);
   --thumb-h: clamp(96px, 4rem + 3vw, 200px);
@@ -94,7 +94,7 @@
    and the text share one left edge. */
 @media (max-width: 768px) {
   .section {
-    padding-inline: 16px;
+    padding-inline: var(--gutter);
   }
 }
 

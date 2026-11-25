@@ -1,5 +1,5 @@
 .section {
-  max-width: var(--content-max);
+  max-width: none;
   margin: 0 auto;
   /* The submit marquee follows, carrying its own air, so the bottom is
      lighter than the top. */

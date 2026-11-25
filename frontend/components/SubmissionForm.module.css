@@ -1,5 +1,5 @@
 .form {
-  max-width: 880px;
+  max-width: var(--measure-page);
   margin: 0 auto 96px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -250,7 +250,7 @@
 }
 
 .success {
-  max-width: 880px;
+  max-width: var(--measure-page);
   margin: 0 auto 96px;
   background: var(--chip-bg);
   border-radius: var(--radius);

@@ -1,11 +1,12 @@
 .intro {
-  max-width: var(--content-max);
+  max-width: none;
   margin: 0 auto;
   padding: clamp(48px, 2rem + 3vw, 192px) var(--gutter) 0; /* caps ~4800 */
 }
 
 .text {
-  max-width: 880px;
+  /* Same width as the body text below, so intro and body share an edge. */
+  max-width: var(--measure);
   margin: 0 auto;
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 500;

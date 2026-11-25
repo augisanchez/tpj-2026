@@ -1,11 +1,11 @@
 .banner {
   background: var(--acid);
   color: var(--chip-text);
-  padding: clamp(64px, 3rem + 4vw, 200px) 0; /* caps ~3200 */
+  padding: clamp(64px, 3rem + 4vw, 200px) var(--gutter); /* caps ~3200 */
 }
 
 .bannerInner {
-  max-width: 880px;
+  max-width: var(--measure-page);
   margin: 0 auto;
 }
 
@@ -70,8 +70,4 @@
   }
 }
 
-@media (max-width: 920px) {
-  .bannerInner {
-    padding: 0 24px;
-  }
-}
+

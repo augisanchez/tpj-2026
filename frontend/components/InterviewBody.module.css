@@ -9,7 +9,7 @@
 
 .body > * {
   width: 100%;
-  max-width: 760px;
+  max-width: var(--measure);
   margin: 0;
 }
 
@@ -170,12 +170,12 @@
 }
 
 .body > :global(.fig-margin) {
-  max-width: 760px;
+  max-width: var(--measure);
 }
 
 @media (max-width: 768px) {
   .body {
-    padding: 64px 16px;
+    padding: 64px var(--gutter);
     gap: 24px;
   }
   .body > :global(.fig-twothirds),

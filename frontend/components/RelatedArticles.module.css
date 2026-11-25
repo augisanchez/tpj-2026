@@ -1,5 +1,5 @@
 .section {
-  padding: 0 32px 120px;
+  padding: 0 var(--gutter) 120px;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -41,7 +41,7 @@
 
 @media (max-width: 640px) {
   .section {
-    padding: 0 16px 80px;
+    padding: 0 var(--gutter) 80px;
     gap: 32px;
   }
   .heading {

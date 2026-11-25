@@ -63,16 +63,22 @@
   --space-element:  clamp(1rem, 0.75rem + 0.5vw, 3rem);        /* caps ~4800 */
   --space-tight:    0.5rem;
 
-  /* Page padding — already scales generously; bumped ceiling matches
-     the rest of the system. */
-  --gutter: clamp(1.25rem, 0.5rem + 5vw, 20rem);               /* caps ~5840 */
-
-  /* Editorial mid-width: the deliberate "pulled-in" framing used by
-     supporting pages (About, Contact, Submit), article-adjacent
-     surfaces (EssayIntro, ThemePage banner, AboutPhotographerSection),
-     and the photographer Spotlight. Listings fill the viewport
-     instead and don't use this token. */
-  --content-max: 1376px;
+  /* The content grid (docs/MARGIN-AUDIT-20261125.md). One side margin
+     for every page: 16px on phones, 32px from 641px, and from 1,984px
+     a centered 1,920px column. The nav, heroes, listings, article
+     bodies and footer all sit on it; only full-bleed elements (bands,
+     marquee, ticker run-off, fixed overlays) ignore it.
+       Wide      between the gutters, at most --grid-max
+       Reading   --measure, story intros and body text
+       Pages     --measure-page, supporting pages' text (About, Submit,
+                 Contact, Shop, banners)
+     100vw, not 100%: the token is read in nested blocks (filter bar,
+     bleeds), and must resolve the same everywhere. */
+  --grid-max: 1920px;
+  --gutter: 16px;
+  --measure: 760px;
+  --measure-page: 880px;
+  --grid-gap: 24px;
 
   /* Motion (docs/MOTION-PLAN.md). Arrivals ease out, exits ease in,
      travel eases in-out. Only transform / opacity / clip-path move. */
@@ -465,5 +471,12 @@ img[data-lqip][data-cached],
   }
   .img-fade img[data-fade][data-lqip][data-ld] {
     animation: none;
+  }
+}
+
+/* Content grid gutter above phone width (see --grid-max above). */
+@media (min-width: 641px) {
+  :root {
+    --gutter: max(32px, calc((100vw - var(--grid-max)) / 2));
   }
 }

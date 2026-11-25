@@ -1,5 +1,5 @@
 .outer {
-  padding: 8px 32px 0;
+  padding: 8px var(--gutter) 0;
 }
 
 .card {
@@ -132,7 +132,7 @@
 
 @media (max-width: 640px) {
   .outer {
-    padding: 4px 16px 0;
+    padding: 4px var(--gutter) 0;
   }
   .card {
     border-radius: var(--radius-img);
@@ -166,11 +166,11 @@
 
 /* Big monitors: keep the hero inside a 1,920px column. */
 .outer {
-  padding-inline: max(32px, calc((100% - 1920px) / 2));
+  padding-inline: var(--gutter);
 }
 @media (max-width: 640px) {
   .outer {
-    padding-inline: 16px;
+    padding-inline: var(--gutter);
   }
 }
 
@@ -213,7 +213,7 @@
     }
     .frame {
       /* Same inset as the static layout: 32px, or the 1,920px column. */
-      --inset: max(32px, calc((100cqi - 1920px) / 2));
+      --inset: max(32px, calc((100cqi - var(--grid-max)) / 2));
       clip-path: inset(0 var(--inset) round var(--radius-img));
       animation: hero-widen linear both;
       animation-timeline: scroll(root block);

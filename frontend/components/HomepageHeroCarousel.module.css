@@ -1,7 +1,7 @@
 /* The carousel owns the rounded frame; slides move inside it. Same
    insets, ratio and corners as a standalone HomepageHero. */
 .carousel {
-  padding: 8px 32px 0;
+  padding: 8px var(--gutter) 0;
 }
 
 .frame {
@@ -88,7 +88,7 @@
 
 @media (max-width: 640px) {
   .carousel {
-    padding: 4px 16px 0;
+    padding: 4px var(--gutter) 0;
   }
   .frame {
     aspect-ratio: 4 / 5;
@@ -101,11 +101,11 @@
 
 /* Big monitors: keep the hero inside a 1,920px column. */
 .carousel {
-  padding-inline: max(32px, calc((100% - 1920px) / 2));
+  padding-inline: var(--gutter);
 }
 @media (max-width: 640px) {
   .carousel {
-    padding-inline: 16px;
+    padding-inline: var(--gutter);
   }
 }
 

@@ -80,11 +80,11 @@
 
 @media (max-width: 640px) {
   .intro {
-    padding-inline: 16px;
+    padding-inline: var(--gutter);
   }
   .grid {
     grid-template-columns: 1fr;
-    padding: 0 16px 64px;
+    padding: 0 var(--gutter) 64px;
     row-gap: 64px;
   }
 }
