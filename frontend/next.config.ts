@@ -91,6 +91,10 @@ const nextConfig: NextConfig = {
       { source: "/submissions", destination: "/submit", permanent: true },
       // The numbered Index is now Explore's List view.
       { source: "/index", destination: "/explore?view=list", permanent: true },
+      // People moved from /photographers to /artists (Nov 2026): the index
+      // lists writers and interviewers too, not only photographers.
+      { source: "/photographers", destination: "/artists", permanent: true },
+      { source: "/photographer/:slug", destination: "/artist/:slug", permanent: true },
       { source: "/articles-essays", destination: "/explore?type=essay", permanent: true },
       { source: "/articles-interviews", destination: "/explore?type=interview", permanent: true },
       { source: "/articles-features", destination: "/explore?type=feature", permanent: true },

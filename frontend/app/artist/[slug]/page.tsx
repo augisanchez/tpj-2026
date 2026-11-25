@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!p) return NOT_FOUND_META;
   return pageMetadata({
     title: `${p.name} — The Photographic Journal`,
-    description: describe(p.bio) ?? `Photographs and interviews by ${p.name} in The Photographic Journal.`,
-    path: `/photographer/${p.slug}`,
+    description: describe(p.bio) ?? `Work by ${p.name} in The Photographic Journal.`,
+    path: `/artist/${p.slug}`,
     image: p.portrait,
     type: "profile",
   });
@@ -52,7 +52,7 @@ export default async function PhotographerPage({ params }: Props) {
         {
           "@context": "https://schema.org",
           "@type": "ProfilePage",
-          url: `${SITE_URL}/photographer/${photographer.slug}`,
+          url: `${SITE_URL}/artist/${photographer.slug}`,
           mainEntity: {
             "@type": "Person",
             name: photographer.name,
@@ -61,8 +61,8 @@ export default async function PhotographerPage({ params }: Props) {
           },
         },
         breadcrumbJsonLd([
-          { name: "Photographers", path: "/photographers" },
-          { name: photographer.name, path: `/photographer/${photographer.slug}` },
+          { name: "Artists", path: "/artists" },
+          { name: photographer.name, path: `/artist/${photographer.slug}` },
         ]),
       ]}
     />
@@ -71,6 +71,7 @@ export default async function PhotographerPage({ params }: Props) {
       articles={work.articles}
       interviewsConducted={work.interviewsConducted}
       appearsIn={work.appearsIn}
+      featuresWritten={work.featuresWritten}
     />
     </>
   );

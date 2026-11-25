@@ -195,7 +195,7 @@ export default async function Home() {
   if (featuredPhotographer) {
     heroSlides.push({
       key: `featured-photographer-${featuredPhotographer.slug}`,
-      href: `/photographer/${featuredPhotographer.slug}`,
+      href: `/artist/${featuredPhotographer.slug}`,
       contentTypeLabel: "Featured Photographer",
       title: featuredPhotographer.name,
       excerpt: summarize(featuredPhotographer.bio, 220),

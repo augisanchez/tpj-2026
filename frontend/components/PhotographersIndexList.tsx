@@ -20,7 +20,7 @@ export function PhotographersIndexList({ people }: { people: PhotographerIndexIt
         const thumb = p.portrait ? cdnImageUrl(p.portrait.src, { width: 160, quality: 80 }) : null;
         return (
           <li key={p.id}>
-            <Link href={`/photographer/${p.slug}`} prefetch={false} className={styles.row}>
+            <Link href={`/artist/${p.slug}`} prefetch={false} className={styles.row}>
               <span className={styles.name}>{p.name}</span>
               <span className={styles.slot} aria-hidden="true">
                 {thumb && (
@@ -29,7 +29,12 @@ export function PhotographersIndexList({ people }: { people: PhotographerIndexIt
                 )}
               </span>
               <span className={styles.count}>
-                {p.articleCount} {p.articleCount === 1 ? "story" : "stories"}
+                {(() => {
+                  const n = p.counts
+                    ? p.counts.photographs + p.counts.interviews + p.counts.conducted + p.counts.written
+                    : p.articleCount;
+                  return `${n} ${n === 1 ? "story" : "stories"}`;
+                })()}
               </span>
             </Link>
           </li>

@@ -69,7 +69,7 @@ export function MobileDrawer({
                 {recent.map((p) => (
                   <li key={p.slug}>
                     <Link
-                      href={`/photographer/${p.slug}`}
+                      href={`/artist/${p.slug}`}
                       prefetch={false}
                       className={styles.recentLink}
                       onClick={() => setOpen(false)}

@@ -22,9 +22,10 @@ type Props = {
   interviewsConducted?: PhotographerArticle[];
   /** Pieces someone else shot that this photographer appears in. */
   appearsIn?: PhotographerArticle[];
+  featuresWritten?: PhotographerArticle[];
 };
 
-type View = "photographs" | "interviews" | "appears";
+type View = "photographs" | "interviews" | "writing" | "appears";
 
 // Cascade: cover -> identity -> bio/socials -> articles header ->
 // articles grid. Container drives the stagger orchestration; each
@@ -55,10 +56,12 @@ export function PhotographerProfileBody({
   articles,
   interviewsConducted = [],
   appearsIn = [],
+  featuresWritten = [],
 }: Props) {
   const totalArticles = articles.length;
   const totalInterviews = interviewsConducted.length;
   const totalAppears = appearsIn.length;
+  const totalWritten = featuresWritten.length;
   const isInterviewer = totalInterviews > 0;
   // Tabs appear only when there's more than one body of work to switch
   // between. Photographs always lead when they exist.
@@ -66,13 +69,17 @@ export function PhotographerProfileBody({
     [
       ["photographs", "Photographs", totalArticles],
       ["interviews", "Interviews", totalInterviews],
+      ["writing", "Writing", totalWritten],
       ["appears", "Appears in", totalAppears],
     ] as const
-  ).filter(([key, , count]) => count > 0 || (key === "photographs" && totalInterviews + totalAppears === 0));
+  ).filter(([key, , count]) => count > 0 || (key === "photographs" && totalInterviews + totalAppears + totalWritten === 0));
   const hasTabs = views.length > 1;
   const [view, setView] = useState<View>(views[0]?.[0] ?? "photographs");
   const shown =
-    view === "interviews" ? interviewsConducted : view === "appears" ? appearsIn : articles;
+    view === "interviews" ? interviewsConducted
+      : view === "writing" ? featuresWritten
+      : view === "appears" ? appearsIn
+      : articles;
 
   // Earliest article year for the "since YYYY" line. Articles are sorted
   // newest first, so the last entry is oldest.
@@ -100,6 +107,9 @@ export function PhotographerProfileBody({
         totalInterviews === 1 ? "interview" : "interviews"
       } conducted`
     );
+  }
+  if (totalWritten > 0) {
+    metaSegments.push(`${totalWritten} ${totalWritten === 1 ? "feature" : "features"} written`);
   }
   if (totalAppears > 0) {
     metaSegments.push(`appears in ${totalAppears}`);

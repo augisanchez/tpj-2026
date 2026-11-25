@@ -6,7 +6,7 @@ import { PhotographersIndexList } from "./PhotographersIndexList";
 import { LazyLetterGrid } from "./LazyLetterGrid";
 import { Icon } from "./Icon";
 import { ViewToggle, type View } from "./ViewToggle";
-import type { PhotographerIndexItem } from "@/lib/queries/photographers-index";
+import type { ArtistRole, PhotographerIndexItem } from "@/lib/queries/photographers-index";
 import indexStyles from "./PhotographersIndex.module.css";
 import f from "./FilterBar.module.css";
 import styles from "./PhotographersFilters.module.css";
@@ -14,6 +14,17 @@ import styles from "./PhotographersFilters.module.css";
 type Props = {
   photographers: PhotographerIndexItem[];
 };
+
+type RoleFilter = "all" | ArtistRole;
+
+/** Plural labels for the role filter. Models are not a role here. */
+const ROLE_LABELS: Record<ArtistRole, string> = {
+  photographer: "Photographers",
+  interviewed: "Interviewed",
+  interviewer: "Interviewers",
+  writer: "Writers",
+};
+const ROLES = Object.keys(ROLE_LABELS) as ArtistRole[];
 
 /**
  * First *alphabetic* character of the first name, uppercased. Mononyms
@@ -30,21 +41,24 @@ function firstLetter(name: string): string {
 export function PhotographersFilters({ photographers }: Props) {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<View>("grid");
+  const [role, setRole] = useState<RoleFilter>("all");
 
-  // The URL holds the view (?view=list), read in the browser like
-  // Explore does so the page itself stays static and cached.
+  // The URL holds the view (?view=list) and role (?role=writer), read
+  // in the browser like Explore does so the page stays static and cached.
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("view") === "list") {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("view") === "list") {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time restore
       setView("list");
     }
+    const r = q.get("role") as ArtistRole | null;
+    if (r && r in ROLE_LABELS) setRole(r);
   }, []);
 
-  const chooseView = (next: View) => {
-    setView(next);
+  const writeQuery = (key: string, value: string | null) => {
     const q = new URLSearchParams(window.location.search);
-    if (next === "list") q.set("view", "list");
-    else q.delete("view");
+    if (value) q.set(key, value);
+    else q.delete(key);
     const qs = q.toString() ? `?${q}` : "";
     if (qs !== window.location.search) {
       window.history.replaceState(
@@ -55,11 +69,24 @@ export function PhotographersFilters({ photographers }: Props) {
     }
   };
 
+  const chooseView = (next: View) => {
+    setView(next);
+    writeQuery("view", next === "list" ? "list" : null);
+  };
+
+  const chooseRole = (next: RoleFilter) => {
+    setRole(next);
+    writeQuery("role", next === "all" ? null : next);
+  };
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return photographers;
-    return photographers.filter((p) => p.name.toLowerCase().includes(term));
-  }, [photographers, search]);
+    return photographers.filter(
+      (p) =>
+        (role === "all" || (p.roles ?? []).includes(role)) &&
+        (!term || p.name.toLowerCase().includes(term)),
+    );
+  }, [photographers, search, role]);
 
   // Group by first-name initial. Letters with no entries in the current
   // (filtered) view are omitted from both the alphabet shortcut and the
@@ -79,7 +106,7 @@ export function PhotographersFilters({ photographers }: Props) {
     });
   }, [filtered]);
 
-  const isFiltering = search.trim().length > 0;
+  const isFiltering = search.trim().length > 0 || role !== "all";
   const totalCount = photographers.length;
   const filteredCount = filtered.length;
 
@@ -96,12 +123,37 @@ export function PhotographersFilters({ photographers }: Props) {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search photographers"
+              placeholder="Search artists"
               className={`${f.control} ${f.field}`}
               autoComplete="off"
             />
             <Icon name="search" size={16} className={f.fieldIcon} />
           </span>
+        </div>
+
+        <div className={f.group}>
+          <p className={f.label} aria-hidden="true">Role</p>
+          <div className={f.segmented} role="group" aria-label="Role">
+            <button
+              type="button"
+              className={f.control}
+              onClick={() => chooseRole("all")}
+              aria-pressed={role === "all"}
+            >
+              All
+            </button>
+            {ROLES.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={f.control}
+                onClick={() => chooseRole(id)}
+                aria-pressed={role === id}
+              >
+                {ROLE_LABELS[id]}
+              </button>
+            ))}
+          </div>
         </div>
 
         <ViewToggle view={view} onChange={chooseView} />
@@ -126,13 +178,15 @@ export function PhotographersFilters({ photographers }: Props) {
 
       <p className={`${f.count} ${styles.count}`} aria-live="polite">
         {isFiltering
-          ? `${filteredCount} of ${totalCount} photographers`
-          : `${totalCount} ${totalCount === 1 ? "photographer" : "photographers"}`}
+          ? `${filteredCount} of ${totalCount} artists`
+          : `${totalCount} ${totalCount === 1 ? "artist" : "artists"}`}
       </p>
 
       {grouped.length === 0 ? (
         <p className={styles.noResults}>
-          No photographers match &ldquo;{search.trim()}&rdquo;.
+          {search.trim()
+            ? <>No artists match &ldquo;{search.trim()}&rdquo;{role !== "all" ? ` among ${ROLE_LABELS[role].toLowerCase()}` : ""}.</>
+            : <>No {ROLE_LABELS[role as ArtistRole]?.toLowerCase()} yet.</>}
         </p>
       ) : (
         <div className={styles.sections}>
@@ -161,6 +215,7 @@ export function PhotographersFilters({ photographers }: Props) {
                         name={p.name}
                         slug={p.slug}
                         articleCount={p.articleCount}
+                        counts={p.counts}
                         appearsInCount={p.appearsInCount}
                         bio={p.bioPreview}
                         portrait={p.portrait}

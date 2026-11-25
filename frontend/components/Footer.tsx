@@ -6,7 +6,7 @@ import styles from "./Footer.module.css";
 const FOOTER_LINKS: { label: string; href: string; icon?: IconName }[] = [
   { label: "Explore", href: "/explore" },
   { label: "Index", href: "/explore?view=list" },
-  { label: "Photographers", href: "/photographers" },
+  { label: "Artists", href: "/artists" },
   { label: "Themes", href: "/themes" },
   { label: "About", href: "/about" },
   { label: "Submit", href: "/submit" },

@@ -9,7 +9,7 @@ import styles from "./Nav.module.css";
 const NAV_LINKS = [
   { label: "Explore", href: "/explore" },
   { label: "Themes", href: "/themes" },
-  { label: "Photographers", href: "/photographers" },
+  { label: "Artists", href: "/artists" },
   { label: "About", href: "/about" },
   { label: "Shop", href: "/shop" },
   { label: "Submit", href: "/submit" },

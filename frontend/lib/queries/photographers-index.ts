@@ -99,6 +99,21 @@ const PhotographersFromArticlesQuery = gql`
   }
 `;
 
+/**
+ * How a person appears in the journal. Photographer: credited on an
+ * essay or feature. Interviewed: the subject of an interview.
+ * Interviewer / Writer: named in an interview's / feature's byline.
+ * Models are deliberately not a role here.
+ */
+export type ArtistRole = "photographer" | "interviewed" | "interviewer" | "writer";
+
+export type RoleCounts = {
+  photographs: number;
+  interviews: number;
+  conducted: number;
+  written: number;
+};
+
 export type PhotographerIndexItem = {
   id: string;
   name: string;
@@ -107,10 +122,74 @@ export type PhotographerIndexItem = {
   articleCount: number;
   /** Pieces someone else shot that this photographer appears in. */
   appearsInCount?: number;
+  roles?: ArtistRole[];
+  counts?: RoleCounts;
   portrait: { src: string; alt: string } | null;
 };
 
 const BIO_PREVIEW_MAX = 100;
+
+/** Every published article's credited people and byline, for roles. */
+const PeopleRolesQuery = gql`
+  query PeopleRoles {
+    essays(first: 1000, where: { status: PUBLISH }) {
+      nodes { linkedPhotographers { slug } }
+    }
+    interviews(first: 1000, where: { status: PUBLISH }) {
+      nodes { linkedPhotographers { slug } articleAuthor }
+    }
+    features(first: 1000, where: { status: PUBLISH }) {
+      nodes { linkedPhotographers { slug } articleAuthor }
+    }
+  }
+`;
+
+type RoleNode = { linkedPhotographers?: { slug: string | null }[] | null; articleAuthor?: string | null };
+type RolesResponse = {
+  essays: { nodes: RoleNode[] };
+  interviews: { nodes: RoleNode[] };
+  features: { nodes: RoleNode[] };
+};
+
+/** Byline names split the way WordPress splits them ("A and B", "A, B & C"). */
+export function bylineSlugs(byline: string | null | undefined): string[] {
+  return (byline ?? "")
+    .split(/\s*(?:&|,|;|\s+and\s+)\s*/i)
+    .map((n) => slugifyName(n.trim()))
+    .filter(Boolean);
+}
+
+async function fetchRoleCounts(): Promise<Map<string, RoleCounts>> {
+  const data = await wpClient.request<RolesResponse>(PeopleRolesQuery);
+  const map = new Map<string, RoleCounts>();
+  const bump = (slug: string | null | undefined, key: keyof RoleCounts) => {
+    if (!slug) return;
+    const c = map.get(slug) ?? { photographs: 0, interviews: 0, conducted: 0, written: 0 };
+    c[key] += 1;
+    map.set(slug, c);
+  };
+  const credited = (n: RoleNode) => [...new Set((n.linkedPhotographers ?? []).map((l) => l.slug))];
+  for (const n of data.essays?.nodes ?? []) credited(n).forEach((s) => bump(s, "photographs"));
+  for (const n of data.features?.nodes ?? []) {
+    credited(n).forEach((s) => bump(s, "photographs"));
+    [...new Set(bylineSlugs(n.articleAuthor))].forEach((s) => bump(s, "written"));
+  }
+  for (const n of data.interviews?.nodes ?? []) {
+    credited(n).forEach((s) => bump(s, "interviews"));
+    [...new Set(bylineSlugs(n.articleAuthor))].forEach((s) => bump(s, "conducted"));
+  }
+  return map;
+}
+
+function rolesFrom(c: RoleCounts | undefined): ArtistRole[] {
+  if (!c) return [];
+  const r: ArtistRole[] = [];
+  if (c.photographs) r.push("photographer");
+  if (c.interviews) r.push("interviewed");
+  if (c.conducted) r.push("interviewer");
+  if (c.written) r.push("writer");
+  return r;
+}
 
 function bioPreview(html: string | null | undefined): string {
   const plain = htmlToInlineText(html);
@@ -301,11 +380,15 @@ async function deriveIndexFromArticles(): Promise<PhotographerIndexItem[]> {
 export async function fetchPhotographersIndex(): Promise<
   PhotographerIndexItem[]
 > {
-  const data = await wpClient.request<Response>(PhotographersIndexQuery);
+  const [data, roleCounts] = await Promise.all([
+    wpClient.request<Response>(PhotographersIndexQuery),
+    fetchRoleCounts().catch(() => new Map<string, RoleCounts>()),
+  ]);
   const items = (data.photographers?.nodes ?? []).map(
     (node): PhotographerIndexItem => {
       const name = titleCaseName(node.title);
       const cptPortrait = resolveCptPortrait(node);
+      const counts = roleCounts.get(node.slug);
       return {
         id: node.id,
         name,
@@ -313,6 +396,8 @@ export async function fetchPhotographersIndex(): Promise<
         bioPreview: bioPreview(node.content),
         articleCount: node.linkedArticleCount ?? node.interviewCount ?? 0,
         appearsInCount: node.appearsInCount ?? 0,
+        roles: rolesFrom(counts),
+        counts,
         portrait: cptPortrait
           ? { src: cptPortrait.src, alt: cptPortrait.alt || name }
           : null,
@@ -322,9 +407,10 @@ export async function fetchPhotographersIndex(): Promise<
 
   if (items.length > 0) {
     items.sort((a, b) => a.name.localeCompare(b.name));
-    // Only photographers with published work are listed (a record whose
-    // only article is a draft would lead to an empty page).
-    return items.filter((i) => i.articleCount > 0);
+    // Listed: anyone with published work in any role. A record whose
+    // only article is a draft would lead to an empty page. Appearing in
+    // someone else's essay (modeling) alone doesn't list a person.
+    return items.filter((i) => (i.roles?.length ?? 0) > 0 || (roleCounts.size === 0 && i.articleCount > 0));
   }
 
   return deriveIndexFromArticles();

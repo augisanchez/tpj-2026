@@ -6,27 +6,27 @@ import ih from "@/components/IndexHeader.module.css";
 import styles from "@/components/PhotographersIndex.module.css";
 
 export const metadata = pageMetadata({
-  title: "Photographers — The Photographic Journal",
-  description: "Every photographer published in The Photographic Journal.",
-  path: "/photographers",
+  title: "Artists — The Photographic Journal",
+  description: "Every photographer, writer and interviewer published in The Photographic Journal since 2012.",
+  path: "/artists",
 });
 
-export default async function PhotographersIndexPage() {
+export default async function ArtistsIndexPage() {
   const photographers = await fetchPhotographersIndex();
 
   return (
     <div className={styles.page}>
       <header className={`${ih.intro} ${styles.intro}`}>
-        <h1 className={ih.title} data-reveal="lines">Photographers</h1>
+        <h1 className={ih.title} data-reveal="lines">Artists</h1>
         <p className={ih.lede} data-reveal>
-          Every photographer who has appeared in TPJ since 2012.
+          Everyone whose work has run in TPJ since 2012: photographers, writers and interviewers.
         </p>
       </header>
 
       {photographers.length === 0 ? (
         <div className={styles.empty}>
           <EmptyState
-            heading="The photographer index hasn’t been populated yet."
+            heading="The artist index hasn’t been populated yet."
             note="Run wp tpj migrate-photographers to import from the archive."
           />
         </div>

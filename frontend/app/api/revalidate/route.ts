@@ -14,6 +14,12 @@ export async function POST(req: Request) {
   const paths = Array.isArray(body.paths)
     ? body.paths.filter((p): p is string => typeof p === "string" && p.startsWith("/")).slice(0, 20)
     : [];
-  for (const p of paths) revalidatePath(p);
-  return Response.json({ ok: true, revalidated: paths });
+  // WordPress still sends the old people paths; refresh the new ones.
+  const mapped = paths.flatMap((p) =>
+    p === "/photographers" ? [p, "/artists"]
+      : p.startsWith("/photographer/") ? [p, "/artist/" + p.slice("/photographer/".length)]
+      : [p],
+  );
+  for (const p of mapped) revalidatePath(p);
+  return Response.json({ ok: true, revalidated: mapped });
 }

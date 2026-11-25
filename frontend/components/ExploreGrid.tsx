@@ -329,7 +329,7 @@ export function ExploreGrid({ items, people = NO_PEOPLE, initialType }: Props) {
       let p = persons.get(slug);
       if (!p) {
         const [portrait, count] = people[slug] ?? ["", 0];
-        p = { name, href: `/photographer/${slug}`, portrait: portrait || null, count };
+        p = { name, href: `/artist/${slug}`, portrait: portrait || null, count };
         persons.set(slug, p);
       }
       return p;

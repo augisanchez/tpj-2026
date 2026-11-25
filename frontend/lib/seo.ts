@@ -91,7 +91,7 @@ export function articleJsonLd(a: {
       author: a.people.map((p) => ({
         "@type": "Person",
         name: p.name,
-        ...(p.slug ? { url: `${SITE_URL}/photographer/${p.slug}` } : {}),
+        ...(p.slug ? { url: `${SITE_URL}/artist/${p.slug}` } : {}),
       })),
       publisher: PUBLISHER,
     },

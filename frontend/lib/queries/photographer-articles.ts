@@ -1,3 +1,4 @@
+import { bylineSlugs } from "./photographers-index";
 import { gql } from "graphql-request";
 import { wpClient } from "../api";
 import { rewriteMediaUrl } from "../media";
@@ -180,6 +181,28 @@ function toArticle(
  * a slugified `photographerName` so contributors with no migrated CPT
  * record still have working detail pages.
  */
+/** All features with their byline, to find the ones a person wrote. */
+const FeatureBylinesQuery = gql`
+  query FeatureBylines {
+    features(first: 500, where: { status: PUBLISH }) {
+      nodes {
+        id
+        title
+        slug
+        date
+        articleAuthor
+        featuredImage {
+          node {
+            sourceUrl
+            altText
+            mediaDetails { width height }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export type PhotographerWork = {
   /** Articles that credit this person as the photographer. */
   articles: PhotographerArticle[];
@@ -187,17 +210,26 @@ export type PhotographerWork = {
   interviewsConducted: PhotographerArticle[];
   /** Pieces someone else shot that this person appears in (model, subject). */
   appearsIn: PhotographerArticle[];
+  /** Features this person wrote (matched on the feature byline). */
+  featuresWritten: PhotographerArticle[];
 };
 
 
 export async function fetchPhotographerArticles(
   photographerSlug: string
 ): Promise<PhotographerWork> {
-  const data = await wpClient.request<WorkResponse>(PhotographerWorkQuery, {
-    slug: photographerSlug,
-  });
+  const [data, bylines] = await Promise.all([
+    wpClient.request<WorkResponse>(PhotographerWorkQuery, { slug: photographerSlug }),
+    wpClient
+      .request<{ features: { nodes: (RawNode & { articleAuthor?: string | null })[] } }>(FeatureBylinesQuery)
+      .catch(() => ({ features: { nodes: [] } })),
+  ]);
+  const featuresWritten = (bylines.features?.nodes ?? [])
+    .filter((n) => bylineSlugs(n.articleAuthor).includes(photographerSlug))
+    .map((n) => toArticle(n, "feature"))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const w = data.photographerWork;
-  if (!w) return { articles: [], interviewsConducted: [], appearsIn: [] };
+  if (!w) return { articles: [], interviewsConducted: [], appearsIn: [], featuresWritten };
 
   const byDateDesc = (a: PhotographerArticle, b: PhotographerArticle) =>
     new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -214,5 +246,5 @@ export async function fetchPhotographerArticles(
     ...(w.appearsInInterviews ?? []).map((n) => toArticle(n, "interview")),
     ...(w.appearsInFeatures ?? []).map((n) => toArticle(n, "feature")),
   ].sort(byDateDesc);
-  return { articles, interviewsConducted, appearsIn };
+  return { articles, interviewsConducted, appearsIn, featuresWritten };
 }

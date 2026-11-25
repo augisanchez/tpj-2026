@@ -2,12 +2,27 @@
 
 import Link from "next/link";
 import { PhotographerAvatar } from "./PhotographerAvatar";
+import type { RoleCounts } from "@/lib/queries/photographers-index";
 import styles from "./PhotographerListCard.module.css";
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** "3 photo stories · 2 interviews conducted · 1 feature written". */
+function roleLine(c: RoleCounts): string {
+  return [
+    c.photographs && plural(c.photographs, "photo story", "photo stories"),
+    c.interviews && plural(c.interviews, "interview", "interviews"),
+    c.conducted && plural(c.conducted, "interview conducted", "interviews conducted"),
+    c.written && plural(c.written, "feature written", "features written"),
+  ].filter(Boolean).join("  ·  ");
+}
 
 type Props = {
   name: string;
   slug: string;
   articleCount: number;
+  /** Per-role counts; when present the count line names each role. */
+  counts?: RoleCounts;
   /** Pieces they appear in that someone else shot (model, subject). */
   appearsInCount?: number;
   bio?: string | null;
@@ -36,6 +51,7 @@ export function PhotographerListCard({
   name,
   slug,
   articleCount,
+  counts,
   appearsInCount = 0,
   bio,
   portrait,
@@ -45,7 +61,7 @@ export function PhotographerListCard({
   const className = `${styles.card}${centered ? " " + styles.centered : ""}`;
   return (
     <Link data-pz
-      href={`/photographer/${slug}`}
+      href={`/artist/${slug}`}
       className={className}
     >
       <div
@@ -59,9 +75,9 @@ export function PhotographerListCard({
       </div>
       <h3 className={styles.cardName}>{name}</h3>
       {!compact && bio && <p className={styles.cardBio}>{bio}</p>}
-      {articleCount > 0 && (
+      {(counts ? roleLine(counts) : articleCount > 0) && (
         <p className={styles.cardCount}>
-          {articleCount} {articleCount === 1 ? "story" : "stories"}
+          {counts ? roleLine(counts) : `${articleCount} ${articleCount === 1 ? "story" : "stories"}`}
           {appearsInCount > 0 && `  ·  appears in ${appearsInCount}`}
           <span className={styles.cardCountArrow} aria-hidden="true">
             →

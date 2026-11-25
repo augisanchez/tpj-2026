@@ -32,21 +32,26 @@ type Props = {
 };
 
 /**
- * Feature byline: "By {names}" · date. Features range from reviews to
- * photo-led pieces, so the credit stays neutral ("By") rather than
- * claiming words or photographs. Writer and photographer are both
- * credited when they differ. With no credit, it's just the date.
+ * Feature byline. The writer and the photographer are separate credits:
+ * "Words by W  ·  Photographs by P". A review credits only its writer
+ * (the reviewed artist isn't linked). One person doing both reads
+ * "By X". With no credit, it's just the date.
  */
 function buildFeatureByline(
   writer: string | null,
   photographer: string | null,
   formattedDate: string
 ): string {
-  const names = [writer, photographer].filter(
-    (n, i, all): n is string => Boolean(n) && all.indexOf(n) === i
-  );
   const parts: string[] = [];
-  if (names.length) parts.push(`By ${names.join(" and ")}`);
+  if (writer && photographer && writer !== photographer) {
+    parts.push(`Words by ${writer}`, `Photographs by ${photographer}`);
+  } else if (writer && photographer) {
+    parts.push(`By ${writer}`);
+  } else if (writer) {
+    parts.push(`Words by ${writer}`);
+  } else if (photographer) {
+    parts.push(`Photographs by ${photographer}`);
+  }
   parts.push(formattedDate);
   return parts.join("  ·  ");
 }
@@ -64,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     image: a.heroImage ?? a.featuredImage,
     type: "article",
     publishedTime: isoDate(a.date, a.dateGmt),
-    authors: names.length ? names : a.photographerName ? [a.photographerName] : undefined,
+    authors: a.writer ? [a.writer] : names.length ? names : a.photographerName ? [a.photographerName] : undefined,
   });
 }
 

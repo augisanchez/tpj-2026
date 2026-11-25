@@ -17,7 +17,7 @@ const TIPS: Record<string, string> = {
   "/explore?view=list": "Every story, numbered, as a list.",
   "/index": "Every story, numbered, as a list.",
   "/themes": "Stories grouped by what they're about.",
-  "/photographers": "Everyone we've published, A to Z.",
+  "/artists": "Photographers, writers and interviewers, A to Z.",
   "/about": "Who we are and how this started.",
   "/shop": "Books from the journal.",
   "/submit": "Send us a photo essay.",

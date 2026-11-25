@@ -43,7 +43,7 @@ export default async function ResidencePage() {
   const specs: [string, React.ReactNode][] = [
     [
       "Photographer",
-      <Link key="p" href={`/photographer/${BOOK.photographer.slug}`} className={styles.specLink}>
+      <Link key="p" href={`/artist/${BOOK.photographer.slug}`} className={styles.specLink}>
         {BOOK.photographer.name}
       </Link>,
     ],
@@ -60,7 +60,7 @@ export default async function ResidencePage() {
             "@context": "https://schema.org",
             "@type": "Book",
             name: BOOK.title,
-            author: { "@type": "Person", name: BOOK.photographer.name, url: `${SITE_URL}/photographer/${BOOK.photographer.slug}` },
+            author: { "@type": "Person", name: BOOK.photographer.name, url: `${SITE_URL}/artist/${BOOK.photographer.slug}` },
             numberOfPages: BOOK.pages,
             bookFormat: "https://schema.org/Hardcover",
             datePublished: String(BOOK.published),

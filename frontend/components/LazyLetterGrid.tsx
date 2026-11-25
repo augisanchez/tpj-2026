@@ -49,7 +49,7 @@ export function LazyLetterGrid({ eager, people, variant = "grid", children }: Pr
       <ul className={styles.srList}>
         {people.map((p) => (
           <li key={p.id}>
-            <Link href={`/photographer/${p.slug}`} prefetch={false}>
+            <Link href={`/artist/${p.slug}`} prefetch={false}>
               {p.name}
             </Link>
           </li>
