@@ -1,3 +1,4 @@
+import { splitEditorialNote } from "@/lib/editorial-note";
 import { gql } from "graphql-request";
 import { wpClient, wpPreviewClient } from "../api";
 import type { PreviewTarget } from "../preview";
@@ -124,7 +125,9 @@ export async function fetchFeatureBySlug(
     photographers.length > 0 ? stripPhotographerBlob(rawBody) : rawBody
   );
 
-  const intro = raw.articleIntro ? raw.articleIntro.trim() : null;
+  const { intro, note: editorialNote } = splitEditorialNote(
+    raw.articleIntro ? raw.articleIntro.trim() : null
+  );
   const writer = raw.articleAuthor ? raw.articleAuthor.trim() || null : null;
   const hero = raw.heroImage;
   const heroSrc = hero ? rewriteMediaUrl(hero.sourceUrl) : null;
@@ -139,6 +142,7 @@ export async function fetchFeatureBySlug(
     credits,
     excerpt: raw.excerpt,
     intro: intro || null,
+    editorialNote,
     photographerName: photographerNameTrimmed,
     photographer: photographers[0] ?? null,
     photographers,

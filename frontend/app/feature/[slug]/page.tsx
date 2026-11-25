@@ -127,7 +127,7 @@ export default async function FeaturePage({ params }: Props) {
         wallLabel={{ photographer: photographerDisplayName, year, count: plates.length }}
       />
 
-      {feature.intro && <EssayIntro text={feature.intro} />}
+      <EssayIntro text={feature.intro} note={feature.editorialNote} />
 
       <ArticleBody html={bodyHtml} />
 

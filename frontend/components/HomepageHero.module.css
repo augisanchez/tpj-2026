@@ -128,7 +128,7 @@
 
 .byline {
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 500;
+  font-weight: 400; /* matches the story hero's lines under the title */
   font-size: 14px;
   color: var(--hero-muted);
   letter-spacing: 0.02em;

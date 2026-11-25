@@ -65,6 +65,8 @@ export type Essay = {
   credits: string;
   excerpt: string | null;
   intro: string | null;
+  /** Editing note under the intro (interviews, features). */
+  editorialNote?: string | null;
   photographerName: string | null;
   photographer: Photographer | null;
   photographers: Photographer[];

@@ -16,3 +16,20 @@
   letter-spacing: 0;
   white-space: pre-wrap;
 }
+
+/* Editing note: same column as the intro, small muted italic, set apart
+   by space alone. */
+.note {
+  max-width: var(--measure);
+  margin: 24px auto 0;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.text + .note {
+  margin-top: clamp(24px, 1rem + 1vw, 40px);
+}

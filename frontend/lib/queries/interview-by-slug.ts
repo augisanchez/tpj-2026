@@ -1,3 +1,4 @@
+import { splitEditorialNote } from "@/lib/editorial-note";
 import { gql } from "graphql-request";
 import { wpClient, wpPreviewClient } from "../api";
 import type { PreviewTarget } from "../preview";
@@ -62,6 +63,8 @@ export type Interview = {
   credits: string;
   excerpt: string | null;
   intro: string | null;
+  /** Editing note shown under the intro. */
+  editorialNote: string | null;
   interviewer: string | null;
   /** e.g. "Portraits of Olivia Bee by Joe Haeberle". */
   portraitCredit: string | null;
@@ -137,7 +140,9 @@ export async function fetchInterviewBySlug(
     photographers.length > 0 ? stripPhotographerBlob(rawBody) : rawBody
   );
 
-  const intro = raw.articleIntro ? raw.articleIntro.trim() : null;
+  const { intro, note: editorialNote } = splitEditorialNote(
+    raw.articleIntro ? raw.articleIntro.trim() : null
+  );
   const interviewer = raw.articleAuthor ? raw.articleAuthor.trim() : null;
   const hero = raw.heroImage;
   const heroSrc = hero ? rewriteMediaUrl(hero.sourceUrl) : null;
@@ -152,6 +157,7 @@ export async function fetchInterviewBySlug(
     credits,
     excerpt: raw.excerpt,
     intro: intro || null,
+    editorialNote,
     interviewer: interviewer || null,
     portraitCredit: raw.portraitCredit?.trim() || null,
     photographerName: photographerNameTrimmed,

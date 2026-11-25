@@ -111,7 +111,9 @@
 
 .byline {
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 500;
+  /* One weight for both lines under the title (byline and portrait
+     credit): the regular reads cleaner on a photograph. */
+  font-weight: 400;
   font-size: 14px;
   color: var(--hero-muted);
   letter-spacing: 0.02em;
@@ -127,7 +129,6 @@
 /* Portrait credit under the title; the margin clears its descenders. */
 .portraitCredit {
   margin-top: 0.1em;
-  font-weight: 400;
 }
 
 @media (max-width: 640px) {

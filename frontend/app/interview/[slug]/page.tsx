@@ -107,7 +107,7 @@ export default async function InterviewPage({ params }: Props) {
         wallLabel={{ photographer: photographerDisplayName, year, count: plates.length }}
       />
 
-      {interview.intro && <EssayIntro text={interview.intro} />}
+      <EssayIntro text={interview.intro} note={interview.editorialNote} />
 
       <InterviewBody html={bodyHtml} />
 
