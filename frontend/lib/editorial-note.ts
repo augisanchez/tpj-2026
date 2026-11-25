@@ -1,12 +1,11 @@
 /**
- * The editing note under a story's intro ("This interview has been
+ * The editing note above a story's intro ("This interview has been
  * edited for length and clarity.").
  *
- * Interviews carried it as the last sentence of their intro text, often
- * after a hand-typed separator line ("----", "—", "⁂"). Until the
- * WordPress editing-note field is live and the intros are cleaned, the
- * note is split out here: the trailing sentence and any separator lines
- * before it leave the intro, and the note shows in the standard wording.
+ * The note itself comes from the WordPress field (tpj_editorial_note).
+ * Older interviews carried it as the last sentence of their intro text,
+ * often after a hand-typed separator line ("----", "—", "⁂"); this strips
+ * that copy (and the separator) from the intro if one is still there.
  * Sign-offs ("— Agustin") stay with the intro.
  */
 

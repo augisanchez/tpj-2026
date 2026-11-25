@@ -25,6 +25,7 @@ const InterviewBySlugQuery = gql`
       content
       excerpt
       articleIntro
+      editorialNote
       articleAuthor
       portraitCredit
       photographerName
@@ -90,6 +91,7 @@ type RawInterview = {
   content: string | null;
   excerpt: string | null;
   articleIntro: string | null;
+  editorialNote?: string | null;
   articleAuthor: string | null;
   portraitCredit?: string | null;
   photographerName: string | null;
@@ -140,9 +142,11 @@ export async function fetchInterviewBySlug(
     photographers.length > 0 ? stripPhotographerBlob(rawBody) : rawBody
   );
 
-  const { intro, note: editorialNote } = splitEditorialNote(
-    raw.articleIntro ? raw.articleIntro.trim() : null
-  );
+  // The note comes from the WordPress field (interviews default to the
+  // standard line; an emptied field means none). Any old copy of it left
+  // at the end of the intro text is stripped.
+  const { intro } = splitEditorialNote(raw.articleIntro ? raw.articleIntro.trim() : null);
+  const editorialNote = raw.editorialNote?.trim() || null;
   const interviewer = raw.articleAuthor ? raw.articleAuthor.trim() : null;
   const hero = raw.heroImage;
   const heroSrc = hero ? rewriteMediaUrl(hero.sourceUrl) : null;
