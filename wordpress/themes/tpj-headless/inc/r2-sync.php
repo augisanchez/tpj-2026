@@ -125,7 +125,7 @@ function tpj_r2_sync_attachment( $attachment_id, $meta = null ) {
 		$meta = wp_get_attachment_metadata( $attachment_id );
 	}
 	$uploads = wp_get_upload_dir();
-	$synced  = (array) get_post_meta( $attachment_id, '_tpj_r2_synced', true );
+	$synced  = array_values( array_filter( (array) get_post_meta( $attachment_id, '_tpj_r2_synced', true ) ) );
 	$failed  = [];
 	foreach ( tpj_r2_attachment_files( (array) $meta, $attachment_id ) as $rel ) {
 		if ( in_array( $rel, $synced, true ) ) {
