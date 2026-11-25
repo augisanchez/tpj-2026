@@ -3,7 +3,7 @@
 import Link from "./SmartLink";
 import { ContentTypeChip, type ContentTypeChipSize } from "./ContentTypeChip";
 import { ThemeThumbnail } from "./ThemeThumbnail";
-import { capWidths, cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
+import { capWidths, cdnImageUrl, cdnSrcSet, capDensity, cdnPlaceholderUrl } from "@/lib/cdn";
 import styles from "./ArticleCard.module.css";
 import { creditFor } from "@/lib/credit";
 
@@ -102,7 +102,8 @@ export function ArticleCard({
                 data-fade=""
                 src={cdnImageUrl(article.featuredImage.src, { width: Math.min(1024, article.featuredImage.width ?? 1024) }) ?? article.featuredImage.src}
                 srcSet={cdnSrcSet(article.featuredImage.src, capWidths([480, 768, 1024, 1440, 1920, 2560], article.featuredImage.width)) ?? undefined}
-                sizes={sizes ?? CARD_SIZES[variant]}
+                sizes={capDensity(sizes ?? CARD_SIZES[variant])}
+                data-lqip-src={cdnPlaceholderUrl(article.featuredImage.src) ?? undefined}
                 alt={article.featuredImage.alt}
                 loading="lazy"
                 decoding="async"
