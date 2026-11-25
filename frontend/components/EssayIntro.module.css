@@ -10,8 +10,8 @@
   margin: 0 auto;
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 500;
-  font-size: clamp(20px, 1rem + 1vw, 44px); /* caps ~3520 */
-  line-height: 1.4;
+  font-size: min(clamp(20px, 1rem + 1vw, 44px), calc(var(--text-body) * 1.4));
+  line-height: var(--leading-intro);
   color: var(--text);
   letter-spacing: 0;
   white-space: pre-wrap;

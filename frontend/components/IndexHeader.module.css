@@ -26,7 +26,7 @@
   font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
   font-weight: 400;
   font-size: var(--text-intro);
-  line-height: 1.5;
+  line-height: var(--leading-intro);
   color: var(--text);
   max-width: 880px;
   margin: 0;

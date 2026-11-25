@@ -43,7 +43,7 @@
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 400;
   font-size: var(--text-body);
-  line-height: 1.7;
+  line-height: var(--leading-body);
   color: var(--text);
   /* Bottom only: the top gap comes from the sibling rhythm above. A
      margin-block reset here outranked it and butted text against the
@@ -52,8 +52,8 @@
 }
 
 .body p:first-child {
-  font-size: var(--text-intro);
-  line-height: 1.55;
+  font-size: var(--text-lede);
+  line-height: var(--leading-intro);
 }
 
 /* Credits: model, styling and other credits carried over from the

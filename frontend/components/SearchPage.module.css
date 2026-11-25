@@ -7,7 +7,7 @@
 .empty {
   font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
   font-size: var(--text-intro);
-  line-height: 1.5;
+  line-height: var(--leading-intro);
   color: var(--muted);
   max-width: 60ch;
   padding: 80px 0;

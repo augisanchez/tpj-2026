@@ -52,7 +52,11 @@
   --text-heading-2:  clamp(1.5rem, 1.125rem + 1.5vw, 4rem);    /* caps ~3267 */
   --text-heading-3:  clamp(1.25rem, 1rem + 0.75vw, 2.5rem);    /* caps ~3200 */
   --text-intro:      clamp(1.1875rem, 1rem + 0.7vw, 2.25rem);  /* caps ~2857 */
-  --text-body:       clamp(1.0625rem, 0.9rem + 0.55vw, 1.4375rem); /* unchanged — locked to 760 prose column */
+  /* Reading text grows with the screen: 17px on phones, about 23px at
+     1440, 25px from about 1730. The reading column (--measure) is set
+     in multiples of it, so a line always holds about 66 characters
+     (the classic 45-75 range, Bringhurst's 66) at any size. */
+  --text-body:       clamp(1.0625rem, 0.75rem + 0.75vw, 1.5625rem); /* caps ~1733 */
   --text-caption:    clamp(0.875rem, 0.8rem + 0.3vw, 1.5rem);  /* caps ~3733 */
   --text-ui:         clamp(0.75rem, 0.7rem + 0.1vw, 0.875rem);
   --text-label:      clamp(0.625rem, 0.6rem + 0.075vw, 0.75rem);
@@ -69,14 +73,25 @@
      bodies and footer all sit on it; only full-bleed elements (bands,
      marquee, ticker run-off, fixed overlays) ignore it.
        Wide      between the gutters, at most --grid-max
-       Reading   --measure, story intros and body text
+       Reading   --measure, story intros and body text, about 66
+                 characters of body type (scales with --text-body)
        Pages     --measure-page, supporting pages' text (About, Submit,
                  Contact, Shop, banners)
      100vw, not 100%: the token is read in nested blocks (filter bar,
      bleeds), and must resolve the same everywhere. */
   --grid-max: 1920px;
   --gutter: 16px;
-  --measure: 760px;
+  --measure: calc(var(--text-body) * 32);
+  /* Leading tightens as type grows (large type needs less air):
+     body 1.6 at 17px, 1.53 at 21px, 1.48 at 25px; ledes 1.45 at 20px
+     down to 1.3 at 36px. Linear in the font size, so it scales with
+     every clamp above. */
+  --leading-body: calc(1.225em + 6.4px);
+  --leading-intro: calc(1.1125em + 6.75px);
+  /* Story ledes stay at most 1.4x the body size, so lede and body keep
+     the same relationship on every screen (about 37 characters a line
+     in the shared reading column). */
+  --text-lede: min(var(--text-intro), calc(var(--text-body) * 1.4));
   --measure-page: 880px;
   --grid-gap: 24px;
 

@@ -109,7 +109,7 @@
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 400;
   font-size: var(--text-body);
-  line-height: 1.5;
+  line-height: var(--leading-body);
   color: var(--muted);
   margin: 0;
 }

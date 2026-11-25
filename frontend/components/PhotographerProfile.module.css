@@ -102,7 +102,7 @@
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 400;
   font-size: var(--text-intro);
-  line-height: 1.55;
+  line-height: var(--leading-intro);
   margin: 0;
   white-space: pre-line;
 }

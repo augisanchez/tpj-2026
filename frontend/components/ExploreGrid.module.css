@@ -53,7 +53,7 @@
 .emptyLine {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-size: var(--text-intro);
-  line-height: 1.5;
+  line-height: var(--leading-intro);
   color: var(--text);
   margin: 0;
 }

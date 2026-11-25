@@ -89,7 +89,7 @@
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 400;
   font-size: var(--text-body);
-  line-height: 1.7;
+  line-height: var(--leading-body);
   color: var(--text);
   margin: 0;
   /* Keep the excerpt to a few lines so the cards stay roughly the same

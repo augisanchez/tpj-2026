@@ -104,7 +104,7 @@
 .textarea {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-size: var(--text-body);
-  line-height: 1.5;
+  line-height: var(--leading-body);
   color: var(--text);
   background: var(--bg);
   border: 1px solid var(--border);
@@ -283,7 +283,7 @@
 .successBody {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-size: var(--text-body);
-  line-height: 1.6;
+  line-height: var(--leading-body);
   color: var(--text);
   margin: 0;
 }

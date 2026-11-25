@@ -28,7 +28,7 @@
   font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
   font-weight: 400;
   font-size: var(--text-intro);
-  line-height: 1.5;
+  line-height: var(--leading-intro);
   color: var(--text);
   margin: 0;
 }
@@ -37,7 +37,7 @@
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 400;
   font-size: var(--text-body);
-  line-height: 1.7;
+  line-height: var(--leading-body);
   color: var(--text);
   margin: 0;
 }

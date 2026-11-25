@@ -43,7 +43,7 @@
 .sub {
   font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
   font-size: var(--text-intro);
-  line-height: 1.45;
+  line-height: var(--leading-intro);
   color: var(--text);
   max-width: 30em;
   margin: 0;

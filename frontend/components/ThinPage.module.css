@@ -33,14 +33,14 @@
 .body :global(p) {
   font-family: var(--font-serif), Georgia, serif;
   font-size: var(--text-body);
-  line-height: 1.7;
+  line-height: var(--leading-body);
   color: var(--text);
   margin: 0;
 }
 
 .body :global(p:first-child) {
   font-size: var(--text-intro);
-  line-height: 1.55;
+  line-height: var(--leading-intro);
 }
 
 .body :global(h2) {
