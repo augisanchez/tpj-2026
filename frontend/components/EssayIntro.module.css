@@ -17,26 +17,17 @@
   white-space: pre-wrap;
 }
 
-/* Editing note: a separator between the intro and the story, in grey
-   (--muted is the lightest grey that holds 4.5:1 for text this size),
-   with equal space above it and below it. The story body's own top
-   padding is the space below, so it steps down while a note leads it
-   (the data-editorial-note rule in globals.css). */
+/* Editing note: above the intro, in grey (--muted is the lightest grey
+   that holds 4.5:1 for text this size), one intro line of space below. */
 .note {
   max-width: var(--measure);
-  margin: var(--note-gap) auto 0;
+  margin: 0 auto 1.6em;
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 500;
   font-size: 21px;
   line-height: 1.4;
   letter-spacing: 0.01em;
   color: var(--muted);
-  text-align: center; /* a separator, centered in the column */
-}
-
-/* A note with no intro above it sits at the intro's own top spacing. */
-.note:first-child {
-  margin-top: 0;
 }
 
 @media (max-width: 640px) {

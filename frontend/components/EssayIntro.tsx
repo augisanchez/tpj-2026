@@ -3,7 +3,7 @@ import styles from "./EssayIntro.module.css";
 type Props = {
   text?: string | null;
   /** Editing note ("This interview has been edited for length and
-   *  clarity."), set under the intro in its own small type. */
+   *  clarity."), set above the intro in grey. */
   note?: string | null;
 };
 
@@ -17,8 +17,8 @@ export function EssayIntro({ text, note }: Props) {
   if (!text && !note) return null;
   return (
     <section className={styles.intro}>
+      {note && <p className={styles.note} data-reveal>{note}</p>}
       {text && <p className={styles.text} data-reveal>{text.trim()}</p>}
-      {note && <p className={styles.note} data-reveal data-editorial-note>{note}</p>}
     </section>
   );
 }

@@ -98,8 +98,6 @@
   --text-lede: min(var(--text-intro), calc(var(--text-body) * 1.4));
   --measure-page: 880px;
   --grid-gap: 24px;
-  /* Space either side of the editing note under a story intro. */
-  --note-gap: clamp(48px, 2rem + 2.5vw, 128px);
 
   /* Motion (docs/MOTION-PLAN.md). Arrivals ease out, exits ease in,
      travel eases in-out. Only transform / opacity / clip-path move. */
@@ -500,10 +498,4 @@ img[data-lqip][data-cached],
   :root {
     --gutter: max(32px, calc((100vw - var(--grid-max)) / 2));
   }
-}
-
-/* Editing note under a story intro: the body that follows starts at the
-   same distance below the note as the note sits below the intro. */
-section:has(> p[data-editorial-note]) + * {
-  padding-top: var(--note-gap);
 }

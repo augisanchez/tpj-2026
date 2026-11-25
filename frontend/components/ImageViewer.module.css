@@ -1,7 +1,11 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: var(--hero-bg); /* solid: nothing from the page shows behind the photo */
+  /* Translucent dark glass: the page stays as soft colour behind the
+     photo, blurred so no detail competes with it. */
+  background: rgba(14, 14, 14, 0.9);
+  -webkit-backdrop-filter: blur(24px) saturate(1.1);
+  backdrop-filter: blur(24px) saturate(1.1);
   z-index: 200;
   display: flex;
   flex-direction: column;
@@ -9,7 +13,7 @@
   align-items: center;
   /* As large as the screen allows: room for the counter and close
      button above and the arrows at the sides, nothing more. */
-  padding: 56px 72px;
+  padding: 48px 64px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 200ms ease-out;
@@ -65,11 +69,13 @@
   color: var(--hero-muted);
 }
 
-/* "04 / 13": same frame counter as the essay page, on the dark ground. */
+/* "04 / 13": the essay page's frame counter, in the same place
+   (PlateCounter.module.css: bottom left, 24px in, 20px up), on the dark
+   ground. */
 .counter {
   position: absolute;
-  top: 22px;
-  left: 20px;
+  bottom: 20px;
+  left: max(24px, calc((100% - var(--grid-max)) / 2 + 24px));
   margin: 0;
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 500;
@@ -82,7 +88,7 @@
 
 .close {
   position: absolute;
-  top: 6px;
+  top: 2px;
   right: 8px;
   width: 44px;
   height: 44px;
@@ -136,8 +142,12 @@
 }
 
 @media (max-width: 640px) {
+  /* Phones: the photo runs edge to edge; the arrows sit over it. */
   .overlay {
-    padding: 56px 8px;
+    padding: 48px 0;
+  }
+  .image {
+    border-radius: 0;
   }
   .nav {
     width: 44px;
@@ -156,4 +166,11 @@
   .image {
     transition: none;
   }
+}
+
+/* Arrows can sit over a photo (phones): white with a difference blend,
+   like the TPJ watermark and the page's photo counter, so they invert
+   what's behind them and read on any photo. */
+.nav {
+  mix-blend-mode: difference;
 }
