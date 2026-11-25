@@ -16,12 +16,14 @@ type Props = {
   counts?: Record<string, number>;
 };
 
-// Story swap: outgoing cards fade fast, then the new set rises in from
-// the right (sequences move left), staggered in reading order.
+// Story swap. The card frames never move: on a switch the photos and
+// text fade out (OUT_MS) and each frame falls back to the loading
+// skeleton. The new photos load behind it and fade in as they arrive
+// (globals.css "Image loading"); the text rises back in, staggered.
 const OUT_MS = 150;
-const IN_MS = 520;
+const IN_MS = 420;
 const IN_STEP_MS = 60;
-const IN_SHIFT = "24px";
+const IN_SHIFT = "8px";
 const EASE_IN = "cubic-bezier(0.7, 0, 0.84, 0)";
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -74,19 +76,59 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
   const panelItems = () =>
     [...(panelRef.current?.children ?? [])] as HTMLElement[];
 
+  // The parts of a slot that swap: a story card's photo and text lines
+  // (its first child is the image frame, which stays), or the count
+  // tile's cover mosaic.
+  const parts = (slot: HTMLElement) => {
+    const card = slot.querySelector<HTMLElement>("a");
+    if (!card) return { photo: [] as HTMLElement[], text: [] as HTMLElement[] };
+    const mosaic = card.querySelector<HTMLElement>(".pz-media");
+    if (mosaic) return { photo: [mosaic], text: [] as HTMLElement[] };
+    return {
+      photo: [...card.querySelectorAll<HTMLElement>("img")],
+      text: [...card.children].slice(1) as HTMLElement[],
+    };
+  };
+
+  const fadeOut = () => {
+    panelItems().forEach((slot) => {
+      const { photo, text } = parts(slot);
+      [...photo, ...text].forEach((el) =>
+        // Single keyframe: fades from wherever a running entrance is.
+        el.animate([{ opacity: 0 }], { duration: OUT_MS, easing: EASE_IN, fill: "forwards" }),
+      );
+    });
+  };
+
   const enter = () => {
-    panelItems().forEach((el, i) => {
-      el.getAnimations().forEach((a) => a.cancel());
+    panelItems().forEach((slot, i) => {
       // A freshly mounted slot (e.g. the count tile returning) is new to
       // the reveal system; mark it shown so its rise never stacks on ours.
-      if (!el.classList.contains("rv-in")) el.classList.add("rv-in", "rv-instant");
-      el.animate(
-        [
-          { opacity: 0, transform: `translateX(${IN_SHIFT})` },
-          { opacity: 1, transform: "none" },
-        ],
-        { duration: IN_MS, delay: i * IN_STEP_MS, easing: EASE_OUT, fill: "backwards" },
-      );
+      if (!slot.classList.contains("rv-in")) slot.classList.add("rv-in", "rv-instant");
+      const { photo, text } = parts(slot);
+      photo.forEach((el) => {
+        el.getAnimations().forEach((a) => a.cancel());
+        if (el instanceof HTMLImageElement) {
+          // Back to "loading" so the frame shows the skeleton and the
+          // photo fades in once it has arrived. A cached or unchanged
+          // photo is marked loaded at once.
+          delete el.dataset.ld;
+          delete el.dataset.instant;
+          if (el.complete && el.naturalWidth) requestAnimationFrame(() => { el.dataset.ld = "1"; });
+        } else {
+          el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: IN_MS, delay: i * IN_STEP_MS, easing: EASE_OUT, fill: "backwards" });
+        }
+      });
+      text.forEach((el) => {
+        el.getAnimations().forEach((a) => a.cancel());
+        el.animate(
+          [
+            { opacity: 0, transform: `translateY(${IN_SHIFT})` },
+            { opacity: 1, transform: "none" },
+          ],
+          { duration: IN_MS, delay: i * IN_STEP_MS, easing: EASE_OUT, fill: "backwards" },
+        );
+      });
     });
   };
 
@@ -100,10 +142,7 @@ export function ThemeBrowser({ groups, extras = {}, counts = {} }: Props) {
     }
     // A fade is already running: it lands on whatever is chosen last.
     if (outTimer.current || slug === shownRef.current) return;
-    panelItems().forEach((el) => {
-      // Single keyframe: fades from wherever a running entrance has got to.
-      el.animate([{ opacity: 0 }], { duration: OUT_MS, easing: EASE_IN, fill: "forwards" });
-    });
+    fadeOut();
     outTimer.current = window.setTimeout(() => {
       outTimer.current = 0;
       const next = targetRef.current;
