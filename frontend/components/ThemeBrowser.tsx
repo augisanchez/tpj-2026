@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./SmartLink";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArticleCard } from "./ArticleCard";
 import { ThemeThumbnail } from "./ThemeThumbnail";

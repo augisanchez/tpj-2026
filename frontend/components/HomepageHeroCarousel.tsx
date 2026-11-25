@@ -9,7 +9,8 @@ import {
 } from "motion/react";
 import { useDrag } from "@use-gesture/react";
 import { HomepageHero } from "./HomepageHero";
-import { cdnImageUrl, cdnSrcSet } from "@/lib/cdn";
+import { capDensity, capWidths, cdnImageUrl, cdnSrcSet, DEFAULT_WIDTHS } from "@/lib/cdn";
+import { isSlowConnection } from "./SmartLink";
 import styles from "./HomepageHeroCarousel.module.css";
 
 export type HeroSlide = {
@@ -131,23 +132,20 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
     return () => window.clearInterval(id);
   }, [slides.length, intervalMs, paused, stopped, tabHidden, reducedMotion]);
 
-  // Preload every slide's image so the one underneath is ready before
-  // it's revealed.
+  // Load the next slide's photo shortly before it's revealed, not every
+  // slide up front: on a phone that was ~680KB the reader may never see.
+  // Preloads the exact files the slide will request (same widths, sizes
+  // and quality as TpjImage). Hover or focus on the carousel loads it at
+  // once, since a click may follow. Skipped on slow connections and data
+  // saver; the slide still loads, behind its blur-up, when shown.
+  const [intent, setIntent] = useState(false);
   useEffect(() => {
-    for (const s of slides) {
-      if (s.backgroundImage?.src) {
-        const img = new Image();
-        img.decoding = "async";
-        // Preload what the slide will actually request (CDN-sized when on).
-        img.src = cdnImageUrl(s.backgroundImage.src, { width: 2560 }) ?? s.backgroundImage.src;
-        const set = cdnSrcSet(s.backgroundImage.src);
-        if (set) {
-          img.sizes = "100vw";
-          img.srcset = set;
-        }
-      }
-    }
-  }, [slides]);
+    if (slides.length <= 1 || isSlowConnection()) return;
+    const next = slides[(index + 1) % slides.length];
+    const lead = intent || reducedMotion || paused || stopped ? 0 : Math.max(0, intervalMs - 2500);
+    const id = window.setTimeout(() => preloadSlide(next), lead);
+    return () => window.clearTimeout(id);
+  }, [index, intent, slides, intervalMs, reducedMotion, paused, stopped]);
 
   // Swipe gestures for touch + pointer drag. Crossing 60px of drag
   // distance OR 0.3 velocity in either direction advances. Vertical
@@ -181,9 +179,15 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
   return (
     <div
       className={styles.carousel}
-      onMouseEnter={() => setPaused(true)}
+      onMouseEnter={() => {
+        setPaused(true);
+        setIntent(true);
+      }}
       onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
+      onFocusCapture={() => {
+        setPaused(true);
+        setIntent(true);
+      }}
       onBlurCapture={() => setPaused(false)}
       {...bindDrag()}
       style={{ touchAction: "pan-y" }}
@@ -244,4 +248,24 @@ export function HomepageHeroCarousel({ slides, intervalMs = DEFAULT_INTERVAL }: 
       </div>
     </div>
   );
+}
+
+/** Warm the cache with exactly what a slide's TpjImage(s) will request. */
+function preloadSlide(slide: HeroSlide) {
+  const warm = (src: string, sizes: string, intrinsic?: number) => {
+    const list = capWidths(DEFAULT_WIDTHS, intrinsic);
+    const img = new Image();
+    img.decoding = "async";
+    const set = cdnSrcSet(src, list);
+    if (set) {
+      img.sizes = capDensity(sizes);
+      img.srcset = set;
+    }
+    img.src = cdnImageUrl(src, { width: list[list.length - 1] }) ?? src;
+  };
+  if (slide.collage && slide.collage.length >= 2) {
+    for (const c of slide.collage) warm(c.src, "(min-width: 1024px) 25vw, 50vw");
+  } else if (slide.backgroundImage?.src) {
+    warm(slide.backgroundImage.src, "100vw", slide.backgroundImage.width);
+  }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./SmartLink";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import styles from "./PhotographersIndex.module.css";
 

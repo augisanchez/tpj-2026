@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/SmartLink";
 import { ArchiveMosaic, type MosaicTile } from "@/components/ArchiveMosaic";
 import { HomepageHeroCarousel, type HeroSlide } from "@/components/HomepageHeroCarousel";
 import { InterviewQuoteRotator } from "@/components/InterviewQuoteRotator";

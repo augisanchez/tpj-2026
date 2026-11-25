@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./SmartLink";
 import { ContentTypeChip } from "./ContentTypeChip";
 import { TpjImage } from "./TpjImage";
 import { ThemeThumbnail } from "./ThemeThumbnail";

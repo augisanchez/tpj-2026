@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./SmartLink";
 import { ThemeThumbnail } from "./ThemeThumbnail";
 import styles from "./ThemesIndex.module.css";
 

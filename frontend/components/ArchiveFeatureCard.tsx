@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./SmartLink";
 import { ContentTypeChip } from "./ContentTypeChip";
 import type { ArchiveFeature } from "@/lib/queries/archive-feature";
 import styles from "./ArchiveFeatureCard.module.css";

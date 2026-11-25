@@ -5,6 +5,8 @@ import {
   cdnImageUrl,
   cdnSrcSet,
   isCdnEnabled,
+  cdnPlaceholderUrl,
+  capDensity,
 } from "./cdn";
 
 /** Any absolute (or protocol-relative) link into a WordPress uploads
@@ -146,15 +148,19 @@ export function rewriteArticleBodyImages(html: string): string {
     attrs += ` srcset="${srcSet}"`;
     attrs += ` sizes="${SIZES_TOKEN}"`;
     if (!LOADING_RE.test(attrs)) attrs += ` loading="lazy"`;
+    // Blur-up source; MotionRoot applies it as the image nears the
+    // viewport (globals.css "Blur-up"), so offscreen photos cost nothing.
+    const lqip = cdnPlaceholderUrl(originalSrc);
+    if (lqip) attrs += ` data-lqip-src="${lqip}"`;
     return frameImage(`<img${attrs}>`);
   });
   // Each image's sizes follows the figure it sits in (full, two-up…).
   return out
     .replace(/<figure\b[^>]*\bclass=["']([^"']*)["'][^>]*>[\s\S]*?<\/figure>/gi, (fig, cls: string) =>
-      fig.split(SIZES_TOKEN).join(sizesForFigure(cls)),
+      fig.split(SIZES_TOKEN).join(capDensity(sizesForFigure(cls))),
     )
     .split(SIZES_TOKEN)
-    .join(ARTICLE_BODY_SIZES);
+    .join(capDensity(ARTICLE_BODY_SIZES));
 }
 
 /**

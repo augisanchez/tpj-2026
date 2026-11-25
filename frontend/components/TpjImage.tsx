@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  capDensity,
   capWidths,
   cdnImageUrl,
+  cdnPlaceholderUrl,
   cdnSrcSet,
   DEFAULT_WIDTHS,
   type CdnImageOpts,
@@ -107,6 +109,42 @@ export function TpjImage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Blur-up (globals.css "Blur-up"): a tiny blurred copy sits behind the
+  // image with a faint shimmer until the real one has loaded and decoded,
+  // then the photo comes into focus. Priority images carry it in the
+  // server HTML so it paints with the page; the rest get it as they near
+  // the viewport, so offscreen images cost nothing. Already-loaded
+  // (cached) images skip the effect.
+  const lqip = cdnPlaceholderUrl(src);
+  useEffect(() => {
+    const img = ref.current;
+    if (!img || !lqip) return;
+    if (img.complete && img.naturalWidth > 0) {
+      img.dataset.cached = "1";
+      return;
+    }
+    if (priority) return;
+    const apply = () => {
+      if (img.complete) return;
+      img.style.setProperty("--lqip", `url("${lqip}")`);
+      img.dataset.lqip = "";
+    };
+    if (typeof IntersectionObserver === "undefined") {
+      apply();
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        apply();
+        io.disconnect();
+      },
+      { rootMargin: "600px 0px" }
+    );
+    io.observe(img);
+    return () => io.disconnect();
+  }, [lqip, priority]);
+
   // Never ask the CDN for more pixels than the original has (Cloudflare
   // doesn't upscale, so larger candidates are the same file, stretched).
   const list = capWidths(widths, width);
@@ -122,7 +160,7 @@ export function TpjImage({
       ref={ref}
       src={finalSrc}
       srcSet={srcSet ?? undefined}
-      sizes={sizes}
+      sizes={capDensity(sizes)}
       alt={alt}
       width={width}
       height={height}
@@ -130,6 +168,8 @@ export function TpjImage({
       fetchPriority={priority ? "high" : "auto"}
       className={className}
       data-fade=""
+      data-lqip={priority && lqip ? "" : undefined}
+      style={priority && lqip ? ({ "--lqip": `url("${lqip}")` } as React.CSSProperties) : undefined}
       onLoad={onLoad}
       onError={(e) => {
         // A failed edge resize (e.g. Cloudflare's transformation quota,

@@ -371,8 +371,8 @@ body.is-arriving footer {
    quote) set --skeleton-base and --skeleton-sweep to a dark pair so
    the type stays readable while the photo loads. Hover previews in
    the Index opt in with [data-skeleton]. */
-.img-fade :has(> img[data-fade]:not([data-ld])),
-.img-fade [data-img-body] .img-frame:has(> img:not([data-ld])),
+.img-fade :has(> img[data-fade]:not([data-ld]):not([data-lqip])),
+.img-fade [data-img-body] .img-frame:has(> img:not([data-ld]):not([data-lqip])),
 [data-skeleton]:has(> img:not([data-ready])) {
   background-color: var(--skeleton-base, var(--placeholder));
   background-image: linear-gradient(
@@ -397,8 +397,8 @@ body.is-arriving footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .img-fade :has(> img[data-fade]:not([data-ld])),
-  .img-fade [data-img-body] .img-frame:has(> img:not([data-ld])),
+  .img-fade :has(> img[data-fade]:not([data-ld]):not([data-lqip])),
+  .img-fade [data-img-body] .img-frame:has(> img:not([data-ld]):not([data-lqip])),
   [data-skeleton]:has(> img:not([data-ready])) {
     animation: none;
     background-image: none;
@@ -406,5 +406,64 @@ body.is-arriving footer {
   .img-fade img[data-fade][data-ld],
   .img-fade [data-img-body] img[data-ld] {
     animation-duration: 200ms;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Blur-up. TpjImage gives an image a tiny pre-blurred copy of itself
+   (--lqip, about 0.5KB) and data-lqip. Until the real image has loaded
+   and decoded, the image box shows that blur with a faint light sweep,
+   instead of the flat skeleton. Then the photo comes into focus (a
+   short blur-to-sharp, not an opacity fade, so nothing behind it ever
+   shows through). MotionRoot sets data-ld only after img.decode().
+   Images already loaded at mount carry data-cached and skip all of it.
+   --------------------------------------------------------------- */
+img[data-lqip] {
+  background-color: var(--skeleton-base, var(--placeholder));
+  background-image: var(--lqip);
+  background-size: cover;
+  /* Match the photo's own crop where a component sets one (heroes). */
+  background-position: var(--hero-focus, center);
+  background-repeat: no-repeat;
+}
+.img-fade img[data-fade][data-lqip]:not([data-ld]) {
+  opacity: 1;
+  background-image:
+    linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.16) 50%, transparent 70%),
+    var(--lqip);
+  background-size: 300% 100%, cover;
+  background-position: 100% 0, var(--hero-focus, center);
+  animation: lqip-sweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) 300ms infinite both;
+}
+.img-fade img[data-fade][data-lqip][data-ld] {
+  opacity: 1;
+  animation: img-focus 320ms cubic-bezier(0.33, 0, 0.2, 1) backwards;
+}
+img[data-lqip][data-cached],
+.img-fade img[data-fade][data-lqip][data-cached] {
+  background-image: none;
+  animation: none;
+  opacity: 1;
+}
+
+@keyframes lqip-sweep {
+  from { background-position: 100% 0, var(--hero-focus, center); }
+  to { background-position: 0% 0, var(--hero-focus, center); }
+}
+
+@keyframes img-focus {
+  from { filter: blur(12px); }
+  to { filter: blur(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .img-fade img[data-fade][data-lqip]:not([data-ld]) {
+    animation: none;
+    background-image: var(--lqip);
+    background-size: cover;
+    background-position: center;
+  }
+  .img-fade img[data-fade][data-lqip][data-ld] {
+    animation: none;
   }
 }
