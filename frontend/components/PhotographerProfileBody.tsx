@@ -111,14 +111,14 @@ export function PhotographerProfileBody({
 
   // Eyebrow names only the roles this person actually has, in the same
   // terms as the Artists role filter. A writer is never "Photographer".
+  const roles = [
+    totalArticles > 0 && "Photographer",
+    isInterviewer && "Interviewer",
+    totalWritten > 0 && "Writer",
+  ].filter((r): r is string => Boolean(r));
+  // "Photographer", "Photographer & Writer", "Photographer, Interviewer & Writer".
   const roleLabel =
-    [
-      totalArticles > 0 && "Photographer",
-      isInterviewer && "Interviewer",
-      totalWritten > 0 && "Writer",
-    ]
-      .filter(Boolean)
-      .join(" & ") || "Artist";
+    roles.length > 1 ? `${roles.slice(0, -1).join(", ")} & ${roles[roles.length - 1]}` : roles[0] ?? "Artist";
 
   return (
     <motion.div

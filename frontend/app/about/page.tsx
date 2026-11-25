@@ -14,7 +14,7 @@ export const metadata = pageMetadata({
 const TEAM: { name: string; role: string; url?: string }[] = [
   { name: "Agustin Sanchez", role: "Founder, Publisher", url: "https://www.agustin-sanchez.com/" },
   { name: "Lou Noble", role: "Editor-In-Chief", url: "https://www.louobedlam.com/" },
-  { name: "SuzAnne Steben", role: "Managing Editor", url: "http://www.suzannesteben.com/" },
+  { name: "SuzAnne Steben", role: "Managing Editor", url: "https://www.suzannesteben.com/" },
   { name: "Paige Mauriello", role: "Essays Editor" },
   { name: "Asa Featherstone, IV", role: "Contributing Editor", url: "https://www.asafeatherstone.com/" },
   { name: "Sally Reynolds", role: "Contributing Editor" },
@@ -23,7 +23,7 @@ const TEAM: { name: string; role: string; url?: string }[] = [
     role: "Staff Photographer · Photographer-in-Residence (2016–2019)",
     url: "https://www.katesweeneyphotography.com/",
   },
-  { name: "Jason Travis", role: "Photographer-in-Residence (2020)", url: "http://www.jasontravisphoto.com/" },
+  { name: "Jason Travis", role: "Photographer-in-Residence (2020)", url: "https://www.jasontravisphoto.com/" },
 ];
 
 export default function AboutPage() {

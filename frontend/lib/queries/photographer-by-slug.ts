@@ -2,6 +2,7 @@ import { gql } from "graphql-request";
 import { wpClient } from "../api";
 import { rewriteMediaUrl } from "../media";
 import { htmlToPlainText, titleCaseName } from "../text-utils";
+import { buildSocialLinks } from "../social-links";
 
 const PhotographerBySlugQuery = gql`
   query PhotographerBySlug($slug: ID!) {
@@ -86,12 +87,6 @@ type Response = { photographer: Raw | null };
 // ampersands, etc.) decode to their Unicode characters and don't show
 // through as literal `&#8217;` strings.
 
-function ensureUrl(value: string, fallbackPrefix: string): string {
-  if (/^https?:\/\//i.test(value)) return value;
-  if (value.startsWith("@")) return fallbackPrefix + value.slice(1);
-  return fallbackPrefix + value;
-}
-
 type SocialFields = {
   website: string | null;
   instagram: string | null;
@@ -108,92 +103,7 @@ type SocialFields = {
 };
 
 function buildSocials(s: SocialFields): Photographer["socials"] {
-  const out: Photographer["socials"] = [];
-  if (s.website) {
-    out.push({
-      label: "Website",
-      href: ensureUrl(s.website, "https://"),
-      external: true,
-    });
-  }
-  if (s.instagram) {
-    out.push({
-      label: "Instagram",
-      href: ensureUrl(s.instagram, "https://instagram.com/"),
-      external: true,
-    });
-  }
-  if (s.twitter) {
-    out.push({
-      label: "Twitter",
-      href: ensureUrl(s.twitter, "https://twitter.com/"),
-      external: true,
-    });
-  }
-  if (s.facebook) {
-    out.push({
-      label: "Facebook",
-      href: ensureUrl(s.facebook, "https://facebook.com/"),
-      external: true,
-    });
-  }
-  if (s.flickr) {
-    out.push({
-      label: "Flickr",
-      href: ensureUrl(s.flickr, "https://flickr.com/people/"),
-      external: true,
-    });
-  }
-  if (s.tumblr) {
-    out.push({
-      label: "Tumblr",
-      href: ensureUrl(s.tumblr, "https://"),
-      external: true,
-    });
-  }
-  if (s.vsco) {
-    out.push({
-      label: "VSCO",
-      href: ensureUrl(s.vsco, "https://vsco.co/"),
-      external: true,
-    });
-  }
-  if (s.vimeo) {
-    out.push({
-      label: "Vimeo",
-      href: ensureUrl(s.vimeo, "https://vimeo.com/"),
-      external: true,
-    });
-  }
-  if (s.blog) {
-    out.push({
-      label: "Blog",
-      href: ensureUrl(s.blog, "https://"),
-      external: true,
-    });
-  }
-  if (s.bluesky) {
-    out.push({
-      label: "Bluesky",
-      href: ensureUrl(s.bluesky, "https://bsky.app/profile/"),
-      external: true,
-    });
-  }
-  if (s.threads) {
-    out.push({
-      label: "Threads",
-      href: ensureUrl(s.threads, "https://www.threads.net/@"),
-      external: true,
-    });
-  }
-  if (s.linkedin) {
-    out.push({
-      label: "LinkedIn",
-      href: ensureUrl(s.linkedin, "https://linkedin.com/in/"),
-      external: true,
-    });
-  }
-  return out;
+  return buildSocialLinks(s);
 }
 
 function resolvePortrait(
