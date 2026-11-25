@@ -114,6 +114,12 @@
   margin: 0;
 }
 
+/* Byline under the title, as on the homepage hero card; the margin
+   clears the title's descenders. */
+.underTitle {
+  margin-top: 0.1em;
+}
+
 /* Portrait credit under the title; the margin clears its descenders. */
 .portraitCredit {
   margin-top: 0.1em;

@@ -67,9 +67,10 @@ export function Hero({
           )}
           <div className={styles.gradient} aria-hidden="true" />
           <div className={styles.stack}>
+            {/* Same order as the homepage hero card: tag, title, then
+                the byline under the title (no blurb on detail pages). */}
             <div className={styles.eyebrowRow} data-reveal>
               <ContentTypeChip label={contentTypeLabel} size="large" />
-              {meta && <p className={styles.byline}>{meta}</p>}
             </div>
             <h1
               className={styles.title}
@@ -80,6 +81,7 @@ export function Hero({
               {title}
             </h1>
             {subtitle && <p className={styles.subtitle} data-reveal>{subtitle}</p>}
+            {meta && <p className={`${styles.byline} ${styles.underTitle}`} data-reveal>{meta}</p>}
             {credit && <p className={`${styles.byline} ${styles.portraitCredit}`} data-reveal>{credit}</p>}
           </div>
         </div>
