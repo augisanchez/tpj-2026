@@ -58,35 +58,38 @@
 
 /* Credits: model, styling and other credits carried over from the
    legacy end-of-article block (lib/queries/linked-photographer.ts emits
-   <dl class="article-credits"> with one <div><dt><dd> per label). Set
-   as plain lines in the text column, no rule and no label column:
-   "Models: Bridget Peterson, Stephanie Pearson". */
+   <dl class="article-credits"> with one <div><dt><dd> per label). In
+   the text column, no rule: the label on its own line in small bold
+   caps, the names under it on one line, comma separated. */
 .body > :global(dl.article-credits) {
   display: block;
   margin-top: 48px;
   margin-bottom: 0;
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: var(--text-caption);
-  line-height: max(1.6em, 26px);
   color: var(--text);
 }
 
-.body > :global(dl.article-credits) > div {
-  display: block;
+.body > :global(dl.article-credits) > div + div {
+  margin-top: 28px;
 }
 
 .body > :global(dl.article-credits) dt {
-  display: inline;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .body > :global(dl.article-credits) dt::after {
-  content: ": ";
+  content: ":";
 }
 
 .body > :global(dl.article-credits) dd {
-  display: inline;
-  margin: 0;
+  margin: 6px 0 0;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  line-height: max(1.6em, 26px);
   overflow-wrap: anywhere;
 }
 

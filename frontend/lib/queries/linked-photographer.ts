@@ -281,7 +281,8 @@ export function creditsToDefinitionList(lines: string[]): string {
   const rows = entries
     .map(
       (e) =>
-        `<div><dt>${escapeText(e.label)}</dt><dd>${e.values.join("<br>")}</dd></div>`
+        // Names under one label read as one line: "A, B, C".
+        `<div><dt>${escapeText(e.label)}</dt><dd>${e.values.join(", ")}</dd></div>`
     )
     .join("");
   return `<dl class="article-credits">${rows}</dl>`;
