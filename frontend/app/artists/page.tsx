@@ -6,6 +6,7 @@ import ih from "@/components/IndexHeader.module.css";
 import styles from "@/components/PhotographersIndex.module.css";
 
 export const metadata = pageMetadata({
+    generatedImage: true,
   title: "Artists — The Photographic Journal",
   description: "Every photographer, writer and interviewer published in The Photographic Journal since 2012.",
   path: "/artists",

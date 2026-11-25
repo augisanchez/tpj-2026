@@ -3,6 +3,7 @@ import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/AboutPage.module.css";
 
 export const metadata = pageMetadata({
+    generatedImage: true,
   title: "About — The Photographic Journal",
   description: "About The Photographic Journal: editorial mission and the team behind the publication.",
   path: "/about",

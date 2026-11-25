@@ -5,6 +5,7 @@ import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/ContactPage.module.css";
 
 export const metadata = pageMetadata({
+    generatedImage: true,
   title: "Contact — The Photographic Journal",
   description: "Get in touch with The Photographic Journal for advertising, press, and general inquiries.",
   path: "/contact",

@@ -7,6 +7,7 @@ import ih from "@/components/IndexHeader.module.css";
 import styles from "./page.module.css";
 
 export const metadata = pageMetadata({
+    generatedImage: true,
   title: "Explore — The Photographic Journal",
   description: "Browse the full archive of photo essays, interviews, and features.",
   path: "/explore",

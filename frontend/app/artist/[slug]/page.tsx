@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await fetchPhotographerBySlug(slug);
   if (!p) return NOT_FOUND_META;
   return pageMetadata({
+    generatedImage: true,
     title: `${p.name} — The Photographic Journal`,
     description: describe(p.bio) ?? `Work by ${p.name} in The Photographic Journal.`,
     path: `/artist/${p.slug}`,

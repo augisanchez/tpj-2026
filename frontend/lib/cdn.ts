@@ -16,6 +16,12 @@ import { rewriteMediaUrl } from "./media";
  */
 export type CdnImageOpts = {
   width?: number;
+  /** With fit "cover": crop to exactly width x height. */
+  height?: number;
+  fit?: "cover" | "scale-down" | "contain";
+  /** Where to keep when cropping: "face" keeps faces (center if none),
+   *  "auto" finds the most salient area. */
+  gravity?: "face" | "auto" | "top" | "center";
   quality?: number;
   format?: "auto" | "webp" | "avif" | "jpeg" | "png";
 };
@@ -46,6 +52,9 @@ export function cdnImageUrl(
 
   const params = [
     typeof opts.width === "number" ? `width=${opts.width}` : null,
+    typeof opts.height === "number" ? `height=${opts.height}` : null,
+    opts.fit ? `fit=${opts.fit}` : null,
+    opts.gravity ? `gravity=${opts.gravity}` : null,
     `quality=${opts.quality ?? 85}`,
     `format=${opts.format ?? "auto"}`,
   ]

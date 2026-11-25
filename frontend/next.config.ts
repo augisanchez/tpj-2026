@@ -39,6 +39,8 @@ const CSP = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // Share-image fonts and mark, read from disk at render time (lib/og.tsx).
+  outputFileTracingIncludes: { "/**": ["./assets/og/**/*"] },
   skipTrailingSlashRedirect: true,
   async headers() {
     return [

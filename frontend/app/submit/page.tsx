@@ -4,6 +4,7 @@ import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/SubmitPage.module.css";
 
 export const metadata = pageMetadata({
+    generatedImage: true,
   title: "Submit — The Photographic Journal",
   description: "How to submit your photo essay to The Photographic Journal.",
   path: "/submit",

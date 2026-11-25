@@ -7,6 +7,7 @@ import ih from "@/components/IndexHeader.module.css";
 import styles from "@/components/ThemesIndex.module.css";
 
 export const metadata = pageMetadata({
+    generatedImage: true,
   title: "Themes — The Photographic Journal",
   description: "Eleven themes that thread through the TPJ archive.",
   path: "/themes",

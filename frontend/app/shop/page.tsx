@@ -4,6 +4,7 @@ import { SupportingPageBanner } from "@/components/SupportingPageBanner";
 import styles from "@/components/ShopPage.module.css";
 
 export const metadata = pageMetadata({
+    generatedImage: true,
   title: "Store — The Photographic Journal",
   description: "Limited-edition books from The Photographic Journal.",
   path: "/shop",
