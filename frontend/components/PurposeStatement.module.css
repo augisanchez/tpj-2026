@@ -2,16 +2,20 @@
   padding: 0 var(--gutter);
 }
 
+/* The intro line, centred, in Inter Medium. Inter runs wider than the
+   condensed display face, so it sets a step smaller with a little more
+   leading; balanced lines keep the centred rag even. */
 .statement {
-  font-family: var(--font-display), Impact, sans-serif;
-  font-weight: 700;
-  /* Ramps from 32px at small phones into ultrawide territory. */
-  font-size: clamp(32px, 1.5rem + 1.4vw, 72px); /* caps ~3429 */
-  line-height: 1.17;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(24px, 1rem + 1.25vw, 52px);
+  line-height: 1.3;
   letter-spacing: -0.02em;
   color: var(--text);
-  margin: 0;
-  max-width: 42ch;
+  text-align: center;
+  text-wrap: balance;
+  margin: 0 auto;
+  max-width: 36ch;
 }
 
 @media (max-width: 768px) {
