@@ -18,7 +18,7 @@ export function EssayIntro({ text, note }: Props) {
   return (
     <section className={styles.intro}>
       {text && <p className={styles.text} data-reveal>{text.trim()}</p>}
-      {note && <p className={styles.note} data-reveal>{note}</p>}
+      {note && <p className={styles.note} data-reveal data-editorial-note>{note}</p>}
     </section>
   );
 }

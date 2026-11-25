@@ -17,18 +17,19 @@
   white-space: pre-wrap;
 }
 
-/* Editing note: a separator between the intro and the story. Set like
-   the hero's secondary lines (14px regular), in grey, with the same
-   space above it as the story body leaves below it, so it sits centered
-   in the pause. */
+/* Editing note: a separator between the intro and the story, in grey
+   (--muted is the lightest grey that holds 4.5:1 for text this size),
+   with equal space above it and below it. The story body's own top
+   padding is the space below, so it steps down while a note leads it
+   (the data-editorial-note rule in globals.css). */
 .note {
   max-width: var(--measure);
-  margin: clamp(96px, 4rem + 5vw, 320px) auto 0; /* = the body's top padding */
+  margin: var(--note-gap) auto 0;
   font-family: var(--font-ui), system-ui, sans-serif;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 1.5;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  font-size: 21px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
   color: var(--muted);
 }
 
@@ -37,11 +38,9 @@
   margin-top: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  /* The body text is 17px here; the note stays under it. */
   .note {
-    margin-top: 64px;
-  }
-  .note:first-child {
-    margin-top: 0;
+    font-size: 17px;
   }
 }
