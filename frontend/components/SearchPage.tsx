@@ -11,12 +11,9 @@ import type { SearchItem, SearchPhotographer } from "@/lib/queries/search";
 import f from "./FilterBar.module.css";
 import ih from "./IndexHeader.module.css";
 import styles from "./SearchPage.module.css";
+import { TYPE_LABELS, countStories } from "@/lib/content-types";
 
-const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = {
-  essay: "Photo Essay",
-  interview: "Interview",
-  feature: "Feature",
-};
+const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = TYPE_LABELS;
 
 const DEBOUNCE_MS = 300;
 
@@ -59,8 +56,8 @@ export function SearchPage({ initialTerm, results, photographers = [] }: Props) 
     showResults && results.length === 0 && photographers.length === 0 && !isPending;
   const counted = [
     photographers.length > 0 &&
-      `${photographers.length} ${photographers.length === 1 ? "photographer" : "photographers"}`,
-    `${results.length} ${results.length === 1 ? "story" : "stories"}`,
+      `${photographers.length} ${photographers.length === 1 ? "artist" : "artists"}`,
+    countStories(results.length),
   ].filter(Boolean);
   const summary = `${counted.join(" and ")} for \u201c${trimmed}\u201d`;
 
@@ -97,7 +94,7 @@ export function SearchPage({ initialTerm, results, photographers = [] }: Props) 
       {empty && (
         <EmptyState
           heading="Nothing in the archive by that name. Yet."
-          note="Try a photographer name, a place, or a single word from a title."
+          note="Try an artist’s name, a place, or a single word from a title."
         />
       )}
 

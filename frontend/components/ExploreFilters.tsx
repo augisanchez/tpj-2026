@@ -4,16 +4,13 @@ import { THEMES } from "@/lib/themes";
 import { Icon } from "./Icon";
 import { ViewToggle, type View } from "./ViewToggle";
 import f from "./FilterBar.module.css";
+import { TYPE_PLURALS } from "@/lib/content-types";
 
 export type ExploreType = "all" | "essay" | "interview" | "feature";
 export type ExploreTheme = "all" | (typeof THEMES)[number]["slug"];
 export type ExploreSort = "newest" | "random";
 
-export const TYPE_LABELS: Record<Exclude<ExploreType, "all">, string> = {
-  essay: "Photo Essays",
-  interview: "Interviews",
-  feature: "Features",
-};
+export const TYPE_LABELS: Record<Exclude<ExploreType, "all">, string> = TYPE_PLURALS;
 
 type Props = {
   type: ExploreType;

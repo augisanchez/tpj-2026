@@ -107,7 +107,11 @@ const PhotographersFromArticlesQuery = gql`
 export type ArtistRole = "photographer" | "interviewed" | "interviewer" | "writer";
 
 export type RoleCounts = {
-  photographs: number;
+  /** Photo essays they photographed. */
+  essays: number;
+  /** Features they photographed. */
+  features: number;
+  /** Interviews with them. */
   interviews: number;
   conducted: number;
   written: number;
@@ -163,14 +167,14 @@ async function fetchRoleCounts(): Promise<Map<string, RoleCounts>> {
   const map = new Map<string, RoleCounts>();
   const bump = (slug: string | null | undefined, key: keyof RoleCounts) => {
     if (!slug) return;
-    const c = map.get(slug) ?? { photographs: 0, interviews: 0, conducted: 0, written: 0 };
+    const c = map.get(slug) ?? { essays: 0, features: 0, interviews: 0, conducted: 0, written: 0 };
     c[key] += 1;
     map.set(slug, c);
   };
   const credited = (n: RoleNode) => [...new Set((n.linkedPhotographers ?? []).map((l) => l.slug))];
-  for (const n of data.essays?.nodes ?? []) credited(n).forEach((s) => bump(s, "photographs"));
+  for (const n of data.essays?.nodes ?? []) credited(n).forEach((s) => bump(s, "essays"));
   for (const n of data.features?.nodes ?? []) {
-    credited(n).forEach((s) => bump(s, "photographs"));
+    credited(n).forEach((s) => bump(s, "features"));
     [...new Set(bylineSlugs(n.articleAuthor))].forEach((s) => bump(s, "written"));
   }
   for (const n of data.interviews?.nodes ?? []) {
@@ -183,7 +187,7 @@ async function fetchRoleCounts(): Promise<Map<string, RoleCounts>> {
 function rolesFrom(c: RoleCounts | undefined): ArtistRole[] {
   if (!c) return [];
   const r: ArtistRole[] = [];
-  if (c.photographs) r.push("photographer");
+  if (c.essays + c.features) r.push("photographer");
   if (c.interviews) r.push("interviewed");
   if (c.conducted) r.push("interviewer");
   if (c.written) r.push("writer");
@@ -397,7 +401,7 @@ export async function fetchPhotographersIndex(): Promise<
         // 10s request on the CMS (a count per record). The role counts
         // come from one article query and carry the same number.
         articleCount: counts
-          ? counts.photographs + counts.interviews + counts.conducted + counts.written
+          ? counts.essays + counts.features + counts.interviews + counts.conducted + counts.written
           : node.interviewCount ?? 0,
         appearsInCount: node.appearsInCount ?? 0,
         roles: rolesFrom(counts),

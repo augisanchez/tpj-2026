@@ -2,6 +2,7 @@ import type { Photographer } from "@/lib/photographer-types";
 import { fetchEssaysByTheme } from "./essays-by-theme";
 import { fetchPhotographerArticles, type PhotographerArticleType } from "./photographer-articles";
 import type { FeaturedImage, RecentEssay } from "./recent-essays";
+import { TYPE_LABELS } from "@/lib/content-types";
 
 export type RelatedStory = {
   id: string;
@@ -13,11 +14,7 @@ export type RelatedStory = {
   featuredImage: FeaturedImage | null;
 };
 
-const TYPE_LABEL: Record<PhotographerArticleType, string> = {
-  essay: "Photo Essay",
-  interview: "Interview",
-  feature: "Feature",
-};
+const TYPE_LABEL: Record<PhotographerArticleType, string> = TYPE_LABELS;
 
 /** Must match the homepage ThemeBrowser's per-theme count, so the
  *  request body (and its cache entry) is shared with the homepage. */

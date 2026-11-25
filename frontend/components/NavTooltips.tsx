@@ -23,7 +23,7 @@ const TIPS: Record<string, string> = {
   "/submit": "Send us a photo essay.",
   "/contact": "Write to the editors.",
   "/random": "A random story from the archive.",
-  "/search": "Find a story or a photographer.",
+  "/search": "Find a story or an artist.",
 };
 
 /** First hover waits this long, so passing over the nav doesn't flash tips. */

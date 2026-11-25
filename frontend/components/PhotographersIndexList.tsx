@@ -4,6 +4,7 @@ import Link from "next/link";
 import { cdnImageUrl } from "@/lib/cdn";
 import type { PhotographerIndexItem } from "@/lib/queries/photographers-index";
 import styles from "./PhotographersIndexList.module.css";
+import { countStories } from "@/lib/content-types";
 
 /**
  * List view of the photographers index (Stedelijk-style): one full-width
@@ -31,9 +32,9 @@ export function PhotographersIndexList({ people }: { people: PhotographerIndexIt
               <span className={styles.count}>
                 {(() => {
                   const n = p.counts
-                    ? p.counts.photographs + p.counts.interviews + p.counts.conducted + p.counts.written
+                    ? p.counts.essays + p.counts.features + p.counts.interviews + p.counts.conducted + p.counts.written
                     : p.articleCount;
-                  return `${n} ${n === 1 ? "story" : "stories"}`;
+                  return countStories(n);
                 })()}
               </span>
             </Link>

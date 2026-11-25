@@ -22,18 +22,11 @@ import { cdnImageUrl } from "@/lib/cdn";
 import type { ExploreItem, ExploreStory } from "@/lib/queries/explore";
 import f from "./FilterBar.module.css";
 import styles from "./ExploreGrid.module.css";
+import { TYPE_LABELS } from "@/lib/content-types";
 
-const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = {
-  essay: "Photo Essay",
-  interview: "Interview",
-  feature: "Feature",
-};
+const LABEL_BY_TYPE: Record<ExploreItem["contentType"], string> = TYPE_LABELS;
 
-const ROW_TYPE: Record<ExploreItem["contentType"], string> = {
-  essay: "Essay",
-  interview: "Interview",
-  feature: "Feature",
-};
+const ROW_TYPE: Record<ExploreItem["contentType"], string> = TYPE_LABELS;
 
 const LIST_ID = "explore-list";
 

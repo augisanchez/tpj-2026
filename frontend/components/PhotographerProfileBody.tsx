@@ -8,12 +8,9 @@ import { PhotographerAvatar } from "./PhotographerAvatar";
 import styles from "./PhotographerProfile.module.css";
 import type { Photographer } from "@/lib/queries/photographer-by-slug";
 import type { PhotographerArticle } from "@/lib/queries/photographer-articles";
+import { TYPE_LABELS, countByType, countOf } from "@/lib/content-types";
 
-const TYPE_LABEL = {
-  essay: "Photo Essay",
-  interview: "Interview",
-  feature: "Feature",
-} as const;
+const TYPE_LABEL = TYPE_LABELS;
 
 type Props = {
   photographer: Photographer;
@@ -68,7 +65,7 @@ export function PhotographerProfileBody({
   const views = (
     [
       ["photographs", "Photographs", totalArticles],
-      ["interviews", "Interviews", totalInterviews],
+      ["interviews", "Interviews conducted", totalInterviews],
       ["writing", "Writing", totalWritten],
       ["appears", "Appears in", totalAppears],
     ] as const
@@ -96,25 +93,32 @@ export function PhotographerProfileBody({
   }
   if (totalArticles > 0) {
     metaSegments.push(
-      `${totalArticles} ${
-        totalArticles === 1 ? "story" : "stories"
-      } in TPJ${startYear ? ` since ${startYear}` : ""}`
+      `${countByType(articles, ", ")}${startYear ? ` since ${startYear}` : ""}`
     );
   }
   if (isInterviewer) {
     metaSegments.push(
-      `${totalInterviews} ${
-        totalInterviews === 1 ? "interview" : "interviews"
-      } conducted`
+      `${countOf(totalInterviews, "interview")} conducted`
     );
   }
   if (totalWritten > 0) {
-    metaSegments.push(`${totalWritten} ${totalWritten === 1 ? "feature" : "features"} written`);
+    metaSegments.push(`${countOf(totalWritten, "feature")} written`);
   }
   if (totalAppears > 0) {
     metaSegments.push(`appears in ${totalAppears}`);
   }
   const metaLine = metaSegments.join("  ·  ");
+
+  // Eyebrow names only the roles this person actually has, in the same
+  // terms as the Artists role filter. A writer is never "Photographer".
+  const roleLabel =
+    [
+      totalArticles > 0 && "Photographer",
+      isInterviewer && "Interviewer",
+      totalWritten > 0 && "Writer",
+    ]
+      .filter(Boolean)
+      .join(" & ") || "Artist";
 
   return (
     <motion.div
@@ -138,7 +142,7 @@ export function PhotographerProfileBody({
         <div className={styles.meta}>
           <motion.div className={styles.identity} variants={itemVariants}>
             <p className={styles.eyebrow} data-reveal>
-              {isInterviewer ? "Photographer & Interviewer" : "Photographer"}
+              {roleLabel}
             </p>
             <h1 className={styles.name} data-reveal="lines">{photographer.name}</h1>
             {metaLine && <p className={styles.locationCount}>{metaLine}</p>}
@@ -206,8 +210,7 @@ export function PhotographerProfileBody({
             <>
               {!hasTabs && (
                 <p className={styles.articlesHead}>
-                  {totalArticles}{" "}
-                  {totalArticles === 1 ? "story" : "stories"}
+                  {countByType(articles)}
                 </p>
               )}
               <div className={styles.grid} data-reveal-children>

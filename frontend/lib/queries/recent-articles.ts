@@ -1,6 +1,7 @@
 import { fetchRecentEssays, type RecentEssay } from "./recent-essays";
 import { fetchRecentFeatures } from "./recent-features";
 import { fetchRecentInterviews } from "./recent-interviews";
+import { TYPE_LABELS } from "@/lib/content-types";
 
 export type RecentArticleContentType = "essay" | "feature" | "interview";
 
@@ -14,11 +15,7 @@ const TYPE_TO_PATH: Record<RecentArticleContentType, string> = {
   interview: "/interview",
 };
 
-const TYPE_TO_LABEL: Record<RecentArticleContentType, string> = {
-  essay: "Photo Essay",
-  feature: "Feature",
-  interview: "Interview",
-};
+const TYPE_TO_LABEL: Record<RecentArticleContentType, string> = TYPE_LABELS;
 
 export function articleHref(article: RecentArticle): string {
   return `${TYPE_TO_PATH[article.contentType]}/${article.slug}`;

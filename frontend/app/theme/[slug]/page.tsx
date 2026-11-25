@@ -7,8 +7,9 @@ import { fetchExplore } from "@/lib/queries/explore";
 import styles from "@/components/ThemePage.module.css";
 import type { Metadata } from "next";
 import { describe, pageMetadata } from "@/lib/seo";
+import { TYPE_LABELS } from "@/lib/content-types";
 
-const TYPE_LABEL = { essay: "Photo Essay", interview: "Interview", feature: "Feature" } as const;
+const TYPE_LABEL = TYPE_LABELS;
 
 type Props = {
   params: Promise<{ slug: string }>;

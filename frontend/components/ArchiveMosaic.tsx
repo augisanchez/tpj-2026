@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TpjImage } from "./TpjImage";
 import styles from "./ArchiveMosaic.module.css";
+import { TYPE_LABELS } from "@/lib/content-types";
 
 export type MosaicTile = {
   href: string;
@@ -12,7 +13,7 @@ export type MosaicTile = {
   year: number | null;
 };
 
-const TYPE_LABEL = { essay: "Photo Essay", interview: "Interview", feature: "Feature" } as const;
+const TYPE_LABEL = TYPE_LABELS;
 
 type Props = {
   tiles: MosaicTile[];

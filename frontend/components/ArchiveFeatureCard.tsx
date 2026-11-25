@@ -4,19 +4,16 @@ import Link from "next/link";
 import { ContentTypeChip } from "./ContentTypeChip";
 import type { ArchiveFeature } from "@/lib/queries/archive-feature";
 import styles from "./ArchiveFeatureCard.module.css";
+import { TYPE_LABELS } from "@/lib/content-types";
 
 type Props = {
   feature: ArchiveFeature;
 };
 
-const TYPE_LABEL: Record<ArchiveFeature["type"], string> = {
-  essay: "Essay",
-  interview: "Interview",
-  feature: "Feature",
-};
+const TYPE_LABEL: Record<ArchiveFeature["type"], string> = TYPE_LABELS;
 
 const READ_LABEL: Record<ArchiveFeature["type"], string> = {
-  essay: "Read essay",
+  essay: "Read photo essay",
   interview: "Read interview",
   feature: "Read feature",
 };

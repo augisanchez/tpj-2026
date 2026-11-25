@@ -4,16 +4,16 @@ import Link from "next/link";
 import { PhotographerAvatar } from "./PhotographerAvatar";
 import type { RoleCounts } from "@/lib/queries/photographers-index";
 import styles from "./PhotographerListCard.module.css";
+import { countOf, countStories } from "@/lib/content-types";
 
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-
-/** "3 photo stories · 2 interviews conducted · 1 feature written". */
+/** "3 photo essays · 1 interview · 2 interviews conducted · 1 feature written". */
 function roleLine(c: RoleCounts): string {
   return [
-    c.photographs && plural(c.photographs, "photo story", "photo stories"),
-    c.interviews && plural(c.interviews, "interview", "interviews"),
-    c.conducted && plural(c.conducted, "interview conducted", "interviews conducted"),
-    c.written && plural(c.written, "feature written", "features written"),
+    c.essays && countOf(c.essays, "essay"),
+    c.features && countOf(c.features, "feature"),
+    c.interviews && countOf(c.interviews, "interview"),
+    c.conducted && `${countOf(c.conducted, "interview")} conducted`,
+    c.written && `${countOf(c.written, "feature")} written`,
   ].filter(Boolean).join("  ·  ");
 }
 
@@ -78,7 +78,7 @@ export function PhotographerListCard({
       {!compact && bio && <p className={styles.cardBio}>{bio}</p>}
       {(counts ? roleLine(counts) : articleCount > 0) && (
         <p className={styles.cardCount}>
-          {counts ? roleLine(counts) : `${articleCount} ${articleCount === 1 ? "story" : "stories"}`}
+          {counts ? roleLine(counts) : countStories(articleCount)}
           {appearsInCount > 0 && `  ·  appears in ${appearsInCount}`}
           <span className={styles.cardCountArrow} aria-hidden="true">
             →
