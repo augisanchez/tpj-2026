@@ -48,7 +48,16 @@ export function ArchiveMosaic({ tiles, total }: Props) {
               <TpjImage
                 src={t.src}
                 alt={t.title}
-                sizes={i === 0 || i === 14 ? "(min-width: 768px) 50vw, 100vw" : "(min-width: 768px) 17vw, 50vw"}
+                // Lead tiles span half the grid; wide (two columns) and tall
+                // (two rows, cropped to fill) tiles need about a third;
+                // squares a sixth.
+                sizes={
+                  i === 0 || i === 14
+                    ? "(min-width: 768px) 50vw, 100vw"
+                    : [1, 3, 6, 8, 11, 15].includes(i)
+                      ? "(min-width: 768px) 34vw, 100vw"
+                      : "(min-width: 768px) 17vw, 50vw"
+                }
                 className={`${styles.image} pz-media`}
               />
               {t.year ? <span className={styles.year}>{t.year}</span> : null}

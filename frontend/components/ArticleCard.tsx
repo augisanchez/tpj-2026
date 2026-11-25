@@ -40,6 +40,8 @@ type Article = {
 type Props = {
   article: Article;
   variant?: ArticleCardVariant;
+  /** Overrides the variant's image `sizes` when the grid differs. */
+  sizes?: string;
   showDate?: boolean;
   /**
    * Composite thumbnail mode: when provided, render a 2×2
@@ -68,6 +70,7 @@ const CHIP_SIZE_BY_VARIANT: Record<ArticleCardVariant, ContentTypeChipSize> = {
 export function ArticleCard({
   article,
   variant = "4up",
+  sizes,
   showDate = true,
   compositeImages,
   badgeCount,
@@ -99,7 +102,7 @@ export function ArticleCard({
                 data-fade=""
                 src={cdnImageUrl(article.featuredImage.src, { width: Math.min(1024, article.featuredImage.width ?? 1024) }) ?? article.featuredImage.src}
                 srcSet={cdnSrcSet(article.featuredImage.src, capWidths([480, 768, 1024, 1440, 1920, 2560], article.featuredImage.width)) ?? undefined}
-                sizes={CARD_SIZES[variant]}
+                sizes={sizes ?? CARD_SIZES[variant]}
                 alt={article.featuredImage.alt}
                 loading="lazy"
                 decoding="async"

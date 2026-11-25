@@ -41,7 +41,7 @@
 .link {
   font-family: var(--font-ui), system-ui, sans-serif;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 12px; /* the site's 12px floor (audit L21) */
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--footer-text);

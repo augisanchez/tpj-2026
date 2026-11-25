@@ -215,6 +215,9 @@ export function PhotographerProfileBody({
                   <ArticleCard
                     key={a.id}
                     variant="5up"
+                    // The profile grid is three across the full width on
+                    // desktop, two on tablets, one on phones.
+                    sizes="(min-width: 1025px) 33vw, (min-width: 641px) 50vw, 100vw"
                     article={{
                       title: a.title,
                       date: a.date,

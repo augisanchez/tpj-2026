@@ -2,7 +2,8 @@
    body photographs are on screen and sinks away otherwise. */
 .counter {
   position: fixed;
-  left: 24px;
+  /* Inside the 1,920px column on ultrawide screens (audit L16). */
+  left: max(24px, calc((100% - 1920px) / 2 + 24px));
   bottom: 20px;
   z-index: 50;
   margin: 0;
