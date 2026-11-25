@@ -64,13 +64,14 @@ export function PhotographerListCard({
       href={`/artist/${slug}`}
       className={className}
     >
-      <div
-        className={`${styles.portraitWrapper} pz-media`}
-      >
+      {/* The circle stays put; the photo inside drifts with the pointer
+          (pz-media) and the circle takes the green hover ring, the same
+          pattern as every article card. */}
+      <div className={styles.portraitWrapper}>
         <PhotographerAvatar
           name={name}
           portrait={portrait ?? undefined}
-          className={styles.portrait}
+          className={`${styles.portrait} pz-media`}
         />
       </div>
       <h3 className={styles.cardName}>{name}</h3>
