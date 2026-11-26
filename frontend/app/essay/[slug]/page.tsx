@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const names = a.photographers.map((p) => p.name).filter(Boolean);
   return pageMetadata({
     title: `${a.title} — The Photographic Journal`,
-    description: describe(a.intro, a.excerpt, a.body),
+    description: describe(a.summary, a.intro, a.excerpt, a.body),
     path: `/essay/${a.slug}`,
     image: a.heroImage ?? a.featuredImage,
     type: "article",
@@ -86,7 +86,7 @@ export default async function EssayPage({ params }: Props) {
           path: `/essay/${essay.slug}`,
           section: "Photo Essays",
           sectionPath: "/explore?type=essay",
-          description: describe(essay.intro, essay.excerpt, essay.body),
+          description: describe(essay.summary, essay.intro, essay.excerpt, essay.body),
           image: essay.heroImage ?? essay.featuredImage,
           datePublished: isoDate(essay.date, essay.dateGmt),
           people: essay.photographers.map((p) => ({ name: p.name, slug: p.slug })),

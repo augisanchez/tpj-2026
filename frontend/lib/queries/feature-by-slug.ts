@@ -24,6 +24,7 @@ const FeatureBySlugQuery = gql`
       dateGmt
       content
       excerpt
+      summary
       articleIntro
       editorialNote
       articleAuthor
@@ -76,6 +77,7 @@ type RawFeature = {
   dateGmt?: string | null;
   content: string | null;
   excerpt: string | null;
+  summary?: string | null;
   articleIntro: string | null;
   editorialNote?: string | null;
   articleAuthor: string | null;
@@ -146,6 +148,7 @@ export async function fetchFeatureBySlug(
     body,
     credits,
     excerpt: raw.excerpt,
+    summary: raw.summary?.trim() || null,
     intro: intro || null,
     editorialNote,
     photographerName: photographerNameTrimmed,

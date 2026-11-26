@@ -24,6 +24,7 @@ const InterviewBySlugQuery = gql`
       dateGmt
       content
       excerpt
+      summary
       articleIntro
       editorialNote
       articleAuthor
@@ -63,6 +64,8 @@ export type Interview = {
   /** Credits colophon (model, styling...) shown under the photographer. */
   credits: string;
   excerpt: string | null;
+  /** Hand-written summary (the editor's Excerpt box); null when empty. */
+  summary: string | null;
   intro: string | null;
   /** Editing note shown under the intro. */
   editorialNote: string | null;
@@ -90,6 +93,7 @@ type RawInterview = {
   dateGmt?: string | null;
   content: string | null;
   excerpt: string | null;
+  summary?: string | null;
   articleIntro: string | null;
   editorialNote?: string | null;
   articleAuthor: string | null;
@@ -161,6 +165,7 @@ export async function fetchInterviewBySlug(
     body,
     credits,
     excerpt: raw.excerpt,
+    summary: raw.summary?.trim() || null,
     intro: intro || null,
     editorialNote,
     interviewer: interviewer || null,

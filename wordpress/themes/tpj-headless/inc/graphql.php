@@ -426,6 +426,15 @@ add_action( 'graphql_register_types', function () {
 				return $v === '' ? null : $v;
 			},
 		] );
+		register_graphql_field( $type, 'summary', [
+			'type'        => 'String',
+			'description' => 'Hand-written one-sentence summary from the editor\'s Excerpt box (post_excerpt). Null when empty; unlike `excerpt`, never auto-generated from the body. Used for search and share descriptions.',
+			'resolve'     => function ( $post ) {
+				$id = is_object( $post ) ? ( $post->ID ?? $post->databaseId ?? 0 ) : 0;
+				$v  = $id ? trim( wp_strip_all_tags( (string) get_post_field( 'post_excerpt', $id ) ) ) : '';
+				return $v === '' ? null : $v;
+			},
+		] );
 		if ( 'Essay' !== $type ) {
 			register_graphql_field( $type, 'editorialNote', [
 				'type'        => 'String',

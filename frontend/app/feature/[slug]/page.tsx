@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const names = a.photographers.map((p) => p.name).filter(Boolean);
   return pageMetadata({
     title: `${a.title} — The Photographic Journal`,
-    description: describe(a.intro, a.excerpt, a.body),
+    description: describe(a.summary, a.intro, a.excerpt, a.body),
     path: `/feature/${a.slug}`,
     image: a.heroImage ?? a.featuredImage,
     type: "article",
@@ -113,7 +113,7 @@ export default async function FeaturePage({ params }: Props) {
           path: `/feature/${feature.slug}`,
           section: "Features",
           sectionPath: "/explore?type=feature",
-          description: describe(feature.intro, feature.excerpt, feature.body),
+          description: describe(feature.summary, feature.intro, feature.excerpt, feature.body),
           image: feature.heroImage ?? feature.featuredImage,
           datePublished: isoDate(feature.date, feature.dateGmt),
           people: [...(feature.writer ? [{ name: feature.writer }] : []), ...feature.photographers.map((p) => ({ name: p.name, slug: p.slug }))],

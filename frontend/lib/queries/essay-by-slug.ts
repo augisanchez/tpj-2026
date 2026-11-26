@@ -23,6 +23,7 @@ const EssayBySlugQuery = gql`
       dateGmt
       content
       excerpt
+      summary
       articleIntro
       photographerName
       ${LinkedPhotographerFields}
@@ -64,6 +65,8 @@ export type Essay = {
   /** Credits colophon (model, styling...) shown under the photographer. */
   credits: string;
   excerpt: string | null;
+  /** Hand-written summary (the editor's Excerpt box); null when empty. */
+  summary: string | null;
   intro: string | null;
   /** Editing note under the intro (interviews, features). */
   editorialNote?: string | null;
@@ -90,6 +93,7 @@ type RawEssay = {
   dateGmt?: string | null;
   content: string | null;
   excerpt: string | null;
+  summary?: string | null;
   articleIntro: string | null;
   photographerName: string | null;
   linkedPhotographer: RawLinkedPhotographer | null;
@@ -155,6 +159,7 @@ export async function fetchEssayBySlug(
     body,
     credits,
     excerpt: raw.excerpt,
+    summary: raw.summary?.trim() || null,
     intro: intro || null,
     photographerName: photographerNameTrimmed,
     photographer: photographers[0] ?? null,
