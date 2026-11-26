@@ -173,13 +173,19 @@ export function rewriteArticleBodyImages(html: string): string {
  * Perrone". The title ties each photo to the story for search and AI
  * tools that can't see the image. Real alt text wins.
  */
+/** Alt text WordPress copied from the file name on upload
+ *  ("wolf-alice-at-le-poisson-rouge2", "IMG_4021.jpg"): one token with
+ *  dashes, underscores, a trailing number or an extension. Treated as
+ *  empty. Single real words ("Scramble") pass. */
+const FILENAME_ALT = /^(?=\S*(?:[-_]|\d$|\.(?:jpe?g|png|gif|webp|tiff?)$))\S+$/i;
+
 function fillEmptyAlt(html: string, credit?: string | null, title?: string | null): string {
   const total = (html.match(IMG_TAG_RE) ?? []).length;
   let n = 0;
   return html.replace(IMG_TAG_RE, (tag) => {
     n += 1;
     const alt = /\salt\s*=\s*(["'])(.*?)\1/i.exec(tag);
-    if (alt && alt[2].trim()) return tag;
+    if (alt && alt[2].trim() && !FILENAME_ALT.test(alt[2].trim())) return tag;
     const label = `Photograph ${n} of ${total}${title ? ` from ${title}` : ""}${credit ? ` by ${credit}` : ""}`
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
     const withoutAlt = alt ? tag.replace(alt[0], "") : tag;
@@ -189,8 +195,10 @@ function fillEmptyAlt(html: string, credit?: string | null, title?: string | nul
 
 export function prepareArticleBodyHtml(html: string, opts: { credit?: string | null; title?: string | null } = {}): string {
   // Decoded here, escaped once when the label is written.
-  const title = opts.title ? decodeHtmlEntities(opts.title).trim() : null;
   const credit = opts.credit ? decodeHtmlEntities(opts.credit).trim() : null;
+  let title = opts.title ? decodeHtmlEntities(opts.title).trim() : null;
+  // Interviews are titled with the person's name: "by Sacha Lecca" alone.
+  if (title && credit && title.toLowerCase().includes(credit.toLowerCase())) title = null;
   const withImages = rewriteArticleBodyImages(fillEmptyAlt(rewriteMediaUrlsInHtml(html), credit, title));
   if (!isCdnEnabled()) return withImages;
   // Everything else that links into uploads (full-size links, video

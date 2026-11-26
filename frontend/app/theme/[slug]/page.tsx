@@ -54,7 +54,10 @@ export default async function ThemePage({ params }: Props) {
     items: items.map((i) => ({
       name: decodeHtmlEntities(i.title),
       path: `/${i.contentType}/${i.slug}`,
-      author: i.photographer,
+      // Interviews are titled with the person's name; skip "X, by X".
+      author: i.photographer && !decodeHtmlEntities(i.title).toLowerCase().includes(i.photographer.toLowerCase())
+        ? i.photographer
+        : null,
     })),
   });
 
