@@ -2,12 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  AnimatePresence,
-  animate,
-  motion,
-  useMotionValue,
-} from "motion/react";
+import { animate, useMotionValue } from "motion/react";
 import { ArticleCard } from "./ArticleCard";
 import {
   ExploreFilters,
@@ -271,6 +266,9 @@ export function ExploreGrid({ items, people = NO_PEOPLE, initialType }: Props) {
     return filtered;
   }, [filtered, sort, shuffleSeed]);
 
+  // One key per result set: a new key remounts the grid so it ripples in.
+  const gridKey = `${type}|${theme}|${sort}|${shuffleSeed}`;
+
   // Reset pagination when the filter/sort criteria change so the user
   // doesn't see a stale slice of the new results. The first run after a
   // restoration shouldn't reset, so we gate on restoredRef.
@@ -418,43 +416,28 @@ export function ExploreGrid({ items, people = NO_PEOPLE, initialType }: Props) {
         </div>
       ) : (
         <>
-          <div className={styles.grid}>
-            {/* AnimatePresence + motion.div layout drives FLIP-style
-                reflow when filters/sort change. mode="popLayout"
-                removes exiting cards from layout flow immediately so
-                the remaining cards animate to their new grid
-                positions while the exit fade runs in parallel.
-                layout="position" instead of plain layout: only
-                animate movement, not size — the cards never resize
-                between filter states, and animating size on grid
-                children risks scrollbar jitter. */}
-            <AnimatePresence mode="popLayout" initial={false}>
-              {visible.map((item) => (
-                <motion.div
-                  key={item.id}
-                  layout="position"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{
-                    layout: { duration: 0.4, ease: [0.2, 0.6, 0.2, 1] },
-                    opacity: { duration: 0.25 },
+          {/* Changing the type, theme or order gives the grid a new key,
+              so React mounts fresh cards. MotionRoot sees them as new
+              blocks and plays the site's ripple: cards on screen rise in
+              a diagonal wave from the top-left, the rest as they're
+              scrolled to. Cards added by "Load more" ripple the same way.
+              Reduced motion: the new grid simply appears. */}
+          <div className={styles.grid} key={gridKey} data-reveal-children>
+            {visible.map((item) => (
+              <div key={item.id}>
+                <ArticleCard
+                  variant="4up"
+                  article={{
+                    title: item.title,
+                    date: item.date,
+                    href: `/${item.contentType}/${item.slug}`,
+                    contentTypeLabel: LABEL_BY_TYPE[item.contentType],
+                    photographer: item.photographer,
+                    featuredImage: item.featuredImage ?? undefined,
                   }}
-                >
-                  <ArticleCard
-                    variant="4up"
-                    article={{
-                      title: item.title,
-                      date: item.date,
-                      href: `/${item.contentType}/${item.slug}`,
-                      contentTypeLabel: LABEL_BY_TYPE[item.contentType],
-                      photographer: item.photographer,
-                      featuredImage: item.featuredImage ?? undefined,
-                    }}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                />
+              </div>
+            ))}
           </div>
 
           {hasMore ? (
