@@ -245,6 +245,12 @@ img {
   padding: 0.32em 0;
   margin: -0.32em 0;
 }
+/* Adjacent block margins collapse to the most negative one, so between
+   two lines only -0.32em applied and split titles ran 0.32em looser than
+   unsplit ones. Doubling the margin here restores the full -0.64em. */
+.rv-line + .rv-line {
+  margin-top: -0.64em;
+}
 
 .rv-line-inner {
   display: block;
