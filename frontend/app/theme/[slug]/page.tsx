@@ -6,7 +6,9 @@ import { THEMES } from "@/lib/themes";
 import { fetchExplore } from "@/lib/queries/explore";
 import styles from "@/components/ThemePage.module.css";
 import type { Metadata } from "next";
-import { describe, pageMetadata } from "@/lib/seo";
+import { collectionJsonLd, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { decodeHtmlEntities } from "@/lib/text-utils";
 import { TYPE_LABELS } from "@/lib/content-types";
 
 const TYPE_LABEL = TYPE_LABELS;
@@ -43,8 +45,22 @@ export default async function ThemePage({ params }: Props) {
   // from the cached Explore list (one archive fetch shared site-wide).
   const items = (await fetchExplore(1000)).filter((i) => i.themes.includes(slug));
 
+  const path = `/theme/${theme.slug}`;
+  const jsonLd = collectionJsonLd({
+    name: theme.name,
+    path,
+    description: theme.prompt,
+    parent: { name: "Themes", path: "/themes" },
+    items: items.map((i) => ({
+      name: decodeHtmlEntities(i.title),
+      path: `/${i.contentType}/${i.slug}`,
+      author: i.photographer,
+    })),
+  });
+
   return (
     <>
+      <JsonLd data={jsonLd} />
       <header className={styles.banner}>
         <p className={styles.eyebrow}>Theme</p>
         <h1 className={styles.name} data-reveal="lines">{theme.name}</h1>

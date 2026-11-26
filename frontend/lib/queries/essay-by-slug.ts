@@ -133,6 +133,7 @@ export async function fetchEssayBySlug(
 
   const rawBody = raw.content
     ? prepareArticleBodyHtml(raw.content, {
+        title: raw.title,
         credit: photographers.map((p) => p.name).filter(Boolean).join(" and ") || photographerNameTrimmed,
       })
     : "";

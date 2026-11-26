@@ -71,6 +71,12 @@ const nextConfig: NextConfig = {
           // (see docs/CUTOVER.md). Article bodies are WordPress HTML, so
           // this is the backstop if a CMS account is ever compromised.
           { key: "Content-Security-Policy-Report-Only", value: CSP },
+          // AI training opt-out, matching robots.txt. tdm-reservation is
+          // the W3C TDMRep signal for the EU text-and-data-mining
+          // reservation (policy file: public/.well-known/tdmrep.json).
+          // noai/noimageai are informal, honored by a few image scrapers.
+          { key: "tdm-reservation", value: "1" },
+          { key: "X-Robots-Tag", value: "noai, noimageai" },
         ],
       },
       {

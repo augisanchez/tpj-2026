@@ -7,6 +7,7 @@ import {
   isCdnEnabled,
   capDensity,
 } from "./cdn";
+import { decodeHtmlEntities } from "./text-utils";
 
 /** Any absolute (or protocol-relative) link into a WordPress uploads
  *  folder on the old hosts. After cutover the live domain serves this
@@ -168,23 +169,29 @@ export function rewriteArticleBodyImages(html: string): string {
 /**
  * Empty alt text on body photos (most of the archive) means screen
  * readers skip the photographs entirely. Fill it from the order and the
- * credit: "Photograph 3 of 11 by Etienne Perrone". Real alt text wins.
+ * story and credit: "Photograph 3 of 11 from Night Swim by Etienne
+ * Perrone". The title ties each photo to the story for search and AI
+ * tools that can't see the image. Real alt text wins.
  */
-function fillEmptyAlt(html: string, credit?: string | null): string {
+function fillEmptyAlt(html: string, credit?: string | null, title?: string | null): string {
   const total = (html.match(IMG_TAG_RE) ?? []).length;
   let n = 0;
   return html.replace(IMG_TAG_RE, (tag) => {
     n += 1;
     const alt = /\salt\s*=\s*(["'])(.*?)\1/i.exec(tag);
     if (alt && alt[2].trim()) return tag;
-    const label = `Photograph ${n} of ${total}${credit ? ` by ${credit}` : ""}`.replace(/"/g, "&quot;");
+    const label = `Photograph ${n} of ${total}${title ? ` from ${title}` : ""}${credit ? ` by ${credit}` : ""}`
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
     const withoutAlt = alt ? tag.replace(alt[0], "") : tag;
     return withoutAlt.replace(/^<img\b/i, `<img alt="${label}"`);
   });
 }
 
-export function prepareArticleBodyHtml(html: string, opts: { credit?: string | null } = {}): string {
-  const withImages = rewriteArticleBodyImages(fillEmptyAlt(rewriteMediaUrlsInHtml(html), opts.credit));
+export function prepareArticleBodyHtml(html: string, opts: { credit?: string | null; title?: string | null } = {}): string {
+  // Decoded here, escaped once when the label is written.
+  const title = opts.title ? decodeHtmlEntities(opts.title).trim() : null;
+  const credit = opts.credit ? decodeHtmlEntities(opts.credit).trim() : null;
+  const withImages = rewriteArticleBodyImages(fillEmptyAlt(rewriteMediaUrlsInHtml(html), credit, title));
   if (!isCdnEnabled()) return withImages;
   // Everything else that links into uploads (full-size links, video
   // sources, posters) goes to the original file on the CDN.

@@ -131,5 +131,38 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]): objec
   };
 }
 
+/** Theme pages: a collection of stories, listed in order, so search and
+ *  AI tools can answer "essays about memory" with the stories themselves. */
+export function collectionJsonLd(c: {
+  name: string;
+  path: string;
+  description?: string;
+  items: { name: string; path: string; author?: string | null }[];
+  parent: { name: string; path: string };
+}): object[] {
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: c.name,
+      url: `${SITE_URL}${c.path}`,
+      ...(c.description ? { description: c.description } : {}),
+      isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL },
+      publisher: PUBLISHER,
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: c.items.length,
+        itemListElement: c.items.map((it, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          url: `${SITE_URL}${it.path}`,
+          name: it.author ? `${it.name}, by ${it.author}` : it.name,
+        })),
+      },
+    },
+    breadcrumbJsonLd([c.parent, { name: c.name, path: c.path }]),
+  ];
+}
+
 /** Missing records: a clear title for the 404 page (Next adds noindex). */
 export const NOT_FOUND_META: Metadata = { title: "Page not found — The Photographic Journal" };
