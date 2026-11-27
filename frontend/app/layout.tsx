@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { MotionRoot } from "@/components/MotionRoot";
+import { SearchOverlay } from "@/components/SearchOverlay";
 import { NavTooltips } from "@/components/NavTooltips";
 import { RouteAnnouncer } from "@/components/RouteAnnouncer";
 import { SkipToContent } from "@/components/SkipToContent";
@@ -108,6 +109,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <MotionRoot />
+        <SearchOverlay />
         <NavTooltips />
         <RouteAnnouncer />
       </body>

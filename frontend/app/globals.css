@@ -141,6 +141,20 @@ main:focus-visible {
   outline: none;
 }
 
+/* Short pages (search, empty results, 404) still end with the footer at
+   the bottom of the window: main grows to fill the gap. */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+body > main {
+  flex: 1 0 auto;
+  min-width: 0;
+}
+
 body {
   font-family: var(--font-ui), system-ui, -apple-system, sans-serif;
   font-size: var(--text-body);

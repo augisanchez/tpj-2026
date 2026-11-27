@@ -5,6 +5,7 @@ import { NavLink as Link } from "./SmartLink";
 import { ReactNode, useState } from "react";
 import { Icon, type IconName } from "./Icon";
 import styles from "./MobileDrawer.module.css";
+import { openSearch } from "./SearchOverlay";
 
 /** A menu link; an icon, when given, is set before the word. */
 export type DrawerLink = { label: string; href: string; icon?: IconName };
@@ -52,13 +53,17 @@ export function MobileDrawer({
                 )}
               </Link>
             ))}
-            <Link
-              href="/search"
-              className={styles.link}
-              onClick={() => setOpen(false)}
+            {/* Closes the menu, then opens the search overlay over the page. */}
+            <button
+              type="button"
+              className={`${styles.link} ${styles.linkButton}`}
+              onClick={() => {
+                setOpen(false);
+                window.setTimeout(openSearch, 0);
+              }}
             >
               Search
-            </Link>
+            </button>
           </nav>
           {recent.length > 0 && (
             <section className={styles.recent} aria-labelledby="drawer-recent">

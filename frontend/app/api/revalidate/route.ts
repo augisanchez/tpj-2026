@@ -21,5 +21,7 @@ export async function POST(req: Request) {
       : [p],
   );
   for (const p of mapped) revalidatePath(p);
+  // Any save can change a title, credit or cover in the quick-search index.
+  if (mapped.length) revalidatePath("/api/search-index");
   return Response.json({ ok: true, revalidated: mapped });
 }

@@ -119,7 +119,9 @@ export function NavClient({ recent }: { recent: DrawerPhotographer[] }) {
         >
           <Icon name="shuffle" />
         </Link>
-        <Link href="/search" aria-label="Search" className={styles.search}>
+        {/* Opens the search overlay (SearchOverlay); a modified click
+            or no JavaScript still reaches /search. */}
+        <Link href="/search" aria-label="Search (⌘K)" className={styles.search} data-open-search>
           <Icon name="search" />
         </Link>
         <MobileDrawer

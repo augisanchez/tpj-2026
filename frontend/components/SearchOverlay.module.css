@@ -1,0 +1,346 @@
+/* Search overlay: the query in display type, results under it. Opaque
+   page ground (not glass) so the big type always reads cleanly. */
+
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1100; /* over the nav (100), photo viewer (200) and nav tooltips (1000) */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  animation: soIn 140ms var(--ease-out) both;
+}
+
+@keyframes soIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+}
+
+.inner {
+  width: min(100%, var(--grid-max));
+  margin: 0 auto;
+  padding: 0 var(--gutter) 48px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── The field ── */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 0.5rem + 1vw, 24px);
+  padding: clamp(24px, 1rem + 4vh, 96px) 0 clamp(10px, 0.5rem + 0.5vw, 18px);
+  border-bottom: 2px solid var(--text);
+}
+
+.glass {
+  flex: none;
+  width: clamp(24px, 1rem + 1.5vw, 48px);
+  height: auto;
+  color: var(--text);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 1.25rem + 4.5vw, 7.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  caret-color: var(--text);
+  appearance: none;
+}
+
+/* The 2px rule under the field is the focus mark; no box ring. */
+.input:focus,
+.input:focus-visible {
+  outline: none;
+}
+
+/* #858585 is 3.3:1 on --bg: the large-text minimum (3:1) at this size. */
+.input::placeholder {
+  color: #858585;
+  opacity: 1;
+}
+
+.clear,
+.close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.clear:hover,
+.close:hover {
+  color: var(--text);
+}
+
+.close {
+  color: var(--text);
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ── Results ── */
+
+.results {
+  flex: 1;
+  padding-top: clamp(8px, 1vw, 16px);
+}
+
+.section {
+  margin-top: clamp(24px, 1rem + 1.5vw, 48px);
+}
+
+.heading {
+  margin: 0 0 12px;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.status {
+  margin: clamp(24px, 1rem + 1.5vw, 48px) 0 0;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: var(--text-intro);
+  line-height: var(--leading-intro);
+  color: var(--muted);
+}
+
+.section .status {
+  margin: 0 0 16px;
+}
+
+/* Every row: same highlight for hover and the arrow keys. */
+.artist,
+.story,
+.all {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 -12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+  scroll-margin: 160px 0 24px;
+}
+
+.artist[aria-selected="true"],
+.story[aria-selected="true"],
+.all[aria-selected="true"] {
+  background: var(--surface);
+}
+
+.artists,
+.stories {
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: 32px;
+}
+
+@media (min-width: 1024px) {
+  .artists,
+  .stories {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.avatar {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--placeholder);
+  color: var(--text);
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: 20px;
+}
+
+.thumb {
+  flex: none;
+  width: 96px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-img);
+  overflow: hidden;
+  background: var(--placeholder);
+}
+
+.avatar img,
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name,
+.title {
+  font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.25rem, 0.9rem + 0.9vw, 2rem);
+  line-height: 1.1;
+}
+
+.meta {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* The part of a name or title that matched what was typed. */
+.mark {
+  background: var(--acid);
+  color: inherit;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.chip[aria-selected="true"] {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+.chipQuiet {
+  border-style: dashed;
+}
+
+.all {
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 48px 0 0;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.hints span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Touch screens have no arrow keys or Esc. */
+@media (hover: none), (max-width: 768px) {
+  .hints {
+    display: none;
+  }
+  .kbd {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .bar {
+    padding-top: 16px;
+  }
+  .thumb {
+    width: 72px;
+  }
+  .avatar {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
