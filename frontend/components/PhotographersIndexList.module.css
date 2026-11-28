@@ -35,7 +35,7 @@
   font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
   font-weight: 700;
   font-size: 1em;
-  line-height: 0.95;
+  line-height: var(--leading-caps);
   letter-spacing: -0.01em;
   text-transform: uppercase;
   overflow-wrap: anywhere;

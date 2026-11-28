@@ -202,7 +202,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(40px, 1.5rem + 2.4vw, 96px);
-  line-height: 1;
+  line-height: var(--leading-display);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
@@ -235,7 +235,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(22px, 0.75rem + 1.1vw, 48px);
-  line-height: 1.05;
+  line-height: var(--leading-title);
   letter-spacing: -0.01em;
   max-width: 22ch;
   overflow-wrap: anywhere;

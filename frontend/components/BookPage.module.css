@@ -43,7 +43,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(56px, 2rem + 4vw, 176px);
-  line-height: 0.9;
+  line-height: var(--leading-display-xl);
   letter-spacing: -0.025em;
   margin: 0;
 }

@@ -111,7 +111,7 @@
 .title {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
-  line-height: 1.05;
+  line-height: var(--leading-title);
   letter-spacing: -0.01em;
   margin: 8px 0 0 0;
   max-width: 22ch;

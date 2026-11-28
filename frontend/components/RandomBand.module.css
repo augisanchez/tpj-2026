@@ -16,7 +16,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: 12vw;
-  line-height: 0.86;
+  line-height: var(--leading-caps);
   letter-spacing: -0.02em;
   text-transform: uppercase;
   max-width: 100%;

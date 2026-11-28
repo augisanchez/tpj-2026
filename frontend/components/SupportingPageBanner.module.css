@@ -13,7 +13,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(72px, 3rem + 7vw, 400px); /* caps ~4686 */
-  line-height: 0.9;
+  line-height: var(--leading-display-xl);
   letter-spacing: -0.04em;
   margin: 0 0 clamp(32px, 4vw, 56px);
   text-transform: none;

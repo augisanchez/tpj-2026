@@ -45,7 +45,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(39px, 1.05rem + 4.2vw, 140px);
-  line-height: 1.05;
+  line-height: var(--leading-display);
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }

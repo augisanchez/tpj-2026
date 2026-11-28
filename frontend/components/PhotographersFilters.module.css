@@ -62,7 +62,7 @@ a.letter {
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(40px, 1.5rem + 2.5vw, 144px); /* caps ~4320 */
-  line-height: 1;
+  line-height: var(--leading-display);
   letter-spacing: -0.02em;
   border-radius: var(--radius);
   padding: 0.16em 0.3em 0.22em;

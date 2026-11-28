@@ -18,7 +18,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(36px, 1.5rem + 2.5vw, 144px); /* caps ~4320 */
-  line-height: 1.05;
+  line-height: var(--leading-display);
   letter-spacing: -0.02em;
   color: var(--text);
   margin: 0 0 16px;

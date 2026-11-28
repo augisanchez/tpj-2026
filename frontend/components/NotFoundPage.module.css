@@ -32,7 +32,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(3rem, 1.5rem + 6.2vw, 14rem);
-  line-height: 0.9;
+  line-height: var(--leading-caps);
   letter-spacing: -0.01em;
   text-transform: uppercase;
   text-wrap: balance;

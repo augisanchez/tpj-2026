@@ -63,7 +63,7 @@
   /* Tightened from the prior 64–128px range — that was tuned for a
      full-width name; here it shares space with a 480px portrait tile. */
   font-size: clamp(48px, 5.5vw, 88px);
-  line-height: 0.95;
+  line-height: var(--leading-display-xl);
   letter-spacing: -0.02em;
   color: var(--text);
   margin: 0;

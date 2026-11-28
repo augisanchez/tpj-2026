@@ -56,7 +56,7 @@
   font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
   font-size: 40px;
   font-weight: 700;
-  line-height: 1.05;
+  line-height: var(--leading-display);
   letter-spacing: -0.01em;
   color: var(--text);
   text-decoration: none;
@@ -120,7 +120,7 @@
   font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
   font-size: 24px;
   font-weight: 600;
-  line-height: 1.15;
+  line-height: var(--leading-title);
   color: var(--text);
   text-decoration: none;
   /* 44px tap target from the line plus padding. */

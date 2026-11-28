@@ -104,7 +104,7 @@
   color: var(--hero-text);
   font-size: clamp(48px, 1.5rem + 2.8vw, 160px);
   /* Room for descenders on wrapped lines (same as the article hero). */
-  line-height: 1.04;
+  line-height: var(--leading-display-xl);
   letter-spacing: -0.025em;
   margin: 0 0 12px;
   max-width: 14ch;

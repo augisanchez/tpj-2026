@@ -92,6 +92,17 @@
      every clamp above. */
   --leading-body: calc(1.225em + 6.4px);
   --leading-intro: calc(1.1125em + 6.75px);
+  /* Display type (Oswald): three steps, by size. Looser as type gets
+     smaller. Nothing below 1: mixed-case titles need the room for
+     descenders (the "g" in "Picturing" touched "Kramer" at 0.9).
+     xl: page titles, heroes, banners (about 56px and up)
+     display: section heads, pitches, names (about 28-56px)
+     title: card, list and in-text headings (under about 28px) */
+  --leading-display-xl: 1;
+  --leading-display: 1.05;
+  --leading-title: 1.1;
+  /* All-caps titles have no descenders, so they can set tight. */
+  --leading-caps: 0.9;
   /* Story ledes stay at most 1.4x the body size, so lede and body keep
      the same relationship on every screen (about 37 characters a line
      in the shared reading column). */
@@ -172,7 +183,7 @@ h6 {
   font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
   font-weight: 700;
   margin: 0;
-  line-height: 1.05;
+  line-height: var(--leading-display);
   letter-spacing: -0.01em;
 }
 

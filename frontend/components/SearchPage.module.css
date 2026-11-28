@@ -99,7 +99,7 @@
   font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
   font-weight: 700;
   font-size: var(--text-display);
-  line-height: 1;
+  line-height: var(--leading-display-xl);
   max-width: 14ch;
 }
 

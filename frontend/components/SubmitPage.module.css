@@ -18,7 +18,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(36px, 1.5rem + 2.2vw, 120px); /* caps ~4000 */
-  line-height: 1.05;
+  line-height: var(--leading-display);
   letter-spacing: -0.015em;
   color: var(--text);
   margin: 0;
@@ -59,7 +59,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(32px, 1.25rem + 2vw, 104px); /* caps ~4200 */
-  line-height: 1.05;
+  line-height: var(--leading-display);
   letter-spacing: -0.015em;
   color: var(--text);
   margin: 0;

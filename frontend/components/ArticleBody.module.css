@@ -286,7 +286,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: 48px;
-  line-height: 1.05;
+  line-height: var(--leading-display);
   letter-spacing: -0.01em;
   margin-top: 24px;
   margin-bottom: 0;
@@ -296,7 +296,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: 32px;
-  line-height: 1.1;
+  line-height: var(--leading-title);
   margin-top: 16px;
   margin-bottom: 0;
 }

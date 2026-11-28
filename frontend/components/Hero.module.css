@@ -86,8 +86,9 @@
   font-size: min(var(--tier), var(--fit));
   /* Leading and bottom room sized so Oswald's descenders (p, g, y,
      ~0.23em) clear the capitals on the next line and the byline below.
-     0.9 looked tighter but let "Picturing" collide with "Kramer". */
-  line-height: 1.04;
+     0.9 looked tighter but let "Picturing" collide with "Kramer"
+     (shared scale in globals.css: --leading-display-xl). */
+  line-height: var(--leading-display-xl);
   padding-bottom: 0.12em;
   letter-spacing: -0.02em;
   margin: 0;

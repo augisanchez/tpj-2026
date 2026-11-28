@@ -17,7 +17,7 @@
   font-family: var(--font-display), Impact, sans-serif;
   font-weight: 700;
   font-size: clamp(28px, 1rem + 1.8vw, 80px);
-  line-height: 1.05;
+  line-height: var(--leading-display);
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -148,7 +148,7 @@
   font-size: clamp(18px, 0.7rem + 0.7vw, 30px);
   /* 1.12 + a 0.16em pad lets Oswald descenders (y, p, g) clear the
      clamp's overflow clip without the top of a third line showing. */
-  line-height: 1.12;
+  line-height: var(--leading-title);
   padding-bottom: 0.16em;
   margin-bottom: -0.16em;
   letter-spacing: -0.01em;

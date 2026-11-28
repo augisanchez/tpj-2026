@@ -240,7 +240,7 @@
   font-family: var(--font-display), Impact, "Arial Narrow", sans-serif;
   font-weight: 700;
   font-size: clamp(1.25rem, 0.9rem + 0.9vw, 2rem);
-  line-height: 1.1;
+  line-height: var(--leading-title);
 }
 
 .meta {
