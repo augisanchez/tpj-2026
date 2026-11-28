@@ -18,6 +18,10 @@ export type IndexStory = {
   y: number | null;
   /** Small cover thumbnail URL. */
   i: string | null;
+  /** Full-size cover (media host URL), for cards that size their own. */
+  s?: string | null;
+  /** Publish date, YYYY-MM-DD. */
+  d?: string | null;
   /** Theme names. */
   th: string[];
 };

@@ -1,0 +1,80 @@
+/* Label (or eyebrow + heading) on the left, Shuffle on the right. */
+.headRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* The strip's label carries its own bottom margin; the row variant's
+   section spaces its children with gap instead. */
+.headRow > h2 {
+  margin-bottom: 0;
+}
+
+/* Heading variant: the button sits on the heading's baseline side. */
+.headRowWide {
+  align-items: flex-end;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.shuffle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1.5px solid var(--text);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease-out,
+    transform 160ms ease-out;
+}
+
+.shuffle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.shuffle:active {
+  transform: scale(0.97);
+}
+
+.shuffle:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .shuffle:hover {
+    background: var(--accent);
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shuffle {
+    transition: none;
+  }
+}

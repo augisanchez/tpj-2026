@@ -7,7 +7,8 @@ import { ArticleBody } from "@/components/ArticleBody";
 import { EssayIntro } from "@/components/EssayIntro";
 import { Hero } from "@/components/Hero";
 import { ReadingProgress } from "@/components/ReadingProgress";
-import { RelatedArticles } from "@/components/RelatedArticles";
+import { ContinueThread } from "@/components/ContinueThread";
+import { buildThread, fetchArtistMore, fromRecent } from "@/lib/queries/related-stories";
 import { hangPlates } from "@/lib/exhibition";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchFeatureBySlug } from "@/lib/queries/feature-by-slug";
@@ -88,7 +89,17 @@ export default async function FeaturePage({ params }: Props) {
     day: "numeric",
   });
 
-  const related = recent.filter((f) => f.slug !== feature.slug).slice(0, 3);
+  // The artist's other work (for their bio's "more" link and the first
+  // thread cards), then recent features.
+  const here = `/feature/${feature.slug}`;
+  const artists = await fetchArtistMore(feature.photographers, here);
+  const related = buildThread({
+    currentType: "feature",
+    currentHref: here,
+    artists,
+    recent: recent.map((r) => fromRecent(r, "feature")),
+    slots: 3,
+  });
 
   const photographerDisplayName =
     formatPhotographerNames(feature.photographers.map((p) => p.name)) ??
@@ -137,15 +148,10 @@ export default async function FeaturePage({ params }: Props) {
           plates={plates}
           type="feature"
           credits={feature.credits}
+          more={artists}
         />
 
-        <RelatedArticles
-          eyebrow="More features"
-          heading="Continue the thread"
-          essays={related}
-          contentTypeLabel="Feature"
-          hrefBase="/feature"
-        />
+        <ContinueThread variant="row" stories={related} currentHref={here} />
       </ArticlePrefooter>
     </>
   );

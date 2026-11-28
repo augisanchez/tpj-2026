@@ -2,7 +2,8 @@ import Link from "./SmartLink";
 import { ArtistLinks } from "./ArtistLinks";
 import { ExhibitionChecklist } from "./ExhibitionChecklist";
 import { PhotographerAvatar } from "./PhotographerAvatar";
-import { CONTENT_TYPES, countStories, type ContentType } from "@/lib/content-types";
+import { CONTENT_TYPES, TYPE_LABELS, type ContentType } from "@/lib/content-types";
+import type { ArtistMore } from "@/lib/queries/related-stories";
 import type { Photographer } from "@/lib/photographer-types";
 import type { Plate } from "@/lib/exhibition";
 import styles from "./ArticleEndMatter.module.css";
@@ -17,7 +18,32 @@ type Props = {
   type: ContentType;
   /** Credits colophon from the story body (model, styling...). */
   credits?: string;
+  /** Each artist's other stories (lib/queries/related-stories.ts). An
+   *  artist with none gets no profile link: their profile would only
+   *  repeat this block. */
+  more?: ArtistMore[];
 };
+
+const plural = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`;
+
+/** "2 photo essays · 1 interview", only when there's more than one kind. */
+function breakdown(items: { type: ContentType }[]): string | null {
+  const order: ContentType[] = ["essay", "interview", "feature"];
+  const parts = order
+    .map((t) => [t, items.filter((i) => i.type === t).length] as const)
+    .filter(([, n]) => n > 0);
+  if (parts.length < 2) return null;
+  return parts.map(([t, n]) => plural(n, TYPE_LABELS[t].toLowerCase())).join(" · ");
+}
+
+/** "3 more stories", or "2 more photo essays" when they're all one kind. */
+function moreLine(items: { type: ContentType }[]): string {
+  const kinds = new Set(items.map((i) => i.type));
+  const noun = kinds.size === 1 ? TYPE_LABELS[items[0].type].toLowerCase() : "story";
+  const n = items.length;
+  const word = n === 1 ? noun : noun === "story" ? "stories" : `${noun}s`;
+  return `${n} more ${word}`;
+}
 
 /**
  * The end of every story, inside the pre-footer band: who made it (and
@@ -25,7 +51,7 @@ type Props = {
  * centered on each other. Stacks on phones, bio first. Either half renders alone when
  * the other has nothing to show.
  */
-export function ArticleEndMatter({ photographers, plates, type, credits }: Props) {
+export function ArticleEndMatter({ photographers, plates, type, credits, more = [] }: Props) {
   const hasPeople = photographers.length > 0;
   const hasPlates = plates.length > 0;
   if (!hasPeople && !hasPlates) return null;
@@ -39,9 +65,10 @@ export function ArticleEndMatter({ photographers, plates, type, credits }: Props
           <h2 id="about-heading" className={styles.label}>
             {photographers.length > 1 ? "About the photographers" : "About the photographer"}
           </h2>
-          {photographers.map((p) => (
-            <div key={p.slug} className={styles.person}>
-              <Link href={`/artist/${p.slug}`} className={styles.head} data-pz>
+          {photographers.map((p) => {
+            const others = more.find((m) => m.slug === p.slug)?.items ?? [];
+            const face = (
+              <>
                 <span className={styles.portrait}>
                   <PhotographerAvatar
                     name={p.name}
@@ -51,20 +78,36 @@ export function ArticleEndMatter({ photographers, plates, type, credits }: Props
                     widths={[320]}
                   />
                 </span>
-                <span className={styles.who}>
-                  <span className={styles.name}>{p.name}</span>
-                  {p.articleCount > 0 && (
-                    <span className={styles.count}>
-                      {countStories(p.articleCount)}
+                <span className={styles.name}>{p.name}</span>
+              </>
+            );
+            const types = breakdown(others);
+            return (
+              <div key={p.slug} className={styles.person}>
+                {others.length > 0 ? (
+                  <Link href={`/artist/${p.slug}`} className={`${styles.head} ${styles.headLink}`} data-pz>
+                    {face}
+                  </Link>
+                ) : (
+                  <div className={styles.head}>{face}</div>
+                )}
+                {p.bio && <p className={styles.bio}>{p.bio}</p>}
+                <ArtistLinks name={p.name} links={p.socials} align="start" />
+                {others.length > 0 && (
+                  <Link href={`/artist/${p.slug}`} className={styles.more}>
+                    <span className={styles.moreText}>
+                      <span className={styles.moreLine}>{moreLine(others)}</span>
+                      {types && <span className={styles.moreTypes}>{types}</span>}
+                    </span>
+                    <span className={styles.moreGo}>
+                      <span className={styles.moreGoLabel}>View profile</span>
                       <span className={styles.arrow} aria-hidden="true">→</span>
                     </span>
-                  )}
-                </span>
-              </Link>
-              {p.bio && <p className={styles.bio}>{p.bio}</p>}
-              <ArtistLinks name={p.name} links={p.socials} align="start" />
-            </div>
-          ))}
+                  </Link>
+                )}
+              </div>
+            );
+          })}
           {credits && (
             <div className={styles.credits} dangerouslySetInnerHTML={{ __html: credits }} />
           )}

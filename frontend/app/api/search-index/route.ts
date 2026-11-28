@@ -27,6 +27,9 @@ export async function GET() {
       y: s.date ? Number(s.date.slice(0, 4)) || null : null,
       // Shown at 96px (overlay) and 160px (results page); 320 covers 2x.
       i: s.featuredImage ? cdnImageUrl(s.featuredImage.src, { width: 320 }) : null,
+      // Shuffle on Continue the thread builds full cards from these.
+      s: s.featuredImage?.src ?? null,
+      d: s.date ? s.date.slice(0, 10) : null,
       th: s.themes.map((slug) => THEME_NAME.get(slug)).filter((n): n is string => Boolean(n)),
     })),
     artists: artists.map((a) => ({

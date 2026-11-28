@@ -7,7 +7,8 @@ import { EssayIntro } from "@/components/EssayIntro";
 import { Hero } from "@/components/Hero";
 import { InterviewBody } from "@/components/InterviewBody";
 import { ReadingProgress } from "@/components/ReadingProgress";
-import { RelatedArticles } from "@/components/RelatedArticles";
+import { ContinueThread } from "@/components/ContinueThread";
+import { buildThread, fetchArtistMore, fromRecent } from "@/lib/queries/related-stories";
 import { hangPlates } from "@/lib/exhibition";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchInterviewBySlug } from "@/lib/queries/interview-by-slug";
@@ -63,7 +64,17 @@ export default async function InterviewPage({ params }: Props) {
     day: "numeric",
   });
 
-  const related = recent.filter((i) => i.slug !== interview.slug).slice(0, 3);
+  // The artist's other work (for their bio's "more" link and the first
+  // thread cards), then recent interviews.
+  const here = `/interview/${interview.slug}`;
+  const artists = await fetchArtistMore(interview.photographers, here);
+  const related = buildThread({
+    currentType: "interview",
+    currentHref: here,
+    artists,
+    recent: recent.map((r) => fromRecent(r, "interview")),
+    slots: 3,
+  });
 
   const photographerDisplayName =
     formatPhotographerNames(interview.photographers.map((p) => p.name)) ??
@@ -117,15 +128,10 @@ export default async function InterviewPage({ params }: Props) {
           plates={plates}
           type="interview"
           credits={interview.credits}
+          more={artists}
         />
 
-        <RelatedArticles
-          eyebrow="More interviews"
-          heading="Continue the thread"
-          essays={related}
-          contentTypeLabel="Interview"
-          hrefBase="/interview"
-        />
+        <ContinueThread variant="row" stories={related} currentHref={here} />
       </ArticlePrefooter>
     </>
   );

@@ -8,14 +8,14 @@ import { EssayIntro } from "@/components/EssayIntro";
 import { Hero } from "@/components/Hero";
 import { PlateCounter } from "@/components/PlateCounter";
 import { ReadingProgress } from "@/components/ReadingProgress";
-import { RelatedStrip } from "@/components/RelatedStrip";
+import { ContinueThread } from "@/components/ContinueThread";
 import { SubmitMarquee } from "@/components/SubmitMarquee";
 import { hangPlates } from "@/lib/exhibition";
 import { formatPhotographerNames } from "@/lib/photographer-types";
 import { fetchEssayBySlug } from "@/lib/queries/essay-by-slug";
 import { previewTarget } from "@/lib/preview";
 import { fetchRecentEssays } from "@/lib/queries/recent-essays";
-import { fetchRelatedStories } from "@/lib/queries/related-stories";
+import { fetchArtistMore, fetchRelatedStories } from "@/lib/queries/related-stories";
 import { normalizeSlug } from "@/lib/text-utils";
 import type { Metadata } from "next";
 import { describe, pageMetadata, articleJsonLd, isoDate } from "@/lib/seo";
@@ -66,8 +66,10 @@ export default async function EssayPage({ params }: Props) {
     day: "numeric",
   });
 
-  // Same photographer first, then same theme, then recent essays.
-  const related = await fetchRelatedStories(essay, recent);
+  // The artist's other work (for their bio's "more" link and the first
+  // thread cards), then the same theme, then recent essays.
+  const artists = await fetchArtistMore(essay.photographers, `/essay/${essay.slug}`);
+  const related = await fetchRelatedStories(essay, recent, artists);
 
   const photographerDisplayName =
     formatPhotographerNames(essay.photographers.map((p) => p.name)) ??
@@ -115,9 +117,10 @@ export default async function EssayPage({ params }: Props) {
           plates={plates}
           type="essay"
           credits={essay.credits}
+          more={artists}
         />
 
-        <RelatedStrip label="Related stories" stories={related} />
+        <ContinueThread variant="strip" stories={related} currentHref={`/essay/${essay.slug}`} />
       </ArticlePrefooter>
       <SubmitMarquee prefooter />
     </>

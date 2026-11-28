@@ -1,80 +1,163 @@
 import type { Photographer } from "@/lib/photographer-types";
 import { fetchEssaysByTheme } from "./essays-by-theme";
-import { fetchPhotographerArticles, type PhotographerArticleType } from "./photographer-articles";
+import { fetchPhotographerArticles, type PhotographerArticle } from "./photographer-articles";
 import type { FeaturedImage, RecentEssay } from "./recent-essays";
-import { TYPE_LABELS } from "@/lib/content-types";
+import { TYPE_LABELS, type ContentType } from "@/lib/content-types";
 
 export type RelatedStory = {
   id: string;
   title: string;
   date: string;
   href: string;
+  type: ContentType;
   contentTypeLabel: string;
   photographer: string | null;
   featuredImage: FeaturedImage | null;
 };
 
-const TYPE_LABEL: Record<PhotographerArticleType, string> = TYPE_LABELS;
+/** Everything else a credited artist has on TPJ, for the "more" link in
+ *  their bio and the first cards of Continue the thread. */
+export type ArtistMore = {
+  slug: string;
+  name: string;
+  /** Other stories, newest first: their own work, interviews they
+   *  conducted, features they wrote, stories they appear in. Never the
+   *  story being read. */
+  items: RelatedStory[];
+};
 
 /** Must match the homepage ThemeBrowser's per-theme count, so the
  *  request body (and its cache entry) is shared with the homepage. */
 const THEME_FIRST = 7;
 
-const fromEssay = (e: RecentEssay): RelatedStory => ({
+/** Group pieces can credit a dozen people; look up the first few. */
+const MAX_ARTISTS = 6;
+
+/** Cards Continue the thread gives the artist; the rest branch out. */
+const ARTIST_SLOTS = 2;
+
+export const fromRecent = (e: RecentEssay, type: ContentType): RelatedStory => ({
   id: e.id,
   title: e.title,
   date: e.date,
-  href: `/essay/${e.slug}`,
-  contentTypeLabel: "Photo Essay",
+  href: `/${type}/${e.slug}`,
+  type,
+  contentTypeLabel: TYPE_LABELS[type],
   photographer: e.photographerName,
   featuredImage: e.featuredImage,
 });
 
+const fromWork = (a: PhotographerArticle, credit: string | null): RelatedStory => ({
+  id: a.id,
+  title: a.title,
+  date: a.date,
+  href: `/${a.contentType}/${a.slug}`,
+  type: a.contentType,
+  contentTypeLabel: TYPE_LABELS[a.contentType],
+  photographer: credit,
+  featuredImage: a.featuredImage,
+});
+
 /**
- * Related stories for the end of an essay: the same photographer's other
- * work first, then essays sharing its first theme, then recent essays to
- * fill. No new query shapes: both lookups reuse the exact requests the
- * photographer page (photographerWork) and the homepage theme browser
- * (essaysByThemeSlug, first 7) already make, so they hit the same
- * hour-long data cache. The photographer lookup is skipped when the
- * photographer has no other published work, and the theme lookup when
- * the photographer alone fills the strip.
+ * Each credited artist's other stories. Reuses the profile page's own
+ * request (photographerWork), so it shares that hour-long cache entry.
+ * An artist whose only story is this one comes back with no items, and
+ * their bio then shows no profile link.
  */
-export async function fetchRelatedStories(
-  essay: { slug: string; photographers: Photographer[]; themes?: string[] },
-  recent: RecentEssay[],
-  limit = 6,
-): Promise<RelatedStory[]> {
-  const out: RelatedStory[] = [];
-  const seen = new Set<string>([`/essay/${essay.slug}`]);
-  const add = (s: RelatedStory) => {
-    if (out.length >= limit || seen.has(s.href) || !s.featuredImage) return;
+export async function fetchArtistMore(
+  photographers: Photographer[],
+  currentHref: string,
+): Promise<ArtistMore[]> {
+  return Promise.all(
+    photographers.slice(0, MAX_ARTISTS).map(async (p) => {
+      const work = await fetchPhotographerArticles(p.slug).catch(() => null);
+      const seen = new Set<string>([currentHref]);
+      const items: RelatedStory[] = [];
+      const add = (s: RelatedStory) => {
+        if (seen.has(s.href)) return;
+        seen.add(s.href);
+        items.push(s);
+      };
+      if (work) {
+        work.articles.forEach((a) => add(fromWork(a, p.name)));
+        work.interviewsConducted.forEach((a) => add(fromWork(a, null)));
+        work.featuresWritten.forEach((a) => add(fromWork(a, null)));
+        work.appearsIn.forEach((a) => add(fromWork(a, null)));
+      }
+      items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      return { slug: p.slug, name: p.name, items };
+    }),
+  );
+}
+
+/**
+ * Continue the thread, the same way on every story page: up to two of
+ * the artist's other stories (a different kind ahead of the same kind:
+ * their interview under an essay, their essays under an interview),
+ * alternating with stories sharing the theme, then recent stories.
+ * Only stories with a cover photo.
+ */
+export function buildThread(opts: {
+  currentType: ContentType;
+  currentHref: string;
+  artists: ArtistMore[];
+  theme?: RelatedStory[];
+  recent: RelatedStory[];
+  slots: number;
+}): RelatedStory[] {
+  const seen = new Set<string>([opts.currentHref]);
+  const take = (s: RelatedStory, into: RelatedStory[]) => {
+    if (seen.has(s.href) || !s.featuredImage) return false;
     seen.add(s.href);
-    out.push(s);
+    into.push(s);
+    return true;
   };
 
-  const lead = essay.photographers.find((p) => p.articleCount > 1);
-  if (lead) {
-    const work = await fetchPhotographerArticles(lead.slug).catch(() => null);
-    for (const a of work?.articles ?? []) {
-      add({
-        id: a.id,
-        title: a.title,
-        date: a.date,
-        href: `/${a.contentType}/${a.slug}`,
-        contentTypeLabel: TYPE_LABEL[a.contentType],
-        photographer: lead.name,
-        featuredImage: a.featuredImage,
-      });
+  // Artist cards: one from each credited artist in turn, each artist's
+  // list ordered other-kind-first, then newest.
+  const mine: RelatedStory[] = [];
+  const queues = opts.artists.map((a) =>
+    [...a.items].sort((x, y) => Number(x.type === opts.currentType) - Number(y.type === opts.currentType)),
+  );
+  const limit = Math.min(ARTIST_SLOTS, opts.slots);
+  while (mine.length < limit && queues.some((q) => q.length)) {
+    for (const q of queues) {
+      if (mine.length >= limit) break;
+      while (q.length && !take(q.shift()!, mine));
     }
   }
 
-  const theme = essay.themes?.[0];
-  if (out.length < limit && theme) {
-    const byTheme = await fetchEssaysByTheme(theme, THEME_FIRST).catch(() => []);
-    byTheme.forEach((e) => add(fromEssay(e)));
+  const branch: RelatedStory[] = [];
+  for (const s of [...(opts.theme ?? []), ...opts.recent]) {
+    if (mine.length + branch.length >= opts.slots) break;
+    take(s, branch);
   }
 
-  if (out.length < 4) recent.forEach((e) => add(fromEssay(e)));
-  return out;
+  // Alternate artist and branch cards, so phones (first two cards only)
+  // see one of each.
+  const out: RelatedStory[] = [];
+  while (mine.length || branch.length) {
+    if (mine.length) out.push(mine.shift()!);
+    if (branch.length) out.push(branch.shift()!);
+  }
+  return out.slice(0, opts.slots);
+}
+
+/** Essays: artist, then the essay's first theme, then recent essays. */
+export async function fetchRelatedStories(
+  essay: { slug: string; themes?: string[] },
+  recent: RecentEssay[],
+  artists: ArtistMore[],
+  slots = 4,
+): Promise<RelatedStory[]> {
+  const theme = essay.themes?.[0];
+  const byTheme = theme ? await fetchEssaysByTheme(theme, THEME_FIRST).catch(() => []) : [];
+  return buildThread({
+    currentType: "essay",
+    currentHref: `/essay/${essay.slug}`,
+    artists,
+    theme: byTheme.map((e) => fromRecent(e, "essay")),
+    recent: recent.map((e) => fromRecent(e, "essay")),
+    slots,
+  });
 }
