@@ -26,14 +26,14 @@ type Props = {
 
 const plural = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`;
 
-/** "2 photo essays · 1 interview", only when there's more than one kind. */
+/** "29 photo essays, 1 interview", only when there's more than one kind. */
 function breakdown(items: { type: ContentType }[]): string | null {
   const order: ContentType[] = ["essay", "interview", "feature"];
   const parts = order
     .map((t) => [t, items.filter((i) => i.type === t).length] as const)
     .filter(([, n]) => n > 0);
   if (parts.length < 2) return null;
-  return parts.map(([t, n]) => plural(n, TYPE_LABELS[t].toLowerCase())).join(" · ");
+  return parts.map(([t, n]) => plural(n, TYPE_LABELS[t].toLowerCase())).join(", ");
 }
 
 /** "3 more stories", or "2 more photo essays" when they're all one kind. */
@@ -94,16 +94,16 @@ export function ArticleEndMatter({ photographers, plates, type, credits, more = 
                 {p.bio && <p className={styles.bio}>{p.bio}</p>}
                 <ArtistLinks name={p.name} links={p.socials} align="start" />
                 {others.length > 0 && (
-                  <Link href={`/artist/${p.slug}`} className={styles.more}>
-                    <span className={styles.moreText}>
-                      <span className={styles.moreLine}>{moreLine(others)}</span>
-                      {types && <span className={styles.moreTypes}>{types}</span>}
-                    </span>
-                    <span className={styles.moreGo}>
-                      <span className={styles.moreGoLabel}>View profile</span>
+                  <div className={styles.more}>
+                    <Link href={`/artist/${p.slug}`} className={styles.moreButton}>
+                      View profile
                       <span className={styles.arrow} aria-hidden="true">→</span>
-                    </span>
-                  </Link>
+                    </Link>
+                    <p className={styles.moreInfo}>
+                      {moreLine(others)}
+                      {types && ` (${types})`}
+                    </p>
+                  </div>
                 )}
               </div>
             );
