@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { Icon } from "./Icon";
 import { loadSearchIndex, peekSearchIndex } from "./SearchOverlay";
 import type { SearchItem, SearchPhotographer } from "@/lib/queries/search";
@@ -23,18 +23,24 @@ import styles from "./SearchPage.module.css";
  *  - Titles and names: matched in the browser from the quick-search
  *    index (lib/search-index.ts), so they follow every keystroke.
  *  - Mentioned in: WordPress full-text matches (words inside a story),
- *    fetched by the server after a short pause in typing, minus
- *    anything already listed above.
+ *    fetched from /api/search after a short pause in typing, minus
+ *    anything already listed above. Answers are kept in memory, so Back
+ *    from a story renders them at once and the scroll position holds.
  */
 
 const DEBOUNCE_MS = 300;
 
 type Props = {
-  /** The query the server results below were fetched for. */
+  /** The query in the URL when the page loaded. */
   initialTerm: string;
-  results: SearchItem[];
-  photographers?: SearchPhotographer[];
 };
+
+type Full = { items: SearchItem[]; photographers: SearchPhotographer[] };
+
+/** Full-text answers by folded query, for this browser session. */
+const fullCache = new Map<string, Full>();
+const fullFailed = new Set<string>();
+const keyOf = (t: string) => fold(t.trim());
 
 type Row = {
   href: string;
@@ -105,14 +111,18 @@ function StoryRow({ row, query }: { row: Row; query: string }) {
   );
 }
 
-export function SearchPage({ initialTerm, results, photographers = [] }: Props) {
+export function SearchPage({ initialTerm }: Props) {
   const router = useRouter();
   const [term, setTerm] = useState(initialTerm);
   const [index, setIndex] = useState<PreparedIndex | null>(() => peekSearchIndex());
   const [indexFailed, setIndexFailed] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
   const lastPushed = useRef(initialTerm);
+  // The query typing has settled on (after DEBOUNCE_MS), and a counter
+  // that re-renders when a full-text answer lands in fullCache.
+  const [settled, setSettled] = useState(() => keyOf(initialTerm));
+  const [, setLanded] = useState(0);
 
   useEffect(() => {
     if (index) return;
@@ -136,18 +146,43 @@ export function SearchPage({ initialTerm, results, photographers = [] }: Props) 
     startTransition(() => router.replace(url, { scroll: false }));
   };
   useEffect(() => {
-    const id = setTimeout(() => pushTerm(term), DEBOUNCE_MS);
+    const id = setTimeout(() => {
+      pushTerm(term);
+      setSettled(keyOf(term));
+    }, DEBOUNCE_MS);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [term]);
 
-  const trimmed = term.trim();
-  const serverFresh = fold(initialTerm) === fold(trimmed) && !isPending;
+  // Words inside stories, once typing settles. Edge-cached per query.
+  useEffect(() => {
+    if (!settled || fullCache.has(settled) || fullFailed.has(settled)) return;
+    const ctrl = new AbortController();
+    fetch(`/api/search?q=${encodeURIComponent(settled)}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? (r.json() as Promise<Full>) : Promise.reject(new Error(String(r.status)))))
+      .then((data) => {
+        fullCache.set(settled, { items: data.items ?? [], photographers: data.photographers ?? [] });
+        setLanded((n) => n + 1);
+      })
+      .catch((err) => {
+        if (ctrl.signal.aborted) return;
+        fullFailed.add(settled);
+        setLanded((n) => n + 1);
+        console.warn("search: full-text unavailable", err);
+      });
+    return () => ctrl.abort();
+  }, [settled]);
 
-  const quick = useMemo(
-    () => (index && trimmed ? quickSearch(index, trimmed, { artists: 12, stories: 60, themes: 4 }) : null),
-    [index, trimmed],
-  );
+  const trimmed = term.trim();
+  const currentKey = keyOf(trimmed);
+  const full = currentKey === settled ? fullCache.get(currentKey) : undefined;
+  const fullDone = Boolean(full) || (currentKey === settled && fullFailed.has(currentKey));
+  const results = full?.items ?? [];
+  const photographers = full?.photographers ?? [];
+  const serverFresh = fullDone;
+
+  // A few milliseconds over the whole index; cheap enough per render.
+  const quick = index && trimmed ? quickSearch(index, trimmed, { artists: 12, stories: 60, themes: 4 }) : null;
 
   // Titles and names: the index, or the server's list if the index
   // couldn't load.

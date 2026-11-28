@@ -8,8 +8,8 @@ import { LogoStage } from "./LogoStage";
  * The site's motion system (docs/MOTION-PLAN.md), in one place:
  *
  *  1. Page to page: internal link clicks run an exit (on-screen blocks
- *     leave in reading order), show the animated logo on the page
- *     background, push the route, wait for the new page, then hand off
+ *     leave in reading order), show the animated logo on the page if the
+ *     new page takes over 250ms, push the route, wait for it, then hand off
  *     to the reveals. Back/forward skip the logo.
  *  (No root loading.tsx: it would stream pages in a Suspense boundary
  *  and let this engine touch DOM before hydration. The logo overlay
@@ -32,6 +32,14 @@ const EXIT_STEP_MS = 30;
 const EXIT_CAP = 6;
 const EXIT_MS = 320;
 const LOGO_MIN_MS = 480;
+/** The logo only appears when the next page takes longer than this.
+ *  Prefetched pages arrive first, so most clicks skip it. */
+const LOGO_DELAY_MS = 250;
+/** Last resort: if the route never changes (a link that redirects back
+ *  to the page it's on), put the current page back. */
+const STUCK_MS = 12000;
+
+const trimSlash = (p: string) => p.replace(/\/+$/, "") || "/";
 
 type Phase = "idle" | "leaving" | "loading";
 
@@ -92,7 +100,12 @@ export function MotionRoot() {
   const watching = useRef<Set<HTMLElement>>(new Set());
   const active = useRef(false);
   const seen = useRef<WeakSet<Element>>(new WeakSet());
-  const pending = useRef<{ href: string; startedAt: number; logoAt: number } | null>(null);
+  const pending = useRef<{ href: string; startedAt: number; logoAt: number | null } | null>(null);
+  const timers = useRef<number[]>([]);
+  const clearTimers = () => {
+    timers.current.forEach((t) => window.clearTimeout(t));
+    timers.current = [];
+  };
 
   /* ---------------- reveals ---------------- */
 
@@ -348,7 +361,8 @@ export function MotionRoot() {
       }
       if (url.origin !== window.location.origin) return;
       if (url.pathname.startsWith("/api/")) return;
-      if (url.pathname === window.location.pathname) return; // same page (query/hash changes stay native)
+      // Same page, trailing slash or not (query/hash changes stay native).
+      if (trimSlash(url.pathname) === trimSlash(window.location.pathname)) return;
       if (reducedMotion() || phase.current !== "idle") return;
 
       e.preventDefault();
@@ -372,9 +386,24 @@ export function MotionRoot() {
       const startedAt = performance.now();
       window.setTimeout(() => {
         phase.current = "loading";
-        pending.current = { href: target, startedAt, logoAt: performance.now() };
-        setLogoVisible(true);
+        pending.current = { href: target, startedAt, logoAt: null };
         router.push(target, { scroll: false });
+        clearTimers();
+        timers.current.push(
+          window.setTimeout(() => {
+            if (phase.current !== "loading" || !pending.current) return;
+            pending.current.logoAt = performance.now();
+            setLogoVisible(true);
+          }, LOGO_DELAY_MS),
+          window.setTimeout(() => {
+            if (phase.current !== "loading") return;
+            document.querySelectorAll(".rv-out").forEach((el) => el.classList.remove("rv-out"));
+            document.body.classList.remove("is-leaving");
+            setLogoVisible(false);
+            pending.current = null;
+            phase.current = "idle";
+          }, STUCK_MS),
+        );
       }, EXIT_MS);
     };
 
@@ -397,7 +426,11 @@ export function MotionRoot() {
         requestAnimationFrame(finish);
         return;
       }
-      const wait = Math.max(0, LOGO_MIN_MS - (performance.now() - p.logoAt));
+      clearTimers();
+      // Logo never appeared (the page was ready within LOGO_DELAY_MS):
+      // arrive straight away. Otherwise give it its minimum time on screen.
+      const shown = p.logoAt !== null;
+      const wait = shown ? Math.max(0, LOGO_MIN_MS - (performance.now() - p.logoAt!)) : 0;
       window.setTimeout(() => {
         if (cancelled) return;
         window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
@@ -413,7 +446,7 @@ export function MotionRoot() {
           phase.current = "idle";
           register();
           check();
-        }, 200);
+        }, shown ? 200 : 0);
       }, wait);
     };
     requestAnimationFrame(finish);
