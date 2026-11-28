@@ -1,0 +1,22 @@
+# After Vercel finishes a deploy, visit every page in the sitemap once,
+# so no reader waits on WordPress for a page's first render.
+# Vercel reports each deploy to GitHub as a deployment status; this runs
+# on the successful ones. Two pages at a time: the CMS is a small server.
+name: Warm page cache
+
+on: deployment_status
+
+jobs:
+  warm:
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: frontend/scripts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Warm every sitemap page
+        run: node frontend/scripts/warm-cache.mjs "${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}" 2
