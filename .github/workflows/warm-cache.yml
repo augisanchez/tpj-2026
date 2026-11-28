@@ -1,16 +1,27 @@
-# After Vercel finishes a deploy, visit every page in the sitemap once,
-# so no reader waits on WordPress for a page's first render.
-# Vercel reports each deploy to GitHub as a deployment status; this runs
-# on the successful ones. Two pages at a time: the CMS is a small server.
+# After each push deploys, visit every page in the sitemap once, so no
+# reader waits on WordPress for a page's first render.
+#
+# Vercel doesn't report deploys to GitHub on this repo, so the job waits
+# until the site's /api/version reports the pushed commit, then warms.
+# Two pages at a time: the CMS is a small server.
+# At cutover, set the repo variable WARM_BASE_URL to the public domain.
 name: Warm page cache
 
-on: deployment_status
+on:
+  push:
+    branches: [fix/scroll-cue-mobile, main]
+  workflow_dispatch:
+
+concurrency:
+  group: warm-cache
+  cancel-in-progress: true
 
 jobs:
   warm:
-    if: github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
+    env:
+      BASE: ${{ vars.WARM_BASE_URL || 'https://v2.thephotographicjournal.com' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -18,5 +29,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Wait for this commit to be live
+        if: github.event_name == 'push'
+        run: |
+          for i in $(seq 1 75); do
+            live=$(curl -fsS "$BASE/api/version" 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).sha||"")}catch{console.log("")}})')
+            if [ "$live" = "$GITHUB_SHA" ]; then echo "live after ~$((i*20))s"; sleep 20; exit 0; fi
+            sleep 20
+          done
+          echo "Deploy of $GITHUB_SHA never went live on $BASE"; exit 1
       - name: Warm every sitemap page
-        run: node frontend/scripts/warm-cache.mjs "${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}" 2
+        run: node frontend/scripts/warm-cache.mjs "$BASE" 2
